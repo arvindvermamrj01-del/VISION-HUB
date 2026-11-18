@@ -1,15 +1,12 @@
 (() => {
   "use strict";
 
-  const ready = () =>
-    window.supabase &&
-    window.VH_SUPABASE_URL &&
-    window.VH_SUPABASE_PUBLISHABLE_KEY &&
-    !window.VH_SUPABASE_URL.includes("PASTE_") &&
-    !window.VH_SUPABASE_PUBLISHABLE_KEY.includes("PASTE_");
-
-  if (!ready()) {
-    console.warn("Vision Hub: Supabase configuration missing.");
+  if (
+    !window.supabase ||
+    !window.VH_SUPABASE_URL ||
+    !window.VH_SUPABASE_PUBLISHABLE_KEY
+  ) {
+    console.error("Supabase configuration missing.");
     return;
   }
 
@@ -34,8 +31,10 @@
     if (el("authNav")) el("authNav").classList.add("hidden");
     if (el("userNav")) el("userNav").classList.remove("hidden");
 
-    const name = user.user_metadata?.full_name  user.email  "User";
-    const initial = name.trim()[0].toUpperCase();
+    const name =
+      user.user_metadata?.full_name  user.email  "User";
+
+    const initial = name.trim().charAt(0).toUpperCase();
 
     ["userAvatar", "profileAvatar"].forEach(id => {
       if (el(id)) el(id).textContent = initial;
@@ -58,15 +57,25 @@
     const password = el("regPassword")?.value;
     const confirm = el("regConfirm")?.value;
 
-    if (!fullName || !email) return notify("Enter your name and email.");
-    if (password.length < 6) return notify("Password must be at least 6 characters.");
-    if (password !== confirm) return notify("Passwords do not match.");
+    if (!fullName || !email) {
+      return notify("Enter your name and email.");
+    }
+
+    if (!password || password.length < 6) {
+      return notify("Password must be at least 6 characters.");
+    }
+
+    if (password !== confirm) {
+      return notify("Passwords do not match.");
+    }
 
     try {
       const { data, error } = await client.auth.signUp({
         email,
         password,
-        options: { data: { full_name: fullName } }
+        options: {
+          data: { full_name: fullName }
+        }
       });
 
       if (error) throw error;
@@ -91,7 +100,7 @@
     const password = el("loginPassword")?.value;
 
     if (!email || !email.includes("@")) {
-      return notify("Please use your registered email address. Phone login is not configured yet.");
+      return notify("Please use your registered email address.");
     }
 
     try {
@@ -112,6 +121,7 @@
 
   window.logoutUser = async () => {
     const { error } = await client.auth.signOut();
+
     if (error) return notify(error.message);
 
     showSignedOut();
@@ -120,7 +130,10 @@
   };
 
   window.logoutAllDevices = async () => {
-    const { error } = await client.auth.signOut({ scope: "global" });
+    const { error } = await client.auth.signOut({
+      scope: "global"
+    });
+
     if (error) return notify(error.message);
 
     showSignedOut();
@@ -129,12 +142,18 @@
   };
 
   client.auth.onAuthStateChange((_event, session) => {
-    if (session?.user) showSignedIn(session.user);
-    else showSignedOut();
+    if (session?.user) {
+      showSignedIn(session.user);
+    } else {
+      showSignedOut();
+    }
   });
 
   client.auth.getSession().then(({ data }) => {
-    if (data?.session?.user) showSignedIn(data.session.user);
-    else showSignedOut();
+    if (data?.session?.user) {
+      showSignedIn(data.session.user);
+    } else {
+      showSignedOut();
+    }
   });
 })();
