@@ -1,10 +1,20 @@
 (() => {
   "use strict";
 
-  if (!window.supabase  !window.VH_SUPABASE_URL  !window.VH_SUPABASE_PUBLISHABLE_KEY) {
-    console.error("Supabase configuration missing.");
-    return;
-  }
+  if (!window.supabase) {
+  console.error("Supabase library missing.");
+  return;
+}
+
+if (!window.VH_SUPABASE_URL) {
+  console.error("Supabase URL missing.");
+  return;
+}
+
+if (!window.VH_SUPABASE_PUBLISHABLE_KEY) {
+  console.error("Supabase key missing.");
+  return;
+}
 
   const client = window.supabase.createClient(
     window.VH_SUPABASE_URL,
