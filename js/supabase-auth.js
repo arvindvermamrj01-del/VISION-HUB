@@ -1,11 +1,7 @@
 (() => {
   "use strict";
 
-  if (
-    !window.supabase ||
-    !window.VH_SUPABASE_URL ||
-    !window.VH_SUPABASE_PUBLISHABLE_KEY
-  ) {
+  if (!window.supabase  !window.VH_SUPABASE_URL  !window.VH_SUPABASE_PUBLISHABLE_KEY) {
     console.error("Supabase configuration missing.");
     return;
   }
@@ -31,9 +27,7 @@
     if (el("authNav")) el("authNav").classList.add("hidden");
     if (el("userNav")) el("userNav").classList.remove("hidden");
 
-    const name =
-      user.user_metadata?.full_name  user.email  "User";
-
+    const name = user.user_metadata?.full_name  user.email  "User";
     const initial = name.trim().charAt(0).toUpperCase();
 
     ["userAvatar", "profileAvatar"].forEach(id => {
@@ -57,25 +51,15 @@
     const password = el("regPassword")?.value;
     const confirm = el("regConfirm")?.value;
 
-    if (!fullName || !email) {
-      return notify("Enter your name and email.");
-    }
-
-    if (!password || password.length < 6) {
-      return notify("Password must be at least 6 characters.");
-    }
-
-    if (password !== confirm) {
-      return notify("Passwords do not match.");
-    }
+    if (!fullName || !email) return notify("Enter your name and email.");
+    if (!password || password.length < 6) return notify("Password must be at least 6 characters.");
+    if (password !== confirm) return notify("Passwords do not match.");
 
     try {
       const { data, error } = await client.auth.signUp({
         email,
         password,
-        options: {
-          data: { full_name: fullName }
-        }
+        options: { data: { full_name: fullName } }
       });
 
       if (error) throw error;
@@ -104,11 +88,7 @@
     }
 
     try {
-      const { data, error } = await client.auth.signInWithPassword({
-        email,
-        password
-      });
-
+      const { data, error } = await client.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
       showSignedIn(data.user);
@@ -121,7 +101,6 @@
 
   window.logoutUser = async () => {
     const { error } = await client.auth.signOut();
-
     if (error) return notify(error.message);
 
     showSignedOut();
@@ -130,10 +109,7 @@
   };
 
   window.logoutAllDevices = async () => {
-    const { error } = await client.auth.signOut({
-      scope: "global"
-    });
-
+    const { error } = await client.auth.signOut({ scope: "global" });
     if (error) return notify(error.message);
 
     showSignedOut();
@@ -142,18 +118,12 @@
   };
 
   client.auth.onAuthStateChange((_event, session) => {
-    if (session?.user) {
-      showSignedIn(session.user);
-    } else {
-      showSignedOut();
-    }
+    if (session?.user) showSignedIn(session.user);
+    else showSignedOut();
   });
 
   client.auth.getSession().then(({ data }) => {
-    if (data?.session?.user) {
-      showSignedIn(data.session.user);
-    } else {
-      showSignedOut();
-    }
+    if (data?.session?.user) showSignedIn(data.session.user);
+    else showSignedOut();
   });
 })();
