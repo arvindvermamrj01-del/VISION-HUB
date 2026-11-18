@@ -27,7 +27,7 @@
     if (el("authNav")) el("authNav").classList.add("hidden");
     if (el("userNav")) el("userNav").classList.remove("hidden");
 
-    const name = user.user_metadata?.full_name  user.email  "User";
+    const name = (user.user_metadata && user.user_metadata.full_name) ? user.user_metadata.full_name : (user.email ? user.email : "User");
     const initial = name.trim().charAt(0).toUpperCase();
 
     ["userAvatar", "profileAvatar"].forEach(id => {
