@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Vision Hub - Stream and Download Bollywood, Hollywood, and South Indian Movies & Web Series in 480p, 720p, 1080p and 4K UHD with Telegram Integration."/>
+  <title>Vision Hub 🎬 | Stream & Download Movies in 480p, 720p, 1080p, 4K</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+  <div id="app">
+
+    <!-- ===== NAVBAR ===== -->
+    <nav class="navbar" id="navbar">
+      <div class="nav-brand" onclick="showPage('home')" style="cursor: pointer;">
+        <span class="brand-icon">🎬</span>
+        <span class="brand-name">Vision<span class="brand-accent">Hub</span></span>
+      </div>
+
+      <!-- Public Navigation Links -->
+      <div class="nav-links" id="navLinks">
+        <a href="#home" class="nav-link active" onclick="showPage('home')">Home</a>
+        <a href="#bollywood" class="nav-link" onclick="filterByIndustry('Bollywood')">Bollywood</a>
+        <a href="#hollywood" class="nav-link" onclick="filterByIndustry('Hollywood')">Hollywood</a>
+        <a href="#south" class="nav-link" onclick="filterByIndustry('South')">South Indian</a>
+        <a href="#movies" class="nav-link" onclick="showPage('movies')">Movies</a>
+        <a href="#series" class="nav-link" onclick="showPage('series')">Web Series</a>
+        <a href="#watchlist" class="nav-link" onclick="showPage('watchlist')">Watchlist</a>
+        <a href="#request" class="nav-link" onclick="showPage('request')">Request Movie</a>
+      </div>
+
+      <!-- User & Auth Actions (NO Admin Button in Public Navbar - Admin is Protected via #control-center) -->
+      <div class="nav-actions">
+        <!-- Telegram Quick Header Button -->
+        <a href="https://t.me/visionhub_official" target="_blank" class="btn-telegram-sm telegram-target-link" title="Join our Telegram Channel">
+          <i class="fab fa-telegram-plane"></i> Telegram
+        </a>
+
+        <button class="btn-search-toggle" onclick="toggleSearch()" title="Search Movies (Hotkey: /)"><i class="fas fa-search"></i></button>
+        
+        <!-- Authenticated User Menu (Only for regular users) -->
+        <div id="userNav" class="user-nav hidden">
+          <span class="user-avatar" id="userAvatar">U</span>
+          <div class="dropdown-menu" id="userDropdown">
+            <a onclick="showPage('profile')"><i class="fas fa-user"></i> My Profile</a>
+            <a onclick="showPage('watchlist')"><i class="fas fa-heart"></i> Watchlist</a>
+            <a onclick="showPage('request')"><i class="fas fa-paper-plane"></i> My Requests</a>
+            <a onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <a onclick="logoutAllDevices()"><i class="fas fa-shield-alt"></i> Logout All Devices</a>
+          </div>
+        </div>
+
+        <!-- Guest User Auth Buttons (Signup / Login for Users Only) -->
+        <div id="authNav">
+          <button class="btn-login" onclick="showPage('login')">Login</button>
+          <button class="btn-signup" onclick="showPage('register')">Sign Up</button>
+        </div>
+
+        <!-- Mobile Hamburger Toggle -->
+        <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Toggle Navigation">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- ===== TOP TELEGRAM ANNOUNCEMENT BAR ===== -->
+    <div class="telegram-banner">
+      <div class="telegram-banner-text">
+        <i class="fab fa-telegram-plane"></i>
+        <span>Join our official Telegram Channel for daily new movies, instant Google Drive direct links & fast updates!</span>
+      </div>
+      <a href="https://t.me/visionhub_official" target="_blank" class="btn-telegram-sm telegram-target-link">
+        <i class="fab fa-telegram-plane"></i> Join Telegram
+      </a>
+    </div>
+
+    <!-- ===== FLOATING TELEGRAM BUTTON (Always Visible On Mobile & Desktop) ===== -->
+    <a href="https://t.me/visionhub_official" target="_blank" class="telegram-fab telegram-target-link" title="Join our Telegram Community">
+      <i class="fab fa-telegram-plane"></i>
+      <span>Join Telegram</span>
+    </a>
+
+    <!-- ===== SEARCH OVERLAY ===== -->
+    <div class="search-overlay" id="searchOverlay">
+      <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search movies, web series, genres, actors..." oninput="liveSearch(this.value)"/>
+        <button onclick="toggleSearch()" aria-label="Close search"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="search-results" id="searchResults"></div>
+    </div>
+
+    <!-- ===== TOAST NOTIFICATION ===== -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ======================================================= -->
+    <!--                     PAGES                               -->
+    <!-- ======================================================= -->
+
+    <!-- 1. HOME PAGE -->
+    <div id="page-home" class="page active">
+      <!-- Hero Banner -->
+      <section class="hero" id="heroSection">
+        <div class="hero-bg" id="heroBg"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content" id="heroContent">
+          <span class="hero-badge">🔥 Trending Now</span>
+          <h1 id="heroTitle">Loading...</h1>
+          <p id="heroDesc">Loading description...</p>
+          <div class="hero-meta" id="heroMeta"></div>
+          <div class="hero-buttons">
+            <button class="btn-play" id="heroPlayBtn">
+              <i class="fas fa-play"></i> Watch Now
+            </button>
+            <button class="btn-download" onclick="downloadMovie()">
+              <i class="fas fa-download"></i> Download All Resolutions
+            </button>
+            <button class="btn-telegram" onclick="openTelegram()">
+              <i class="fab fa-telegram-plane"></i> Telegram
+            </button>
+            <button class="btn-add-list" id="heroListBtn">
+              <i class="fas fa-plus"></i> My List
+            </button>
+          </div>
+        </div>
+        <div class="hero-dots" id="heroDots"></div>
+      </section>
+
+      <!-- Category & Industry Filter Bar -->
+      <section class="section">
+        <div class="category-filters" id="industryFilters" style="margin-bottom: 14px;">
+          <button class="filter-btn active" onclick="filterByIndustry('All', this)">🌐 All Industries</button>
+          <button class="filter-btn" onclick="filterByIndustry('Bollywood', this)">🇮🇳 Bollywood</button>
+          <button class="filter-btn" onclick="filterByIndustry('Hollywood', this)">🎬 Hollywood</button>
+          <button class="filter-btn" onclick="filterByIndustry('South', this)">⚡ South Indian</button>
+        </div>
+        <div class="category-filters" id="categoryFilters">
+          <button class="filter-btn active" onclick="filterByGenre('All', this)">All Genres</button>
+          <button class="filter-btn" onclick="filterByGenre('Action', this)">🔥 Action</button>
+          <button class="filter-btn" onclick="filterByGenre('Drama', this)">🎭 Drama</button>
+          <button class="filter-btn" onclick="filterByGenre('Comedy', this)">😂 Comedy</button>
+          <button class="filter-btn" onclick="filterByGenre('Horror', this)">👻 Horror</button>
+          <button class="filter-btn" onclick="filterByGenre('Sci-Fi', this)">🚀 Sci-Fi</button>
+          <button class="filter-btn" onclick="filterByGenre('Romance', this)">💖 Romance</button>
+          <button class="filter-btn" onclick="filterByGenre('Thriller', this)">🔪 Thriller</button>
+        </div>
+      </section>
+
+      <!-- Trending Movies Section -->
+      <section class="section">
+        <div class="section-header">
+          <h2>🔥 Trending Movies</h2>
+          <a onclick="showPage('movies')" class="see-all">See All Movies →</a>
+        </div>
+        <div class="movies-grid" id="trendingGrid"></div>
+      </section>
+
+      <!-- Popular Web Series Section -->
+      <section class="section">
+        <div class="section-header">
+          <h2>📺 Popular Web Series</h2>
+          <a onclick="showPage('series')" class="see-all">See All Series →</a>
+        </div>
+        <div class="movies-grid" id="seriesGrid"></div>
+      </section>
+
+      <!-- New Releases Section -->
+      <section class="section">
+        <div class="section-header">
+          <h2>🆕 New Releases</h2>
+          <a onclick="showPage('movies')" class="see-all">Browse More →</a>
+        </div>
+        <div class="movies-grid" id="newGrid"></div>
+      </section>
+    </div>
+
+    <!-- 2. ALL MOVIES PAGE -->
+    <div id="page-movies" class="page">
+      <div class="page-header-banner">
+        <h1>🎬 All Movies</h1>
+        <p>Explore our complete cinema library in 480p, 720p, 1080p and 4K</p>
+      </div>
+      <section class="section">
+        <div class="category-filters">
+          <button class="filter-btn active" onclick="filterMoviesPage('All',this)">All</button>
+          <button class="filter-btn" onclick="filterMoviesPage('Action',this)">Action</button>
+          <button class="filter-btn" onclick="filterMoviesPage('Drama',this)">Drama</button>
+          <button class="filter-btn" onclick="filterMoviesPage('Comedy',this)">Comedy</button>
+          <button class="filter-btn" onclick="filterMoviesPage('Horror',this)">Horror</button>
+          <button class="filter-btn" onclick="filterMoviesPage('Sci-Fi',this)">Sci-Fi</button>
+          <button class="filter-btn" onclick="filterMoviesPage('Romance',this)">Romance</button>
+          <button class="filter-btn" onclick="filterMoviesPage('Thriller',this)">Thriller</button>
+        </div>
+        <div class="movies-grid" id="allMoviesGrid"></div>
+      </section>
+    </div>
+
+    <!-- 3. WEB SERIES PAGE -->
+    <div id="page-series" class="page">
+      <div class="page-header-banner">
+        <h1>📺 Web Series</h1>
+        <p>Binge-worthy shows with multi-season and episode streaming</p>
+      </div>
+      <section class="section">
+        <div class="movies-grid" id="allSeriesGrid"></div>
+      </section>
+    </div>
+
+    <!-- 4. WATCHLIST PAGE -->
+    <div id="page-watchlist" class="page">
+      <div class="page-header-banner">
+        <h1>❤️ My Watchlist</h1>
+        <p>Your saved movies and series ready to watch and download anytime</p>
+      </div>
+      <section class="section">
+        <div class="movies-grid" id="watchlistGrid"></div>
+        <div id="watchlistEmpty" class="empty-state hidden">
+          <div class="empty-icon">🎬</div>
+          <h3>Your watchlist is empty</h3>
+          <p>Explore our library and tap the heart icon to save movies for later!</p>
+          <button class="btn-primary" onclick="showPage('home')" style="margin-top: 16px;">
+            <i class="fas fa-compass"></i> Browse Content
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- 5. REQUEST A MOVIE PAGE -->
+    <div id="page-request" class="page">
+      <div class="page-header-banner">
+        <h1>🎯 Request Content</h1>
+        <p>Can't find your favourite movie or series? Let our team know or ask in Telegram!</p>
+      </div>
+      <section class="section">
+        <div class="request-form-container">
+          <div>
+            <form class="request-form" onsubmit="submitRequest(event)">
+              <div class="form-group">
+                <label>Movie / Series Title *</label>
+                <input type="text" id="reqTitle" placeholder="e.g. Interstellar 2, Sacred Games S3" required/>
+              </div>
+              <div class="form-group">
+                <label>Content Type</label>
+                <select id="reqType">
+                  <option value="Movie">Movie</option>
+                  <option value="Web Series">Web Series</option>
+                  <option value="Documentary">Documentary</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Release Year (if known)</label>
+                <input type="number" id="reqYear" placeholder="2024" min="1900" max="2035"/>
+              </div>
+              <div class="form-group">
+                <label>Preferred Language</label>
+                <input type="text" id="reqLang" placeholder="Hindi, English, Telugu, Tamil, etc."/>
+              </div>
+              <div class="form-group">
+                <label>Additional Notes</label>
+                <textarea id="reqNotes" rows="3" placeholder="Specify director, actors, or required resolution (480p/720p/1080p/4K)..."></textarea>
+              </div>
+              <button type="submit" class="btn-primary full-width">
+                <i class="fas fa-paper-plane"></i> Submit Request
+              </button>
+            </form>
+
+            <!-- Telegram Request Support Banner -->
+            <div class="telegram-callout" style="margin-top: 18px;">
+              <p>⚡ <strong>Want Instant Request Approval & Updates?</strong><br/>Join our Telegram Channel to talk directly with uploaders!</p>
+              <a href="https://t.me/visionhub_official" target="_blank" class="btn-telegram-sm telegram-target-link" style="width: 100%; justify-content: center;">
+                <i class="fab fa-telegram-plane"></i> Join Telegram Group
+              </a>
+            </div>
+          </div>
+
+          <div class="request-list-panel">
+            <h3>📋 Recent Requests</h3>
+            <div id="requestsList"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 6. USER PROFILE PAGE -->
+    <div id="page-profile" class="page">
+      <div class="page-header-banner">
+        <h1>👤 My Account</h1>
+        <p>Manage your profile, account preferences and watch records</p>
+      </div>
+      <section class="section">
+        <div class="profile-container">
+          <div class="profile-card">
+            <div class="profile-avatar" id="profileAvatar">U</div>
+            <h2 id="profileName">Username</h2>
+            <p id="profileEmail">user@example.com</p>
+            <div class="profile-stats">
+              <div class="stat"><span id="statWatchlist">0</span><small>Watchlist</small></div>
+              <div class="stat"><span id="statRequests">0</span><small>Requests</small></div>
+              <div class="stat"><span id="statJoined">-</span><small>Joined</small></div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 20px;">
+              <button class="btn-primary full-width" onclick="logoutUser()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+              </button>
+              <button class="btn-delete full-width" onclick="logoutAllDevices()" style="padding: 10px; border-radius: 8px;">
+                <i class="fas fa-shield-alt"></i> Logout from All Devices
+              </button>
+            </div>
+          </div>
+          <div class="profile-watchlist">
+            <h3>❤️ Saved in Watchlist</h3>
+            <div class="movies-grid" id="profileWatchlistGrid"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 7. USER LOGIN PAGE (EMAIL OR PHONE NUMBER LOGIN) -->
+    <div id="page-login" class="page">
+      <div class="auth-container">
+        <div class="auth-box">
+          <div class="auth-brand">🎬 VisionHub</div>
+          <h2>Welcome Back!</h2>
+          <p class="auth-sub">Sign in using your Email or Phone Number (only one required)</p>
+          <form onsubmit="loginUser(event)">
+            <div class="form-group">
+              <label>Email Address or Phone Number *</label>
+              <input type="text" id="loginIdentifier" placeholder="you@example.com or 9876543210" required/>
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <div class="input-group">
+                <input type="password" id="loginPassword" placeholder="••••••••" required/>
+                <button type="button" onclick="togglePassword('loginPassword')"><i class="fas fa-eye"></i></button>
+              </div>
+            </div>
+            <button type="submit" class="btn-primary full-width">Sign In</button>
+          </form>
+          <!-- Guest Mode Button -->
+          <button class="btn-guest" onclick="loginGuest()">🎭 Continue as Guest <small>(6 hour free session)</small></button>
+          <p class="auth-switch">Don't have an account? <a onclick="showPage('register')">Create Account</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. USER REGISTER PAGE (EMAIL OR PHONE - ONLY ONE REQUIRED) -->
+    <div id="page-register" class="page">
+      <div class="auth-container">
+        <div class="auth-box">
+          <div class="auth-brand">🎬 VisionHub</div>
+          <h2>Create Account</h2>
+          <p class="auth-sub">Join Vision Hub — provide Email OR Phone Number (not both required)</p>
+          <form onsubmit="registerUser(event)">
+            <div class="form-group">
+              <label>Full Name *</label>
+              <input type="text" id="regName" placeholder="Rahul Sharma" required/>
+            </div>
+            <div class="form-group">
+              <label>Email Address <span style="color:var(--text-muted)">(optional if phone is given)</span></label>
+              <input type="email" id="regEmail" placeholder="you@example.com"/>
+            </div>
+
+            <!-- Phone Number with Country Code Dropdown -->
+            <div class="form-group">
+              <label>Mobile Number <span style="color:var(--text-muted)">(optional if email is given)</span></label>
+              <div style="display: flex; gap: 8px;">
+                <select id="regCountryCode" style="width: 130px; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px; font-size: 0.85rem;">
+                  <option value="+91" selected>🇮🇳 +91 (India)</option>
+                  <option value="+1">🇺🇸 +1 (USA/Can)</option>
+                  <option value="+44">🇬🇧 +44 (UK)</option>
+                  <option value="+971">🇦🇪 +971 (UAE)</option>
+                  <option value="+966">🇸🇦 +966 (KSA)</option>
+                  <option value="+61">🇦🇺 +61 (Aus)</option>
+                  <option value="+65">🇸🇬 +65 (Singapore)</option>
+                  <option value="+49">🇩🇪 +49 (Germany)</option>
+                  <option value="+92">🇵🇰 +92 (Pakistan)</option>
+                  <option value="+880">🇧🇩 +880 (Bangladesh)</option>
+                  <option value="+977">🇳🇵 +977 (Nepal)</option>
+                </select>
+                <input type="tel" id="regPhone" placeholder="9876543210" pattern="[0-9]{7,15}" style="flex: 1;"/>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Password *</label>
+              <div class="input-group">
+                <input type="password" id="regPassword" placeholder="Min 6 characters" required/>
+                <button type="button" onclick="togglePassword('regPassword')"><i class="fas fa-eye"></i></button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Confirm Password *</label>
+              <input type="password" id="regConfirm" placeholder="Re-enter password" required/>
+            </div>
+            <button type="submit" class="btn-primary full-width">Create Free Account</button>
+          </form>
+          <!-- Guest Mode Button -->
+          <button class="btn-guest" onclick="loginGuest()">🎭 Continue as Guest <small>(6 hour free session)</small></button>
+          <p class="auth-switch">Already registered? <a onclick="showPage('login')">Sign In</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. RESTRICTED ADMIN LOGIN PAGE (3 FAILED ATTEMPTS -> 15 MINUTE LOCKOUT WITH RED COUNTDOWN TIMER) -->
+    <!-- Accessible strictly via #control-center or Ctrl+Shift+A; never linked in public navbar -->
+    <div id="page-admin-login" class="page">
+      <div class="auth-container">
+        <div class="auth-box admin-auth-box">
+          <div class="auth-brand">⚙️ Vision Hub Control Center</div>
+          <h2>Restricted Administrative Portal</h2>
+          <p class="auth-sub" style="color: var(--warning);">
+            <i class="fas fa-shield-alt"></i> Authorized Administrative Personnel Only
+          </p>
+
+          <!-- Security Protocol Pill -->
+          <div id="adminSecurityNotice" class="admin-security-pill">
+            <i class="fas fa-exclamation-triangle"></i> Security Protocol: <strong>Max 3 Attempts</strong> before a 15-minute system lockout.
+          </div>
+
+          <!-- Red Lock Alert Box with Live Glowing Countdown Timer -->
+          <div id="adminLockBox" class="admin-lock-box hidden">
+            <div class="lock-icon-pulse"><i class="fas fa-user-lock"></i></div>
+            <h3 class="lock-title">SYSTEM TEMPORARILY LOCKED</h3>
+            <p class="lock-desc">3 consecutive failed login attempts detected. For security protection, administrative access has been suspended for 15 minutes.</p>
+            <div class="lock-timer-container">
+              <span class="timer-label">ACCESS RESTRICTED FOR:</span>
+              <div id="adminLockTimer" class="lock-timer-countdown">15:00</div>
+            </div>
+            <p class="lock-footer"><i class="fas fa-shield-virus"></i> Device Timestamp & IP Audit Recorded</p>
+          </div>
+
+          <!-- Admin Authentication Form -->
+          <form id="adminLoginForm" onsubmit="adminLogin(event)">
+            <div class="form-group">
+              <label>Admin / Sub-Admin Username</label>
+              <input type="text" id="adminUser" placeholder="admin" autocomplete="username" required/>
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <div class="input-group">
+                <input type="password" id="adminPass" placeholder="••••••••" autocomplete="current-password" required/>
+                <button type="button" onclick="togglePassword('adminPass')"><i class="fas fa-eye"></i></button>
+              </div>
+            </div>
+
+            <!-- Remaining Attempts Tracker -->
+            <div id="adminAttemptStatus" class="attempt-status">
+              <span>Failed Attempts: <strong id="attemptCount">0</strong> / 3</span>
+              <span id="attemptWarning" style="color: var(--warning); font-weight: 700;"></span>
+            </div>
+
+            <button type="submit" id="adminSubmitBtn" class="btn-admin-login full-width">
+              <i class="fas fa-key"></i> Authenticate & Enter Control Center
+            </button>
+          </form>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- 10. ADMIN DASHBOARD & CONTROL CENTER -->
+    <div id="page-admin" class="page">
+      <div class="admin-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="admin-sidebar">
+          <div class="admin-logo">
+            <span>⚙️</span> Control Center
+            <div><span id="adminRoleBadge" class="admin-role-badge">Super Admin</span></div>
+          </div>
+          <nav class="admin-nav">
+            <button class="admin-nav-btn active" onclick="adminTab('dashboard',this)">
+              <i class="fas fa-tachometer-alt"></i> Dashboard
+            </button>
+            <button class="admin-nav-btn" onclick="adminTab('add-movie',this)">
+              <i class="fas fa-plus-circle"></i> Add Content
+            </button>
+            <button class="admin-nav-btn" onclick="adminTab('manage',this)">
+              <i class="fas fa-film"></i> Manage Catalog
+            </button>
+            <button class="admin-nav-btn" onclick="adminTab('drive-import',this)">
+              <i class="fab fa-google-drive"></i> Drive Import
+            </button>
+            <button class="admin-nav-btn" onclick="adminTab('requests-admin',this)">
+              <i class="fas fa-inbox"></i> User Requests
+            </button>
+            <button class="admin-nav-btn" onclick="adminTab('reports',this)">
+              <i class="fas fa-chart-bar"></i> Analytics & Reports
+            </button>
+            <button class="admin-nav-btn" onclick="adminTab('users-admin',this)">
+              <i class="fas fa-users-cog"></i> User Management
+            </button>
+            <button class="admin-nav-btn" onclick="adminTab('team-admin',this)">
+              <i class="fas fa-user-shield"></i> Admins & Password
+            </button>
+            <button class="admin-nav-btn" onclick="adminTab('settings',this)">
+              <i class="fas fa-sliders-h"></i> Platform Settings
+            </button>
+            <button class="admin-nav-btn" onclick="adminTab('categories',this)">
+              <i class="fas fa-tags"></i> Category Manager
+            </button>
+            <button class="admin-nav-btn" onclick="adminTab('songs',this)">
+              <i class="fas fa-music"></i> Song Management
+            </button>
+            <button class="admin-nav-btn logout-btn" onclick="adminLogout()">
+              <i class="fas fa-sign-out-alt"></i> Exit Admin
+            </button>
+          </nav>
+        </aside>
+
+        <!-- Admin Workspace Main Area -->
+        <main class="admin-main">
+          
+          <!-- TAB 1: Dashboard Overview -->
+          <div id="tab-dashboard" class="admin-tab active">
+            <h2>📊 Dashboard & Performance Overview</h2>
+            <div class="stats-grid">
+              <div class="stat-card blue">
+                <i class="fas fa-film"></i>
+                <span id="totalMovies">0</span>
+                <small>Total Movies</small>
+              </div>
+              <div class="stat-card purple">
+                <i class="fas fa-tv"></i>
+                <span id="totalSeries">0</span>
+                <small>Web Series</small>
+              </div>
+              <div class="stat-card green">
+                <i class="fas fa-users"></i>
+                <span id="totalUsers">0</span>
+                <small>Registered Users</small>
+              </div>
+              <div class="stat-card orange">
+                <i class="fas fa-eye"></i>
+                <span id="totalViews">0</span>
+                <small>Total Stream Views</small>
+              </div>
+            </div>
+
+            <div class="admin-recent" style="margin-top: 30px;">
+              <h3>🕐 Recently Added Catalog Content</h3>
+              <div id="recentMoviesAdmin"></div>
+            </div>
+          </div>
+
+          <!-- TAB 2: Add Movie / Series (With Multi-Resolution Downloads & Telegram Integration) -->
+          <div id="tab-add-movie" class="admin-tab">
+            <h2>➕ Add New Movie / Web Series</h2>
+            <form class="admin-form" onsubmit="addMovie(event)">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Title *</label>
+                  <input type="text" id="addTitle" placeholder="e.g. Inception" required/>
+                </div>
+                <div class="form-group">
+                  <label>Content Type *</label>
+                  <select id="addType">
+                    <option value="Movie">Movie</option>
+                    <option value="Web Series">Web Series</option>
+                    <option value="Documentary">Documentary</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Primary Genre *</label>
+                  <select id="addGenre">
+                    <option>Action</option>
+                    <option>Drama</option>
+                    <option>Comedy</option>
+                    <option>Horror</option>
+                    <option>Sci-Fi</option>
+                    <option>Romance</option>
+                    <option>Thriller</option>
+                    <option>Animation</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Language & Industry</label>
+                  <input type="text" id="addLang" placeholder="Hindi, English (Bollywood/Hollywood/South)"/>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Release Year</label>
+                  <input type="number" id="addYear" placeholder="2024" min="1900" max="2035"/>
+                </div>
+                <div class="form-group">
+                  <label>Rating (1.0 to 10.0)</label>
+                  <input type="number" id="addRating" placeholder="8.5" step="0.1" min="1" max="10"/>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Poster Image URL</label>
+                <input type="url" id="addPoster" placeholder="https://... (Direct poster image link)"/>
+              </div>
+
+              <div class="form-group">
+                <label>Main Video Stream URL / Drive Link *</label>
+                <input type="url" id="addVideo" placeholder="https://drive.google.com/file/d/... or YouTube Embed" required/>
+              </div>
+
+              <!-- Multi-Resolution Download Link Inputs -->
+              <div style="background: var(--bg-secondary); border: 1px solid var(--border); padding: 16px; border-radius: var(--radius-sm); margin: 16px 0;">
+                <h4 style="margin-bottom: 12px; color: var(--accent);"><i class="fas fa-download"></i> Resolution Specific Download Links (Optional)</h4>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>480p Download Link (Mobile SD)</label>
+                    <input type="url" id="addDl480" placeholder="https://drive.google.com/... or direct link"/>
+                  </div>
+                  <div class="form-group">
+                    <label>720p Download Link (HD)</label>
+                    <input type="url" id="addDl720" placeholder="https://drive.google.com/... or direct link"/>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>1080p Download Link (Full HD)</label>
+                    <input type="url" id="addDl1080" placeholder="https://drive.google.com/... or direct link"/>
+                  </div>
+                  <div class="form-group">
+                    <label>4K UHD Download Link</label>
+                    <input type="url" id="addDl4k" placeholder="https://drive.google.com/... or direct link"/>
+                  </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label><i class="fab fa-telegram-plane" style="color: #229ED9;"></i> Telegram Direct Post Link (Optional)</label>
+                  <input type="url" id="addTgPost" placeholder="https://t.me/yourchannel/123"/>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Official Trailer URL (YouTube)</label>
+                <input type="url" id="addTrailer" placeholder="https://www.youtube.com/watch?v=..."/>
+              </div>
+
+              <!-- Screenshots for download preview carousel (Admin Only) -->
+              <div class="form-group">
+                <label>🖼️ Screenshot / Scene Preview URLs <small style="color:var(--text-muted)">(Comma separated — shown in download modal carousel)</small></label>
+                <input type="text" id="addScreenshots" placeholder="https://img1.com/shot.jpg, https://img2.com/shot.jpg, ..."/>
+              </div>
+
+              <div class="form-group">
+                <label>Synopsis & Description</label>
+                <textarea id="addDesc" rows="4" placeholder="Enter movie story synopsis, plot outline..."></textarea>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Cast (comma separated)</label>
+                  <input type="text" id="addCast" placeholder="Leonardo DiCaprio, Joseph Gordon-Levitt"/>
+                </div>
+                <div class="form-group">
+                  <label>Director</label>
+                  <input type="text" id="addDirector" placeholder="Christopher Nolan"/>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Duration / Episodes Info</label>
+                <input type="text" id="addDuration" placeholder="2h 28m or S1 • 8 Episodes"/>
+              </div>
+
+              <button type="submit" class="btn-primary full-width" style="margin-top: 10px;">
+                <i class="fas fa-save"></i> Publish to Vision Hub Catalog
+              </button>
+            </form>
+          </div>
+
+          <!-- TAB 3: Manage Content -->
+          <div id="tab-manage" class="admin-tab">
+            <h2>🎬 Manage Catalog Content</h2>
+            <div class="admin-toolbar">
+              <input type="text" id="manageSearch" placeholder="Filter by title, genre, language..." oninput="filterManageList(this.value)"/>
+            </div>
+            <div id="manageList" class="manage-list"></div>
+          </div>
+
+          <!-- TAB 4: Google Drive Import -->
+          <div id="tab-drive-import" class="admin-tab">
+            <h2>☁️ Google Drive Direct Import</h2>
+            <div class="drive-import-box">
+              <div class="drive-icon"><i class="fab fa-google-drive"></i></div>
+              <h3>Import Media from Google Drive</h3>
+              <p>Connect authorized Google Drive share links to auto-index content into Vision Hub</p>
+              
+              <div class="form-group">
+                <label>Drive File / Folder Link *</label>
+                <input type="url" id="driveLink" placeholder="https://drive.google.com/file/d/... or folder share link"/>
+              </div>
+              <div class="form-group">
+                <label>Title to Assign *</label>
+                <input type="text" id="driveName" placeholder="Movie or Show Title"/>
+              </div>
+              <div class="form-group">
+                <label>Content Type</label>
+                <select id="driveType">
+                  <option value="Movie">Movie</option>
+                  <option value="Web Series">Web Series</option>
+                </select>
+              </div>
+              <button class="btn-primary full-width" onclick="importFromDrive()">
+                <i class="fab fa-google-drive"></i> Verify & Import from Drive
+              </button>
+              <div id="driveImportLog" class="drive-log"></div>
+            </div>
+          </div>
+
+          <!-- TAB 5: User Requests Management -->
+          <div id="tab-requests-admin" class="admin-tab">
+            <h2>📥 User Movie & Show Requests</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Review user submissions, approve for ingestion or decline requests.</p>
+            <div id="adminRequestsList" class="admin-requests"></div>
+          </div>
+
+          <!-- TAB 6: Analytics & Reports -->
+          <div id="tab-reports" class="admin-tab">
+            <h2>📊 Platform Reports & Insights</h2>
+            <div class="reports-grid">
+              <div class="report-card">
+                <h4>📈 Most Watched Content</h4>
+                <div id="topViewedList"></div>
+              </div>
+              <div class="report-card">
+                <h4>⬇️ Most Downloaded Content</h4>
+                <div id="topDownloadedList"></div>
+              </div>
+              <div class="report-card">
+                <h4>🔥 Genre Popularity Index</h4>
+                <div id="genreChart" class="bar-chart"></div>
+              </div>
+              <div class="report-card">
+                <h4>📅 Monthly Traffic Activity</h4>
+                <div id="monthlyChart" class="bar-chart"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 7: User Management (With Privacy Protection: Phone Numbers Only for Super Admin) -->
+          <div id="tab-users-admin" class="admin-tab">
+            <h2>👥 Registered Users & Privacy Management</h2>
+            <p style="color: var(--text-muted); margin-bottom: 16px;">
+              <i class="fas fa-lock" style="color: var(--warning);"></i> 
+              <strong>Data Privacy Protocol:</strong> Full registered phone numbers with country codes are visible <em>only to the Super Admin</em>. Sub-Admins see masked phone numbers.
+            </p>
+            <div class="admin-toolbar">
+              <input type="text" id="userManageSearch" placeholder="Search user by name, email, or ID..." oninput="filterUsersList(this.value)"/>
+            </div>
+            <div class="user-table-container">
+              <table class="user-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>User Profile</th>
+                    <th>Email</th>
+                    <th>Phone (Country Code)</th>
+                    <th>Joined Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminUsersTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- TAB 8: Admins, Sub-Admins & Password Management -->
+          <div id="tab-team-admin" class="admin-tab">
+            <h2>🛡️ Admin Credentials & Sub-Admin Roles</h2>
+            
+            <!-- Section 1: Change Password & Username Form -->
+            <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 28px;">
+              <h3 style="margin-bottom: 6px;"><i class="fas fa-key" style="color: var(--accent);"></i> Change Admin Credentials</h3>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">Update your administrative username or set a new secure password.</p>
+              
+              <form class="admin-form" onsubmit="updateAdminCredentials(event)">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Current Password *</label>
+                    <input type="password" id="changeCurrPass" placeholder="Enter current password" required/>
+                  </div>
+                  <div class="form-group">
+                    <label>New Username (Optional)</label>
+                    <input type="text" id="changeAdminUser" placeholder="Leave blank to keep current"/>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>New Password * (Min 6 chars)</label>
+                    <input type="password" id="changeNewPass" placeholder="New strong password" required/>
+                  </div>
+                  <div class="form-group">
+                    <label>Confirm New Password *</label>
+                    <input type="password" id="changeConfirmPass" placeholder="Re-enter new password" required/>
+                  </div>
+                </div>
+                <button type="submit" class="btn-primary full-width" style="margin-top: 8px;">
+                  <i class="fas fa-check-circle"></i> Save New Credentials
+                </button>
+              </form>
+            </div>
+
+            <!-- Section 2: Sub-Admin Creation & Management (Super Admin Only) -->
+            <div id="superAdminOnlySection" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px;">
+              <h3 style="margin-bottom: 6px;"><i class="fas fa-users-cog" style="color: var(--accent2);"></i> Sub-Admin Team Management</h3>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">
+                Create Sub-Admin accounts to help manage movies and user requests. Sub-Admins cannot access user phone numbers or change master credentials.
+              </p>
+
+              <form class="admin-form" onsubmit="addSubAdmin(event)">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Staff Member Name *</label>
+                    <input type="text" id="subName" placeholder="e.g. Vikas Kumar" required/>
+                  </div>
+                  <div class="form-group">
+                    <label>Sub-Admin Username *</label>
+                    <input type="text" id="subUsername" placeholder="e.g. vikas_admin" required/>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Sub-Admin Password *</label>
+                    <input type="password" id="subPassword" placeholder="Min 6 characters" required/>
+                  </div>
+                  <div class="form-group">
+                    <label>Assigned Role *</label>
+                    <select id="subRole">
+                      <option value="Sub-Admin">Sub-Admin (Catalog & Requests)</option>
+                      <option value="Content Editor">Content Editor (Movies Only)</option>
+                      <option value="Moderator">Moderator (Requests Only)</option>
+                    </select>
+                  </div>
+                </div>
+                <button type="submit" class="btn-primary full-width">
+                  <i class="fas fa-user-plus"></i> Create Sub-Admin Account
+                </button>
+              </form>
+
+              <div style="margin-top: 26px;">
+                <h4>Active Sub-Admins</h4>
+                <div id="subAdminsList" class="subadmin-grid"></div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- TAB 10: Category Manager (Admin Only) -->
+          <div id="tab-categories" class="admin-tab">
+            <h2>🏷️ Category Manager</h2>
+            <div class="tab-categories-form">
+              <h3 style="margin-bottom:14px;"><i class="fas fa-plus-circle" style="color:var(--accent);"></i> Add New Category</h3>
+              <form class="admin-form" onsubmit="addCategory(event)">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Category Name *</label>
+                    <input type="text" id="catName" placeholder="e.g. Bollywood, South Indian, Anime" required/>
+                  </div>
+                  <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" id="catDesc" placeholder="Short description of the category"/>
+                  </div>
+                </div>
+                <button type="submit" class="btn-primary full-width"><i class="fas fa-save"></i> Save Category</button>
+              </form>
+            </div>
+            <h3 style="margin:0 0 14px;">📋 Existing Categories</h3>
+            <div id="categoriesList" class="manage-list"></div>
+          </div>
+
+          <!-- TAB 11: Song / Music Management (Admin Only) -->
+          <div id="tab-songs" class="admin-tab">
+            <h2>🎵 Song &amp; Music Management</h2>
+            <div class="tab-songs-form">
+              <h3 style="margin-bottom:14px;"><i class="fas fa-plus-circle" style="color:var(--accent);"></i> Add New Song</h3>
+              <form class="admin-form" onsubmit="addSong(event)">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Song Title *</label>
+                    <input type="text" id="songTitle" placeholder="e.g. Tum Hi Ho" required/>
+                  </div>
+                  <div class="form-group">
+                    <label>Artist / Singer *</label>
+                    <input type="text" id="songArtist" placeholder="e.g. Arijit Singh" required/>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Audio File URL * <small style="color:var(--text-muted)">(Direct MP3 / Google Drive / CDN link)</small></label>
+                  <input type="url" id="songFileUrl" placeholder="https://drive.google.com/file/d/... or direct .mp3 link" required/>
+                </div>
+                <div class="form-group">
+                  <label>Poster / Album Art URL <small style="color:var(--text-muted)">(Optional)</small></label>
+                  <input type="url" id="songPoster" placeholder="https://... (direct image link)"/>
+                </div>
+                <button type="submit" class="btn-primary full-width"><i class="fas fa-save"></i> Add Song to Library</button>
+              </form>
+            </div>
+            <h3 style="margin:0 0 14px;">🎶 Song Library</h3>
+            <div id="songsList" class="manage-list"></div>
+          </div>
+
+          <!-- TAB 9: Platform Settings (With Telegram Channel Link Configuration) -->
+          <div id="tab-settings" class="admin-tab">
+            <h2>⚙️ Vision Hub Platform Settings</h2>
+            <form class="admin-form" onsubmit="saveWebsiteSettings(event)">
+              <div class="form-group">
+                <label>Platform Name</label>
+                <input type="text" id="settingSiteName" value="Vision Hub"/>
+              </div>
+              <div class="form-group">
+                <label><i class="fab fa-telegram-plane" style="color:#229ED9;"></i> Your Telegram Channel Link</label>
+                <input type="url" id="settingTelegram" value="https://t.me/visionhub_official" placeholder="https://t.me/your_channel_name"/>
+                <small style="color: var(--text-muted);">This link will be used in all Telegram buttons, banners, and download callouts.</small>
+              </div>
+              <div class="form-group">
+                <label>SEO Meta Description</label>
+                <textarea rows="2">Vision Hub - Stream and Download the best Bollywood, Hollywood, and South Indian Movies & Web Series online in HD.</textarea>
+              </div>
+              <div class="form-group">
+                <label>Maintenance Mode</label>
+                <select id="settingMaintenance">
+                  <option value="off">Off (Live for Public)</option>
+                  <option value="on">On (Staff Access Only)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Google Drive API Connection Status</label>
+                <p style="color: var(--success); font-weight: 600; font-size: 0.9rem;">
+                  <i class="fas fa-check-circle"></i> Service Account Connected & Stream Proxy Ready
+                </p>
+              </div>
+              <button type="submit" class="btn-primary full-width">
+                <i class="fas fa-save"></i> Save Configuration
+              </button>
+            </form>
+          </div>
+
+        </main>
+      </div>
+    </div>
+
+    <!-- ===== MOVIE DETAIL MODAL ===== -->
+    <div class="modal-overlay" id="movieModal" onclick="closeModal(event)">
+      <div class="modal-box">
+        <button class="modal-close" onclick="closeModalBtn()" aria-label="Close dialog"><i class="fas fa-times"></i></button>
+        <div class="modal-hero" id="modalHero"></div>
+        <div class="modal-body">
+          <div class="modal-left">
+            <img id="modalPoster" src="" alt="Movie Poster" class="modal-poster"/>
+          </div>
+          <div class="modal-right">
+            <h2 id="modalTitle">Movie Title</h2>
+            <div class="modal-meta" id="modalMeta"></div>
+            <p id="modalDesc" class="modal-desc"></p>
+            <div class="modal-cast" id="modalCast"></div>
+            <div class="modal-actions">
+              <button class="btn-play" id="modalPlayBtn" onclick="playMovie()">
+                <i class="fas fa-play"></i> Watch Now
+              </button>
+              <button class="btn-download" onclick="downloadMovie()">
+                <i class="fas fa-download"></i> Download Options
+              </button>
+              <button class="btn-telegram" onclick="openTelegram()">
+                <i class="fab fa-telegram-plane"></i> Telegram
+              </button>
+              <button class="btn-add-list" id="modalWatchBtn" onclick="toggleWatchlist()">
+                <i class="fas fa-heart"></i> Watchlist
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Embedded Trailer -->
+        <div class="trailer-section" id="trailerSection">
+          <h3>🎞️ Official Trailer</h3>
+          <div class="trailer-embed" id="trailerEmbed"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== VIDEO STREAM PLAYER MODAL ===== -->
+    <div class="player-overlay" id="playerOverlay">
+      <div class="player-box">
+        <div class="player-header">
+          <span id="playerTitle">▶ Now Playing</span>
+          <button onclick="closePlayer()" aria-label="Close player"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="player-frame">
+          <iframe id="playerIframe" src="" allowfullscreen title="Media Player"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"></iframe>
+          <!-- Fallback for Error 153 / blocked embed -->
+          <div class="player-fallback" id="playerFallback">
+            <video controls controlsList="nodownload">
+              <source src="" type="video/mp4"/>
+              Your browser does not support the video tag.
+            </video>
+            <p style="color:var(--text-muted); font-size:0.85rem;">⚠️ Stream embed blocked. Playing direct file. If not loading, use <strong>Download Options</strong>.</p>
+            <button class="btn-download" onclick="downloadMovie()"><i class="fas fa-download"></i> Download Instead</button>
+          </div>
+        </div>
+        <div class="player-controls">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="color: var(--success); font-size: 0.85rem;"><i class="fas fa-shield-alt"></i> Secure Stream</span>
+            <span style="color: var(--text-muted); font-size: 0.82rem;">1080p Full HD</span>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-telegram-sm" onclick="openTelegram()">
+              <i class="fab fa-telegram-plane"></i> Telegram
+            </button>
+            <button class="btn-download" onclick="downloadMovie()">
+              <i class="fas fa-download"></i> Download
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ALL RESOLUTIONS DOWNLOAD MODAL (A TO Z RESOLUTION OPTIONS) ===== -->
+    <div class="download-modal-overlay" id="downloadModal" onclick="if(event.target===this)closeDownloadModal()">
+      <div class="download-modal-box">
+        <div class="download-header">
+          <h3><i class="fas fa-download" style="color:var(--accent);"></i> Download in All Resolutions</h3>
+          <button class="modal-close" onclick="closeDownloadModal()" aria-label="Close download dialog" style="position:static; width:36px; height:36px;">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Movie Header Inside Download Modal -->
+        <div class="download-movie-info">
+          <img id="dlModalPoster" src="" alt="Poster" />
+          <div class="download-movie-details">
+            <h4 id="dlModalTitle">Movie Title</h4>
+            <p id="dlModalMeta">2024 • Action • Hindi • 2h 15m</p>
+            <span style="font-size:0.75rem; color:var(--success); font-weight:600;">
+              <i class="fas fa-volume-up"></i> Dual Audio (Hindi Clean) • High Bitrate
+            </span>
+          </div>
+        </div>
+
+        <!-- Screenshot Preview Carousel -->
+        <div class="screenshot-slider-wrap">
+          <div id="dlScreenshotSlider"></div>
+          <div id="dlSliderDots"></div>
+        </div>
+
+        <!-- Resolution Cards List (480p, 720p, 1080p, 4K) -->
+        <div class="res-list">
+          
+          <!-- 480p SD -->
+          <div class="res-card">
+            <div class="res-info">
+              <span class="res-tag res-480">480p SD</span>
+              <div class="res-meta">
+                <span>Mobile Data Saver Quality</span>
+                <small>Size: ~420 MB • MP4 • Fast Download</small>
+              </div>
+            </div>
+            <div class="res-actions">
+              <button class="btn-dl-server" onclick="triggerDownload('480p', 'Fast Cloud Server')"><i class="fas fa-bolt"></i> Server 1</button>
+              <button class="btn-dl-server" onclick="triggerDownload('480p', 'Google Drive Direct')"><i class="fab fa-google-drive"></i> Drive</button>
+            </div>
+          </div>
+
+          <!-- 720p HD -->
+          <div class="res-card">
+            <div class="res-info">
+              <span class="res-tag res-720">720p HD</span>
+              <div class="res-meta">
+                <span>Standard High Definition (Balanced)</span>
+                <small>Size: ~950 MB • Crisp Visuals • Dual Audio</small>
+              </div>
+            </div>
+            <div class="res-actions">
+              <button class="btn-dl-server" onclick="triggerDownload('720p', 'Fast Cloud Server')"><i class="fas fa-bolt"></i> Server 1</button>
+              <button class="btn-dl-server" onclick="triggerDownload('720p', 'Google Drive Direct')"><i class="fab fa-google-drive"></i> Drive</button>
+            </div>
+          </div>
+
+          <!-- 1080p FHD -->
+          <div class="res-card">
+            <div class="res-info">
+              <span class="res-tag res-1080">1080p FHD</span>
+              <div class="res-meta">
+                <span>Full HD 1080p (Crystal Clear)</span>
+                <small>Size: ~1.9 GB • 60fps Theater Quality • 5.1 Surround</small>
+              </div>
+            </div>
+            <div class="res-actions">
+              <button class="btn-dl-server" onclick="triggerDownload('1080p', 'Fast Cloud Server')"><i class="fas fa-bolt"></i> Server 1</button>
+              <button class="btn-dl-server" onclick="triggerDownload('1080p', 'Google Drive Direct')"><i class="fab fa-google-drive"></i> Drive</button>
+            </div>
+          </div>
+
+          <!-- 4K UHD -->
+          <div class="res-card">
+            <div class="res-info">
+              <span class="res-tag res-4k">4K UHD</span>
+              <div class="res-meta">
+                <span>Ultra HD 2160p HDR (Master Print)</span>
+                <small>Size: ~4.6 GB • High Bitrate • Dolby Atmos</small>
+              </div>
+            </div>
+            <div class="res-actions">
+              <button class="btn-dl-server" onclick="triggerDownload('4K', 'High-Speed Cloud Server')"><i class="fas fa-bolt"></i> Ultra Server</button>
+              <button class="btn-dl-server" onclick="triggerDownload('4K', 'Google Drive Direct')"><i class="fab fa-google-drive"></i> Drive</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Telegram Direct File Option Callout -->
+        <div class="telegram-callout">
+          <p>📲 <strong>Want Instant Direct Download Without Any Waiting or Redirection?</strong><br/>Download the original video file directly inside our Telegram Channel!</p>
+          <a id="dlModalTelegramBtn" href="https://t.me/visionhub_official" target="_blank" class="btn-telegram telegram-target-link" style="width: 100%;">
+            <i class="fab fa-telegram-plane"></i> Get Direct File on Telegram
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- end #app -->
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-brand" onclick="showPage('home')" style="cursor: pointer;">
+        🎬 Vision<span class="brand-accent">Hub</span>
+      </div>
+      <p>© 2026 Vision Hub. All rights reserved. The ultimate entertainment hub for Movies and Web Series.</p>
+      <div class="footer-links">
+        <a href="#home" onclick="showPage('home')">Home</a>
+        <a href="#movies" onclick="showPage('movies')">Movies</a>
+        <a href="#series" onclick="showPage('series')">Web Series</a>
+        <a href="#request" onclick="showPage('request')">Request Movie</a>
+        <a href="https://t.me/visionhub_official" target="_blank" class="telegram-target-link" style="color: #229ED9;">
+          <i class="fab fa-telegram-plane"></i> Join Telegram
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
