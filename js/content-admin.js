@@ -64,6 +64,7 @@
   window.filterManageList = value => renderManageList(value);
   window.deletePublishedContent = async id => {
     if (!Number.isFinite(Number(id)) || !window.confirm("Delete this published item permanently?")) return;
+    let cleanupPending=false;
     try {
       await requireContentStaff();
       const { data: row, error: readError } = await db.from("vh_content").select("storage_path,storage_provider,content_type").eq("id", Number(id)).maybeSingle();
@@ -72,7 +73,7 @@
         const {data:{session}}=await db.auth.getSession();
         const response=await fetch("/api/storage/terabox/file?id="+encodeURIComponent(id),{method:"DELETE",headers:{authorization:"Bearer "+session.access_token}});
         const payload=await response.json();if(!response.ok)throw new Error(payload.error||"Could not remove TeraBox-backed item.");
-        if(payload.cleanup_pending)toast("Catalogue item removed. TeraBox file cleanup is pending; check provider storage later.");
+        cleanupPending=Boolean(payload.cleanup_pending);
       }else{
         const { error } = await db.from("vh_content").delete().eq("id", Number(id));
         if (error) throw error;
@@ -81,7 +82,7 @@
       window.VISION_HUB_DATA = (window.VISION_HUB_DATA || []).filter(item => !(item.isSupabaseContent && Number(item.id) === Number(id)));
       window.renderVisionHub?.();
       renderManageList($("manageSearch")?.value || "");
-      toast("Content deleted.");
+      toast(cleanupPending?"Content deleted; TeraBox file cleanup is pending.":"Content deleted.");
     } catch (error) {
       console.error("Content delete failed:", error);
       toast(error.message || "Could not delete content.");
