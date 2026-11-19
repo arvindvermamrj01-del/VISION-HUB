@@ -2,7 +2,7 @@ import {json,requireContentStaff,getFreshTeraBoxConnection,postForm,teraboxFolde
 export async function onRequestPost({request,env}){
   const auth=await requireContentStaff(request,env);if(auth.response)return auth.response;
   let body;try{body=await request.json();}catch(_){return json({error:"Invalid JSON"},400);}
-  const name=String(body.file_name||"").split(/[\\/]/).pop().replace(/[\\x00-\\x1f\\x7f]/g,"").replace(/[^a-zA-Z0-9._() -]/g,"_").slice(0,160);
+  const name=String(body.file_name||"").split(/[\\/]/).pop().replace(/[\x00-\x1f\x7f]/g,"").replace(/[^a-zA-Z0-9._() -]/g,"_").slice(0,160);
   const size=Number(body.size||0),hashes=body.block_md5s;
   if(!name||!Number.isSafeInteger(size)||size<=0)return json({error:"A valid filename and file size are required"},400);
   if(!Array.isArray(hashes)||hashes.length<1||hashes.length>10000||hashes.some(x=>!/^[a-f0-9]{32}$/i.test(String(x))))return json({error:"Invalid TeraBox chunk hash list"},400);
