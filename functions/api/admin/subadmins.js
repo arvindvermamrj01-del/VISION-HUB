@@ -44,3 +44,17 @@ export async function onRequestPost({request,env}){
   }
   return json({ok:true,staff:{id:uid,fullname,role}},201);
 }
+
+export async function onRequestDelete({request,env}){
+  if(!env.SUPABASE_URL||!env.SUPABASE_ANON_KEY||!env.SUPABASE_SERVICE_ROLE_KEY)return json({error:"Staff API is not configured"},503);
+  const auth=await primaryAdmin(request,env);if(auth.response)return auth.response;
+  const id=new URL(request.url).searchParams.get("id")||"";
+  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id))return json({error:"Valid staff user ID is required"},400);
+  const profile=await sb(env,"/rest/v1/profiles?id=eq."+encodeURIComponent(id)+"&select=role");
+  if(!profile.ok)return json({error:"Could not verify staff account"},503);
+  const rows=await profile.json();
+  if(!["sub_admin","content_editor","moderator"].includes(rows?.[0]?.role))return json({error:"Only assigned staff accounts can be removed here"},403);
+  const deleted=await fetch(env.SUPABASE_URL+"/auth/v1/admin/users/"+encodeURIComponent(id),{method:"DELETE",headers:{apikey:env.SUPABASE_SERVICE_ROLE_KEY,authorization:"Bearer "+env.SUPABASE_SERVICE_ROLE_KEY}});
+  if(!deleted.ok)return json({error:"Could not revoke this staff account"},502);
+  return json({ok:true,deleted_user_id:id});
+}
