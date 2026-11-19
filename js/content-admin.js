@@ -101,11 +101,98 @@
     document.dispatchEvent(new CustomEvent("visionhub:content-loaded"));
   }
 
+  function ensureEditModal() {
+    if ($("vhEditContentModal")) return;
+    const modal=document.createElement("div");
+    modal.id="vhEditContentModal";
+    modal.className="vh-edit-modal";
+    modal.innerHTML='<section class="vh-edit-panel" role="dialog" aria-modal="true" aria-labelledby="vhEditHeading"><button type="button" class="vh-edit-close" data-vh-edit-close aria-label="Close">×</button><h2 id="vhEditHeading">Edit published content</h2><p>Update movie details. Existing video uploads and quality links will remain untouched.</p><form id="vhEditContentForm"><div class="vh-edit-grid"><label>Title *<input name="title" required maxlength="250"></label><label>Release year<input name="release_year" type="number" min="1888" max="2100"></label><label>Genre<input name="genre"></label><label>Language<input name="language"></label><label>Rating<input name="rating" type="number" min="0" max="10" step="0.1"></label><label>Duration<input name="duration" placeholder="e.g. 2h 15m"></label><label>Poster URL<input name="poster_url" type="url"></label><label>Trailer URL<input name="trailer_url" type="url"></label><label>Director<input name="director"></label><label>Cast<input name="cast"></label><label class="vh-edit-wide">Description<textarea name="description" rows="4"></textarea></label><label class="vh-edit-wide">Screenshots URLs (comma or new line separated)<textarea name="screenshots" rows="4" placeholder="https://..."></textarea></label></div><div class="vh-edit-actions"><button type="button" class="btn-delete" data-vh-edit-close>Cancel</button><button type="submit" class="btn-primary">Save changes</button></div></form></section>';
+    document.body.appendChild(modal);
+    modal.querySelectorAll("[data-vh-edit-close]").forEach(button=>button.addEventListener("click",()=>modal.classList.remove("open")));
+    modal.addEventListener("click",event=>{if(event.target===modal)modal.classList.remove("open");});
+    $("vhEditContentForm").addEventListener("submit",saveEditedContent);
+  }
+
+  function editField(form,name,value) {
+    const field=form.elements.namedItem(name);
+    if(field)field.value=value==null?"":String(value);
+  }
+
+  window.editPublishedContent=id=>{
+    const item=(window.VISION_HUB_DATA||[]).find(entry=>entry.isSupabaseContent&&String(entry.id)===String(id));
+    if(!item){toast("Content catalog mein nahi mila. Page refresh karke dobara try karein.");return;}
+    ensureEditModal();
+    const form=$("vhEditContentForm");
+    form.dataset.contentId=String(id);
+    editField(form,"title",item.title);
+    editField(form,"release_year",item.year);
+    editField(form,"genre",item.genre);
+    editField(form,"language",item.language);
+    editField(form,"rating",item.rating);
+    editField(form,"duration",item.duration);
+    editField(form,"poster_url",item.poster);
+    editField(form,"trailer_url",item.trailer);
+    editField(form,"director",item.director);
+    editField(form,"cast",item.cast);
+    editField(form,"description",item.description);
+    editField(form,"screenshots",Array.isArray(item.screenshots)?item.screenshots.join("\n"):item.screenshots);
+    $("vhEditContentModal").classList.add("open");
+  };
+
+  async function saveEditedContent(event) {
+    event.preventDefault();
+    const form=event.currentTarget;
+    const button=form.querySelector('[type="submit"]');
+    if(button)button.disabled=true;
+    try {
+      await requireAdmin();
+      const id=form.dataset.contentId;
+      const value=name=>String(form.elements.namedItem(name)?.value||"").trim();
+      const optionalUrl=(raw,label)=>{
+        if(!raw)return null;
+        let parsed;try{parsed=new URL(raw);}catch(_){throw new Error(label+" URL valid nahi hai.");}
+        if(!["http:","https:"].includes(parsed.protocol))throw new Error(label+" URL http/https hona chahiye.");
+        return parsed.href;
+      };
+      const screenshotUrls=value("screenshots").split(/[\n,]+/).map(url=>url.trim()).filter(Boolean).map(url=>optionalUrl(url,"Screenshot"));
+      const year=Number(value("release_year"));
+      const rating=value("rating")===""?null:Number(value("rating"));
+      if(value("release_year")&&(!Number.isInteger(year)||year<1888||year>2100))throw new Error("Release year 1888–2100 ke beech hona chahiye.");
+      if(rating!==null&&(!Number.isFinite(rating)||rating<0||rating>10))throw new Error("Rating 0 se 10 ke beech honi chahiye.");
+      const updates={
+        title:value("title"),
+        release_year:value("release_year")?year:null,
+        genre:value("genre")||null,
+        language:value("language")||null,
+        rating,
+        duration:value("duration")||null,
+        poster_url:optionalUrl(value("poster_url"),"Poster"),
+        trailer_url:optionalUrl(value("trailer_url"),"Trailer"),
+        director:value("director")||null,
+        cast:value("cast")||null,
+        description:value("description")||null,
+        screenshots:screenshotUrls
+      };
+      if(!updates.title)throw new Error("Title required hai.");
+      const {data:updated,error}=await db.from("vh_content").update(updates).eq("id",id).select("*").single();
+      if(error)throw error;
+      const current=(window.VISION_HUB_DATA||[]).find(entry=>entry.isSupabaseContent&&String(entry.id)===String(id));
+      addToCatalog(updated,current?.media_assets||[]);
+      window.renderVisionHub?.();
+      renderManageList($("manageSearch")?.value||"");
+      $("vhEditContentModal").classList.remove("open");
+      toast("Movie details successfully update ho gayi.");
+    } catch(error) {
+      console.error("Content update failed:",error);
+      toast(error.message||"Movie details update nahi ho paayi.");
+    } finally {if(button)button.disabled=false;}
+  }
+
   function renderManageList(query="") {
     const host=$("manageList");if(!host)return;
     const term=String(query).trim().toLowerCase();
     const items=(window.VISION_HUB_DATA||[]).filter(item=>item.isSupabaseContent&&[item.title,item.type,item.genre,item.language,item.industry].join(" ").toLowerCase().includes(term));
-    host.innerHTML=items.length?items.map(item=>'<article class="manage-item"><div><strong>'+esc(item.title)+'</strong><small>'+esc(item.type)+' · '+esc(item.year)+' · '+esc(item.genre)+'</small></div><button type="button" class="btn-delete" onclick="deletePublishedContent(&quot;'+esc(item.id)+'&quot;)">Delete</button></article>').join(""):"<p>No published content found.</p>";
+    host.innerHTML=items.length?items.map(item=>'<article class="manage-item"><div><strong>'+esc(item.title)+'</strong><small>'+esc(item.type)+' · '+esc(item.year)+' · '+esc(item.genre)+'</small></div><div class="manage-actions"><button type="button" class="btn-primary" onclick="editPublishedContent(&quot;'+esc(item.id)+'&quot;)">Edit</button><button type="button" class="btn-delete" onclick="deletePublishedContent(&quot;'+esc(item.id)+'&quot;)">Delete</button></div></article>').join(""):"<p>No published content found.</p>";
   }
   window.filterManageList=value=>renderManageList(value);
 
