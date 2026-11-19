@@ -43,3 +43,11 @@ Before deploying the new upload/player code to an existing Supabase project, run
 The Control Center supports three least-privilege staff roles: `sub_admin` (catalogue and requests), `content_editor` (Movie-only publishing), and `moderator` (request moderation only). Staff provisioning runs through the Cloudflare Pages Function `/api/admin/subadmins`; the Supabase service-role key is used server-side only and must never be exposed in browser code. Temporary passwords must be at least 12 characters and should be delivered securely.
 
 For an existing Supabase database that already has the Vision Hub base schema, run `supabase/private-media-migration.sql` if it has not been run yet, then run `supabase/sub-admin-role-migration.sql` as project owner before using staff provisioning. Fresh installations should use the updated `supabase/setup.sql`. The primary `admin` role remains the only role allowed to read login activity, manage users/staff, configure site settings, or view administrative analytics.
+
+
+## TeraBox Open Platform connection
+The Control Center includes a primary-admin-only TeraBox device-code connection and quota check. It requires an approved TeraBox Open Platform app. Configure these Cloudflare Pages secrets: `TERABOX_CLIENT_ID`, `TERABOX_CLIENT_SECRET`, `TERABOX_PRIVATE_SECRET`, and `PROVIDER_TOKEN_ENCRYPTION_KEY` (32 random bytes, supplied as 64 hex characters or Base64). The encryption key protects stored OAuth access/refresh tokens. Never put these values in frontend JavaScript or chat.
+
+Run `supabase/provider-connections.sql` in Supabase before connecting. The API stores encrypted tokens in a server-only table and refreshes the rotating refresh token server-side. TeraBox developer approval is separate from a normal consumer account; its device authorization flow may require the TeraBox app and VPN access according to its official integration documentation.
+
+This is the account-connection/quota phase only. TeraBox direct chunk upload and player streaming are not yet wired into the catalogue. Its documented HLS streaming types are 480p, 720p and 1080p, so it must not be presented as a 2K/4K/8K source. Supabase remains the only enabled direct-upload provider until each connector is implemented and tested.
