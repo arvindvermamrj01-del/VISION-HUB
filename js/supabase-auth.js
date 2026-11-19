@@ -64,6 +64,49 @@
     return profile || null;
   }
 
+  window.loginUser = async event => {
+    event?.preventDefault();
+    const email = el("userEmail")?.value.trim();
+    const password = el("userPassword")?.value;
+    if (!email || !password) return notify("Email aur password bharein.");
+    const button = event?.currentTarget?.querySelector('[type="submit"]');
+    if (button) button.disabled = true;
+    try {
+      const { data, error } = await db.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      await hydrateUser(data.user);
+      navigate("home");
+      notify("Login successful.");
+    } catch (error) { notify(error.message || "Login failed."); }
+    finally { if (button) button.disabled = false; }
+  };
+  window.registerUser = async event => {
+    event?.preventDefault();
+    const name = el("registerName")?.value.trim();
+    const email = el("registerEmail")?.value.trim();
+    const password = el("registerPassword")?.value;
+    if (!name || !email || !password) return notify("Name, email aur password bharein.");
+    if (password.length < 8) return notify("Password kam se kam 8 characters ka hona chahiye.");
+    const button = event?.currentTarget?.querySelector('[type="submit"]');
+    if (button) button.disabled = true;
+    try {
+      const { data, error } = await db.auth.signUp({
+        email, password, options: { data: { full_name: name } }
+      });
+      if (error) throw error;
+      if (data.session) {
+        await hydrateUser(data.user);
+        navigate("home");
+        notify("Account created successfully.");
+      } else {
+        notify("Account created. Email confirmation link check karein, phir login karein.");
+        navigate("login");
+      }
+      event.currentTarget.reset();
+    } catch (error) { notify(error.message || "Account creation failed."); }
+    finally { if (button) button.disabled = false; }
+  };
+
   window.adminLogin = async event => {
     event?.preventDefault();
     const email = el("adminUser")?.value.trim();
