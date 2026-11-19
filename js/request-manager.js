@@ -63,6 +63,7 @@
       $("reqLang").value = "";
       $("reqNotes").value = "";
       notify("Request submitted successfully.");
+      loadOwnRequests();
     } catch (error) {
       console.error("Request submission failed:", error);
       notify(error.message || "Request could not be submitted. Please try again.");
@@ -71,6 +72,21 @@
     }
   };
 
+  async function loadOwnRequests() {
+    const host=$("myRequestHistory");
+    if(!host||!db)return;
+    try {
+      const {data:{user},error:authError}=await db.auth.getUser();
+      if(authError)throw authError;
+      if(!user){host.textContent="Sign in to view requests linked to your account.";return;}
+      const {data,error}=await db.from("vh_requests").select("id,request_title,content_type,status,priority,admin_note,created_at").eq("requester_id",user.id).order("created_at",{ascending:false}).limit(50);
+      if(error)throw error;
+      host.innerHTML=data?.length?data.map(item=>'<article class="request-history-item"><strong>'+escapeHTML(item.request_title)+'</strong><small>'+escapeHTML(item.content_type)+' · '+escapeHTML(item.status||"pending")+' · '+escapeHTML(item.priority||"normal")+' · '+escapeHTML(new Date(item.created_at).toLocaleDateString())+'</small>'+(item.admin_note?'<p>'+escapeHTML(item.admin_note)+'</p>':'')+'</article>').join(""):"No account-linked requests yet.";
+    } catch(error) {
+      console.warn("Personal request history unavailable:",error.message);
+      host.textContent="Request history will be available after the request workflow database migration is applied.";
+    }
+  }
   async function isAdmin() {
     if (!db) throw new Error("Supabase is not connected.");
     const { data: { user }, error } = await db.auth.getUser();
@@ -176,7 +192,9 @@
       observer.observe(tab, { attributes: true, attributeFilter: ["class"] });
     }
     db?.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) loadRequests();
+      if (session?.user) { loadRequests(); loadOwnRequests(); }
+      else loadOwnRequests();
     });
+    loadOwnRequests();
   });
 })();
