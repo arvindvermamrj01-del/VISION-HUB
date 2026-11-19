@@ -104,7 +104,7 @@
     const host=$("manageList");if(!host)return;
     const term=String(query).trim().toLowerCase();
     const items=(window.VISION_HUB_DATA||[]).filter(item=>item.isSupabaseContent&&[item.title,item.type,item.genre,item.language,item.industry].join(" ").toLowerCase().includes(term));
-    host.innerHTML=items.length?items.map(item=>'<article class="manage-item"><div><strong>'+esc(item.title)+'</strong><small>'+esc(item.type)+' · '+esc(item.year)+' · '+esc(item.genre)+'</small></div><button type="button" class="btn-delete" onclick="deletePublishedContent(\\'"+esc(item.id)+"\\')">Delete</button></article>').join(""):"<p>No published content found.</p>";
+    host.innerHTML=items.length?items.map(item=>'<article class="manage-item"><div><strong>'+esc(item.title)+'</strong><small>'+esc(item.type)+' · '+esc(item.year)+' · '+esc(item.genre)+'</small></div><button type="button" class="btn-delete" onclick="deletePublishedContent(&quot;'+esc(item.id)+'&quot;)">Delete</button></article>').join(""):"<p>No published content found.</p>";
   }
   window.filterManageList=value=>renderManageList(value);
 
