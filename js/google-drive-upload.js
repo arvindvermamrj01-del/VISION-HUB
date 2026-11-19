@@ -20,8 +20,10 @@
     const chunkSize=Math.max(256*1024,Math.floor(Number(init.chunk_size||8*MB)/(256*1024))*256*1024);
     let final=null,offset=0,retries=0,completed=0,total=Math.ceil(file.size/chunkSize);
     const nextOffset=range=>{
-      const match=String(range||"").match(/(?:bytes=)?\\s*(\\d+)-(\\d+)/i);
-      return match?Number(match[2])+1:0;
+      const parts=String(range||"").replace(/^bytes=/i,"").trim().split("-");
+      if(parts.length!==2)return 0;
+      const end=Number(parts[1]);
+      return Number.isSafeInteger(end)&&end>=0?end+1:0;
     };
     while(offset<file.size){
       const end=Math.min(file.size,offset+chunkSize),chunk=file.slice(offset,end);
