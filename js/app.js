@@ -70,7 +70,15 @@ async function loadCloudWatchlist(){
     const {data:{user}}=await db.auth.getUser();if(!user)return;
     const {data:rows,error}=await db.from("vh_user_watchlist").select("content_id").eq("user_id",user.id);
     if(error)throw error;
-    setList("vh_watchlist",(rows||[]).map(row=>String(row.content_id)));
+    const cloudIds=(rows||[]).map(row=>String(row.content_id));
+    const localIds=getList("vh_watchlist").map(String);
+    const merged=[...new Set([...cloudIds,...localIds])];
+    setList("vh_watchlist",merged);
+    const missing=localIds.filter(id=>!cloudIds.includes(id));
+    if(missing.length){
+      const {error:syncError}=await db.from("vh_user_watchlist").upsert(missing.map(content_id=>({user_id:user.id,content_id})),{onConflict:"user_id,content_id"});
+      if(syncError)console.warn("Guest watchlist items could not be merged:",syncError.message);
+    }
     renderWatchlist();
   }catch(error){console.warn("Cloud watchlist load unavailable:",error.message);}
 }
