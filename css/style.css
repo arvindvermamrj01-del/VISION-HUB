@@ -140,3 +140,26 @@ body{background:radial-gradient(ellipse at 8% -12%,rgba(88,111,220,.15),transpar
 .vh-screenshot-grid a:hover img{transform:scale(1.05)}
 .trailer-embed iframe{display:block;width:100%;aspect-ratio:16/9;border:0;border-radius:16px}
 @media(max-width:560px){.vh-screenshot-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* Existing published content editor */
+.manage-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.manage-actions button{padding:9px 14px;border-radius:9px}
+.vh-edit-modal{display:none;position:fixed;inset:0;z-index:1200;background:rgba(2,6,15,.82);backdrop-filter:blur(12px);padding:18px;overflow-y:auto;align-items:center;justify-content:center}
+.vh-edit-modal.open{display:flex}
+.vh-edit-panel{position:relative;width:min(820px,100%);max-height:calc(100vh - 36px);overflow:auto;padding:26px;border:1px solid var(--vh-line);border-radius:22px;background:linear-gradient(145deg,#1b2941,#101a2b);color:#f5f7fb;box-shadow:0 24px 80px #0009}
+.vh-edit-panel h2{margin:0 36px 8px 0}
+.vh-edit-panel>p{color:#aab8ce;line-height:1.55;margin:0 0 20px}
+.vh-edit-close{position:absolute;right:15px;top:12px;border:0;background:transparent;color:inherit;font-size:1.8rem;cursor:pointer}
+.vh-edit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.vh-edit-grid label{display:flex;flex-direction:column;gap:7px;min-width:0;color:#dce6f6;font-size:.84rem;font-weight:700}
+.vh-edit-grid input,.vh-edit-grid textarea{width:100%;min-width:0;border:1px solid #34445f;border-radius:10px;background:#0b1423;color:#fff;padding:12px;font:inherit;font-weight:400}
+.vh-edit-grid textarea{resize:vertical}
+.vh-edit-grid input:focus,.vh-edit-grid textarea:focus{outline:2px solid #8b72ee;outline-offset:1px}
+.vh-edit-wide{grid-column:1/-1}
+.vh-edit-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+@media(max-width:560px){.manage-item{align-items:flex-start}.manage-actions{flex-direction:column}.manage-actions button{width:100%}.vh-edit-panel{padding:22px 16px}.vh-edit-grid{grid-template-columns:1fr}.vh-edit-wide{grid-column:auto}}
+:root[data-theme="light"] .vh-edit-panel{background:linear-gradient(145deg,#fff,#f5f7fc);color:#182238}
+:root[data-theme="light"] .vh-edit-panel>p{color:#65728a}
+:root[data-theme="light"] .vh-edit-grid label{color:#34425e}
+:root[data-theme="light"] .vh-edit-grid input,:root[data-theme="light"] .vh-edit-grid textarea{background:#fff;color:#1c2941;border-color:#dce3ef}
