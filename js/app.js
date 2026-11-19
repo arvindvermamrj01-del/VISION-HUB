@@ -7,8 +7,8 @@ const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"
 const getList=k=>{try{return JSON.parse(localStorage.getItem(k)||"[]")}catch{return []}};
 const setList=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
 const watchlistStorageKey=userId=>window.VH_ACCOUNT_DATA?.watchlistKey(userId)||"vh_watchlist";
-const getWatchlist=userId=>window.VH_ACCOUNT_DATA?.readWatchlist(userId)??getList(watchlistStorageKey(userId));
-const saveWatchlist=(items,userId)=>window.VH_ACCOUNT_DATA?.writeWatchlist(items,userId)??setList(watchlistStorageKey(userId),items);
+const getWatchlist=(userId=window.VH_USER_ID)=>window.VH_ACCOUNT_DATA?.readWatchlist(userId)??getList(watchlistStorageKey(userId));
+const saveWatchlist=(items,userId=window.VH_USER_ID)=>window.VH_ACCOUNT_DATA?.writeWatchlist(items,userId)??setList(watchlistStorageKey(userId),items);
 const progressStorageKey=(id,userId=window.VH_USER_ID)=>window.VH_ACCOUNT_DATA?.progressKey(id,userId)||"vh_progress_"+String(id);
 function toast(msg){const el=$("toast");if(!el)return;el.textContent=msg;el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("show"),2800)}
 function card(m){
