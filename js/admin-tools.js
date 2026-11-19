@@ -238,7 +238,7 @@
       const payload=await response.json();
       if(!response.ok)throw new Error(payload.error||"Could not load staff accounts.");
       const staff=payload.staff||[];
-      host.innerHTML=staff.length?staff.map(person=>'<div class="request-item"><strong>'+esc(person.fullname||"Staff")+'</strong><small>'+esc(person.role)+' · '+esc(new Date(person.created_at).toLocaleDateString())+'</small><code>'+esc(person.id)+'</code></div>').join(""):"<p>No staff accounts created yet.</p>";
+      host.innerHTML=staff.length?staff.map(person=>'<div class="request-item"><strong>'+esc(person.fullname||"Staff")+'</strong><small>'+esc(person.role)+' · '+esc(new Date(person.created_at).toLocaleDateString())+'</small><code>'+esc(person.id)+'</code><button type="button" class="btn-delete" onclick="removeSubAdmin(\\''+esc(person.id)+'\\')">Remove access</button></div>').join(""):"<p>No staff accounts created yet.</p>";
     }catch(error){host.textContent=error.message||"Staff list unavailable.";}
   }
   window.addSubAdmin=async event=>{
@@ -258,6 +258,17 @@
       await loadSubAdmins();
     }catch(error){toast(error.message||"Staff account could not be created.");}
     finally{if(button)button.disabled=false;}
+  };
+  window.removeSubAdmin=async id=>{
+    if(!window.confirm("Remove this staff account and revoke its login access?"))return;
+    try{
+      await requireAdmin();
+      const {data:{session}}=await db.auth.getSession();
+      const response=await fetch("/api/admin/subadmins?id="+encodeURIComponent(id),{method:"DELETE",headers:{authorization:"Bearer "+session.access_token}});
+      const payload=await response.json();
+      if(!response.ok)throw new Error(payload.error||"Could not remove staff account.");
+      toast("Staff login access revoked.");await loadSubAdmins();
+    }catch(error){toast(error.message||"Could not remove staff account.");}
   };
   // Browser code never receives the Supabase service-role key. Staff provisioning is server-only.
   window.importFromDrive=()=>{const log=$("driveImportLog");if(log)log.textContent="Google Drive OAuth/Picker connector is not configured. A server-side OAuth function and Google credentials are required; a share URL alone cannot securely import private files.";toast("Drive import needs a secure Google OAuth connector.");};
