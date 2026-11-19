@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { md5, teraboxSign, encryptSecret, decryptSecret } from "../functions/lib/terabox.js";
+import { md5, teraboxSign, encryptSecret, decryptSecret, signTeraBoxUploadToken, verifyTeraBoxUploadToken, hashUploadList } from "../functions/lib/terabox.js";
 
 test("TeraBox MD5 signature helper matches standard MD5 vectors", () => {
   assert.equal(md5(""), "d41d8cd98f00b204e9800998ecf8427e");
@@ -36,4 +36,19 @@ await import("../js/terabox-md5.js");
 test("browser chunk checksum matches the server-side MD5 implementation", async () => {
   assert.equal(await window.VH_MD5_BLOB(new Blob(["abc"])), "900150983cd24fb0d6963f7d28e17f72");
   assert.equal(await window.VH_MD5_BLOB(new Blob(["message digest"])), "f96b697d7cb7938d525a2f31aaf161d0");
+});
+
+test("TeraBox upload tokens are signed, user-bound and time-limited", async () => {
+  const env = { PROVIDER_TOKEN_ENCRYPTION_KEY: Buffer.alloc(32, 9).toString("base64") };
+  const hashes = ["900150983cd24fb0d6963f7d28e17f72"];
+  const token = await signTeraBoxUploadToken({
+    uid: "staff-user", exp: Date.now() + 60000, path: "/From: Other Applications/App/file.mp4",
+    uploadid: "upload-session", hashes_digest: await hashUploadList(hashes)
+  }, env);
+  const payload = await verifyTeraBoxUploadToken(token, env);
+  assert.equal(payload.uid, "staff-user");
+  assert.equal(payload.uploadid, "upload-session");
+  await assert.rejects(() => verifyTeraBoxUploadToken(token + "x", env));
+  const expired = await signTeraBoxUploadToken({uid:"staff-user",exp:Date.now()-1,path:"/x",uploadid:"x"},env);
+  await assert.rejects(() => verifyTeraBoxUploadToken(expired,env));
 });
