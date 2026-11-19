@@ -109,7 +109,7 @@ if (!username || !password) {
 
 const email =
   username.toLowerCase() === "admin"
-    ? "arvindvermamrj@gmail.com"
+    ? "arvindvermamrj01@gmail.com"
     : username;
 
 const btn = el("adminSubmitBtn");
