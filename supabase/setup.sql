@@ -202,13 +202,15 @@ create table if not exists public.vh_feedback (
   feedback_type text not null default 'General',
   subject text not null,
   message text not null,
+  admin_reply text,
   status text not null default 'pending' check (status in ('pending','reviewing','resolved')),
   user_id uuid references auth.users(id) on delete set null default auth.uid(),
   created_at timestamptz not null default now()
 );
+alter table public.vh_feedback add column if not exists admin_reply text;
 alter table public.vh_feedback enable row level security;
 drop policy if exists "anyone can submit feedback" on public.vh_feedback;
-create policy "anyone can submit feedback" on public.vh_feedback for insert to anon, authenticated with check (status='pending');
+create policy "anyone can submit feedback" on public.vh_feedback for insert to anon, authenticated with check (status='pending' and (user_id is null or user_id=auth.uid()));
 drop policy if exists "admins read and manage feedback" on public.vh_feedback;
 create policy "admins read and manage feedback" on public.vh_feedback for all to authenticated using (public.vh_is_admin()) with check (public.vh_is_admin());
 grant insert on public.vh_feedback to anon, authenticated;
