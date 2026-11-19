@@ -24,6 +24,17 @@
           <button class="btn-primary" type="submit">Submit Feedback</button>
         </form><div id="vhFeedbackAdmin" style="margin-top:24px"></div>
       </section>
+      <section id="page-donate" class="page section" style="max-width:850px;margin:32px auto;padding:24px;">
+        <h1>Support Vision Hub</h1><p id="vhDonationMessage">If you find Vision Hub useful, you can support its development with a voluntary contribution.</p>
+        <div style="${style};text-align:center">
+          <img id="vhDonationQr" alt="Donation UPI QR code" style="display:none;width:min(280px,100%);height:auto;margin:12px auto;border-radius:12px">
+          <p id="vhDonationUnavailable">Donation details will be published here by the site administrator.</p>
+          <p><strong>UPI ID:</strong> <span id="vhDonationUpi">Not configured</span></p>
+          <button id="vhDonatePay" class="btn-primary" type="button" disabled>Donate with UPI</button>
+          <button id="vhDonateCopy" type="button" disabled>Copy UPI ID</button>
+          <p style="font-size:13px;opacity:.75">Donations are voluntary. Payment is completed in your UPI app; Vision Hub does not collect or verify payment details on this page.</p>
+        </div>
+      </section>
       <section id="page-improvements" class="page section" style="max-width:1000px;margin:32px auto;padding:24px;">
         <h1>Improvements & Updates</h1><p>Suggest a feature, vote for ideas, and see what has changed on Vision Hub.</p>
         <form id="vhIdeaForm" style="${style}">
@@ -41,7 +52,28 @@
       '<a href="#feedback" onclick="showPage(\'feedback\')">Feedback</a><a href="#improvements" onclick="showPage(\'improvements\')">Improvements & Updates</a>');
     $("vhFeedbackForm")?.addEventListener("submit", submitFeedback);
     $("vhIdeaForm")?.addEventListener("submit", submitIdea);
+    $("vhDonatePay")?.addEventListener("click", startDonation);
+    $("vhDonateCopy")?.addEventListener("click", copyDonationUpi);
+    loadDonationSettings();
   }
+  let donationUpi = "";
+  function validHttpsUrl(value){try{const u=new URL(value);return u.protocol==="https:"?u.href:"";}catch(_){return "";}}
+  async function loadDonationSettings(){
+    const fallback={donation_upi_id:"",donation_qr_url:"",donation_message:"If you find Vision Hub useful, you can support its development with a voluntary contribution."};
+    let settings={...fallback};
+    if(db){const {data,error}=await db.from("vh_site_settings").select("setting_key,setting_value").in("setting_key",Object.keys(fallback));if(!error)(data||[]).forEach(x=>settings[x.setting_key]=x.setting_value);}
+    donationUpi=String(settings.donation_upi_id||"").trim();
+    const upiNode=$("vhDonationUpi"),qr=$("vhDonationQr"),pay=$("vhDonatePay"),copy=$("vhDonateCopy"),message=$("vhDonationMessage"),hint=$("vhDonationUnavailable");
+    if(upiNode)upiNode.textContent=donationUpi||"Not configured";
+    if(message)message.textContent=settings.donation_message||fallback.donation_message;
+    const qrUrl=validHttpsUrl(settings.donation_qr_url||"");
+    if(qr&&qrUrl){qr.src=qrUrl;qr.style.display="block";qr.onerror=()=>{qr.style.display="none";};}
+    if(pay)pay.disabled=!/^[-.a-zA-Z0-9]{2,256}@[a-zA-Z]{2,64}$/.test(donationUpi);
+    if(copy)copy.disabled=!donationUpi;
+    if(hint)hint.textContent=donationUpi?"Choose UPI or scan the QR code.":"Donation details will appear here after the administrator configures the UPI ID and QR code.";
+  }
+  function startDonation(){if(!donationUpi)return;const uri="upi://pay?pa="+encodeURIComponent(donationUpi)+"&pn="+encodeURIComponent("Vision Hub")+"&cu=INR";window.location.href=uri;}
+  async function copyDonationUpi(){if(!donationUpi)return;try{await navigator.clipboard.writeText(donationUpi);toast("UPI ID copied.");}catch(_){toast("Copy not supported in this browser.");}}
   async function currentUser() {
     if (!db) return null;
     const {data:{user}} = await db.auth.getUser(); return user || null;
@@ -122,5 +154,5 @@
   }
   document.addEventListener("DOMContentLoaded",()=>{ensurePages();loadIdeas();loadChangelog();loadAdminFeedback();});
   db?.auth.onAuthStateChange(()=>{loadIdeas();loadAdminFeedback();loadChangelog();});
-  window.addEventListener("vh:page-shown",event=>{if(event.detail==="feedback")loadAdminFeedback();if(event.detail==="improvements"){loadIdeas();loadChangelog();}});
+  window.addEventListener("vh:page-shown",event=>{if(event.detail==="feedback")loadAdminFeedback();if(event.detail==="improvements"){loadIdeas();loadChangelog();}if(event.detail==="donate")loadDonationSettings();});
 })();
