@@ -79,6 +79,7 @@ create policy "vh_private_media_admin_read" on storage.objects
 -- Content metadata used by the advanced player.
 alter table public.vh_content
   add column if not exists telegram_url text,
+  add column if not exists is_featured boolean not null default false,
   add column if not exists subtitle_tracks jsonb not null default '[]'::jsonb,
   add column if not exists director text,
   add column if not exists screenshots text[] not null default '{}'::text[],
