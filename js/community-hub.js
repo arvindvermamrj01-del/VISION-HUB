@@ -12,7 +12,8 @@
     const nav = $("navLinks");
     if (nav) nav.insertAdjacentHTML("beforeend",
       '<a href="#feedback" class="nav-link" onclick="showPage(\'feedback\')">Feedback</a>' +
-      '<a href="#improvements" class="nav-link" onclick="showPage(\'improvements\')">Improvements</a>');
+      '<a href="#improvements" class="nav-link" onclick="showPage(\'improvements\')">Improvements</a>' +
+      '<a href="#donate" class="nav-link" onclick="showPage(\'donate\')">Donate</a>');
     const pages = document.createElement("div");
     pages.innerHTML = `
       <section id="page-feedback" class="page section" style="max-width:900px;margin:32px auto;padding:24px;">
@@ -49,7 +50,7 @@
     app.appendChild(pages);
     const footer = document.querySelector(".footer-links");
     if (footer) footer.insertAdjacentHTML("beforeend",
-      '<a href="#feedback" onclick="showPage(\'feedback\')">Feedback</a><a href="#improvements" onclick="showPage(\'improvements\')">Improvements & Updates</a>');
+      '<a href="#feedback" onclick="showPage(\'feedback\')">Feedback</a><a href="#improvements" onclick="showPage(\'improvements\')">Improvements & Updates</a><a href="#donate" onclick="showPage(\'donate\')">Donate</a>');
     $("vhFeedbackForm")?.addEventListener("submit", submitFeedback);
     $("vhIdeaForm")?.addEventListener("submit", submitIdea);
     $("vhDonatePay")?.addEventListener("click", startDonation);
