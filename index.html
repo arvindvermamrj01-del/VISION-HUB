@@ -466,6 +466,11 @@
                 <span id="totalViews">—</span>
                 <small>Tracked Events (page and content activity)</small>
               </div>
+              <div class="stat-card">
+                <i class="fas fa-inbox"></i>
+                <span id="adminRequestCount">—</span>
+                <small>Total Content Requests</small>
+              </div>
             </div>
 
             <div class="admin-recent" style="margin-top: 30px;">
@@ -768,10 +773,10 @@
             <h2>👥 Registered Users & Privacy Management</h2>
             <p style="color: var(--text-muted); margin-bottom: 16px;">
               <i class="fas fa-lock" style="color: var(--warning);"></i> 
-              <strong>Data Privacy Protocol:</strong> Full registered phone numbers with country codes are visible <em>only to the Super Admin</em>. Sub-Admins see masked phone numbers.
+              <strong>Data Privacy:</strong> This dashboard currently shows profile name, role, and join date only. Email addresses and phone numbers are not stored in the profiles table and are not displayed here.
             </p>
             <div class="admin-toolbar">
-              <input type="text" id="userManageSearch" placeholder="Search user by name, email, or ID..." oninput="filterUsersList(this.value)"/>
+              <input type="text" id="userManageSearch" placeholder="Search user by name, profile ID, or role..." oninput="filterUsersList(this.value)"/>
             </div>
             <div class="user-table-container">
               <table class="user-table">
