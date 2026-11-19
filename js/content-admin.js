@@ -14,6 +14,8 @@
   const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const slug = value => String(value || "media").normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g,"-").replace(/^-+|-+$/g,"").slice(-100) || "media";
   const qualityOrder = ["180p","240p","360p","420p","480p","720p","1080p","2K","4K","8K"];
+  const staffRoles = ["admin","sub_admin","content_editor"];
+  const validHttpUrl = raw => { if(!raw)return null; let url; try{url=new URL(raw);}catch(_){throw new Error("Media URL valid nahi hai.");} if(!["http:","https:"].includes(url.protocol))throw new Error("Media URL http/https hona chahiye."); return url.href; };
   const dbResolution = value => !value || String(value).toLowerCase() === "original" ? null : String(value).toLowerCase();
 
   async function requireAdmin() {
@@ -21,7 +23,7 @@
     if (error || !user) throw new Error("Pehle Admin account se login karein.");
     const {data:profile,error:profileError} = await db.from("profiles").select("role").eq("id",user.id).maybeSingle();
     if (profileError) throw profileError;
-    if (profile?.role !== "admin") throw new Error("Admin permission nahi hai.");
+    if (!staffRoles.includes(profile?.role)) throw new Error("Admin permission nahi hai.");
     return user;
   }
 
@@ -35,28 +37,52 @@
       qualityOrder.map(q => '<label class="vh-quality-field"><span>'+q+' file</span><input type="file" accept="video/*" data-vh-quality-file="'+q+'"></label>').join("") +
       '</div><div class="vh-quality-links">' +
       [["180p","addDl180"],["240p","addDl240"],["420p","addDl420"],["480p","addDl480"],["720p","addDl720"],["1080p","addDl1080"],["2K","addDl2k"],["4K","addDl4k"],["8K","addDl8k"]].map(([q,id]) => '<label class="vh-quality-field"><span>'+q+' authorised link</span><input type="url" id="'+id+'" placeholder="Optional direct media URL"></label>').join("") +
-      '</div><label class="vh-quality-field vh-language-field"><span>Audio / subtitle languages (optional)</span><input id="vhMediaLanguages" type="text" placeholder="Hindi, English, Tamil; subtitles: Hindi, English"></label>';
+      '</div><label class="vh-quality-field vh-language-field"><span>Audio languages (optional)</span><input id="vhMediaLanguages" type="text" placeholder="Hindi, English, Tamil"></label><label class="vh-quality-field vh-language-field"><span>Subtitle tracks — one per line: Label|language|HTTPS .vtt URL</span><textarea id="vhSubtitleTracks" rows="3" placeholder="Hindi|hi|https://cdn.example.com/subtitles/movie-hi.vtt"></textarea></label>';
     const submit = form.querySelector('[type="submit"]');
     form.insertBefore(block, submit || null);
   }
 
-  async function uploadPrivate(file,user) {
+  async function uploadPrivate(file,user,provider) {
     if (!file) return null;
     if (!file.type.startsWith("video/")) throw new Error("Selected file video format mein nahi hai.");
-    const path = user.id + "/" + Date.now() + "-" + slug(file.name);
+    if (provider === "cloudflare_r2") {
+      const {data:{session},error:sessionError}=await db.auth.getSession();
+      if(sessionError||!session?.access_token)throw new Error("Admin session expired. Sign in again.");
+      const response=await fetch("/api/media/upload-url",{
+        method:"POST",
+        headers:{"Authorization":"Bearer "+session.access_token,"Content-Type":"application/json"},
+        body:JSON.stringify({contentType:file.type,fileName:file.name,fileSize:file.size})
+      });
+      const signed=await response.json().catch(()=>({}));
+      if(!response.ok||!signed.uploadUrl)throw new Error(signed.error||"Cloudflare R2 upload could not be prepared.");
+      const uploadResponse=await fetch(signed.uploadUrl,{method:"PUT",headers:signed.headers||{"Content-Type":file.type},body:file});
+      if(!uploadResponse.ok)throw new Error("R2 upload failed with HTTP "+uploadResponse.status+". Check bucket CORS and credentials.");
+      return {path:signed.key,file,storage_provider:"cloudflare_r2"};
+    }
+    if(provider!=="supabase")throw new Error("Is provider ke liye direct upload connector abhi configure nahi hai. Supabase/R2 upload choose karein ya authorised direct URL dein.");
+    const path = user.id + "/" + crypto.randomUUID() + "-" + slug(file.name);
     const {error} = await db.storage.from(PRIVATE_BUCKET).upload(path,file,{upsert:false,contentType:file.type,cacheControl:"3600"});
     if (error) throw error;
-    return {path,file};
+    return {path,file,storage_provider:"supabase"};
   }
 
   async function signedAsset(asset) {
     const provider = String(asset.storage_provider || "supabase").toLowerCase();
     const path = asset.storage_path || asset.video_url || "";
     if (!path) return null;
-    if (provider === "supabase" && !/^https?:\/\//i.test(path)) {
-      const {data,error} = await db.storage.from(PRIVATE_BUCKET).createSignedUrl(path,3600);
-      if (error) { console.warn("Could not sign media asset:",error.message); return null; }
-      return data?.signedUrl || null;
+    if (["supabase","cloudflare_r2"].includes(provider) && !/^https?:\/\//i.test(path)) {
+      try {
+        const response=await fetch("/api/media/access",{
+          method:"POST",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({contentId:asset.content_id,storagePath:path,provider})
+        });
+        const result=await response.json().catch(()=>({}));
+        if(!response.ok||!result.url)throw new Error(result.error||"Private media URL could not be signed.");
+        return result.url;
+      } catch(error) {
+        console.warn("Secure media URL unavailable:",error.message);
+        return null;
+      }
     }
     return path;
   }
@@ -71,7 +97,7 @@
       duration:row.duration || "", poster:row.poster_url || "", backdrop:row.poster_url || "",
       description:row.description || "", cast:row.cast || "", director:row.director || "", screenshots:Array.isArray(row.screenshots)?row.screenshots:(typeof row.screenshots==="string"?row.screenshots.split(",").map(x=>x.trim()).filter(Boolean):[]), trailer:row.trailer_url || "",
       video_url:primary?.url || (String(row.video_url||"").startsWith("private://") ? "" : row.video_url),
-      media_assets:mappedAssets, is_short:row.content_type === "Short"
+      media_assets:mappedAssets, subtitle_tracks:Array.isArray(row.subtitle_tracks)?row.subtitle_tracks:[], storage_provider:row.storage_provider||primary?.storage_provider||"supabase", is_short:row.content_type === "Short"
     };
     const list=window.VISION_HUB_DATA || (window.VISION_HUB_DATA=[]);
     const index=list.findIndex(item=>String(item.id)===String(row.id));
@@ -120,11 +146,23 @@
     const modal=document.createElement("div");
     modal.id="vhEditContentModal";
     modal.className="vh-edit-modal";
-    modal.innerHTML='<section class="vh-edit-panel" role="dialog" aria-modal="true" aria-labelledby="vhEditHeading"><button type="button" class="vh-edit-close" data-vh-edit-close aria-label="Close">×</button><h2 id="vhEditHeading">Edit published content</h2><p>Update movie details. Existing video uploads and quality links will remain untouched.</p><form id="vhEditContentForm"><div class="vh-edit-grid"><label>Title *<input name="title" required maxlength="250"></label><label>Release year<input name="release_year" type="number" min="1888" max="2100"></label><label>Genre<input name="genre"></label><label>Language<input name="language"></label><label>Rating<input name="rating" type="number" min="0" max="10" step="0.1"></label><label>Duration<input name="duration" placeholder="e.g. 2h 15m"></label><label>Poster URL<input name="poster_url" type="url"></label><label>Trailer URL<input name="trailer_url" type="url"></label><label>Director<input name="director"></label><label>Cast<input name="cast"></label><label class="vh-edit-wide">Description<textarea name="description" rows="4"></textarea></label><label class="vh-edit-wide">Screenshots URLs (comma or new line separated)<textarea name="screenshots" rows="4" placeholder="https://..."></textarea></label></div><div class="vh-edit-actions"><button type="button" class="btn-delete" data-vh-edit-close>Cancel</button><button type="submit" class="btn-primary">Save changes</button></div></form></section>';
+    modal.innerHTML='<section class="vh-edit-panel" role="dialog" aria-modal="true" aria-labelledby="vhEditHeading"><button type="button" class="vh-edit-close" data-vh-edit-close aria-label="Close">×</button><h2 id="vhEditHeading">Edit published content</h2><p>Update movie details. Existing video uploads and quality links will remain untouched.</p><form id="vhEditContentForm"><div class="vh-edit-grid"><label>Title *<input name="title" required maxlength="250"></label><label>Release year<input name="release_year" type="number" min="1888" max="2100"></label><label>Genre<input name="genre"></label><label>Language<input name="language"></label><label>Rating<input name="rating" type="number" min="0" max="10" step="0.1"></label><label>Duration<input name="duration" placeholder="e.g. 2h 15m"></label><label>Poster URL<input name="poster_url" type="url"></label><label>Trailer URL<input name="trailer_url" type="url"></label><label>Director<input name="director"></label><label>Cast<input name="cast"></label><label class="vh-edit-wide">Description<textarea name="description" rows="4"></textarea></label><label class="vh-edit-wide">Screenshots URLs (comma or new line separated)<textarea name="screenshots" rows="4" placeholder="https://..."></textarea></label><label class="vh-edit-wide">Subtitle tracks — Label|language|HTTPS .vtt URL<textarea name="subtitle_tracks" rows="3" placeholder="Hindi|hi|https://cdn.example.com/movie-hi.vtt"></textarea></label></div><div class="vh-edit-actions"><button type="button" class="btn-delete" data-vh-edit-close>Cancel</button><button type="submit" class="btn-primary">Save changes</button></div></form></section>';
     document.body.appendChild(modal);
     modal.querySelectorAll("[data-vh-edit-close]").forEach(button=>button.addEventListener("click",()=>modal.classList.remove("open")));
     modal.addEventListener("click",event=>{if(event.target===modal)modal.classList.remove("open");});
     $("vhEditContentForm").addEventListener("submit",saveEditedContent);
+  }
+
+  function parseSubtitleLines(raw) {
+    return String(raw||"").split(/\r?\n/).map(line=>line.trim()).filter(Boolean).map(line=>{
+      const parts=line.split("|").map(part=>part.trim());
+      if(parts.length!==3)throw new Error("Subtitle line format: Label|language|HTTPS .vtt URL");
+      const [label,language,rawUrl]=parts;
+      const url=validHttpUrl(rawUrl);
+      if(!url||!url.toLowerCase().split("?")[0].endsWith(".vtt"))throw new Error("Subtitle URL must point to a .vtt file.");
+      if(!label||!language)throw new Error("Subtitle label and language are required.");
+      return {label:label.slice(0,60),language:language.slice(0,12),url};
+    });
   }
 
   function editField(form,name,value) {
@@ -150,6 +188,7 @@
     editField(form,"cast",item.cast);
     editField(form,"description",item.description);
     editField(form,"screenshots",Array.isArray(item.screenshots)?item.screenshots.join("\n"):item.screenshots);
+    editField(form,"subtitle_tracks",(item.subtitle_tracks||[]).map(track=>[track.label,track.language,track.url].join("|")).join("\n"));
     $("vhEditContentModal").classList.add("open");
   };
 
@@ -169,6 +208,7 @@
         return parsed.href;
       };
       const screenshotUrls=value("screenshots").split(/[\n,]+/).map(url=>url.trim()).filter(Boolean).map(url=>optionalUrl(url,"Screenshot"));
+      const subtitleTracks=parseSubtitleLines(value("subtitle_tracks"));
       const year=Number(value("release_year"));
       const rating=value("rating")===""?null:Number(value("rating"));
       if(value("release_year")&&(!Number.isInteger(year)||year<1888||year>2100))throw new Error("Release year 1888–2100 ke beech hona chahiye.");
@@ -185,7 +225,8 @@
         director:value("director")||null,
         cast:value("cast")||null,
         description:value("description")||null,
-        screenshots:screenshotUrls
+        screenshots:screenshotUrls,
+        subtitle_tracks:subtitleTracks
       };
       if(!updates.title)throw new Error("Title required hai.");
       const {data:updated,error}=await db.from("vh_content").update(updates).eq("id",id).select("*").single();
@@ -246,13 +287,13 @@
     if(!uploads.length&&!links.length)throw new Error("Video file upload karein ya authorised video URL dein.");
     const uploaded=[];
     try {
-      for(const entry of uploads){const result=await uploadPrivate(entry.file,user);uploaded.push({...entry,...result,storage_provider:"supabase"});}
+      for(const entry of uploads){const result=await uploadPrivate(entry.file,user,provider);uploaded.push({...entry,...result,storage_provider:result.storage_provider||provider});}
       const primaryUpload=uploaded.find(x=>x.is_primary)||uploaded[0];
       const primaryLink=links.find(x=>x.is_primary)||links[0];
       const primary=primaryUpload||primaryLink;
       const row={
         title,content_type:type,video_url:primaryUpload?"private://"+primaryUpload.path:primary.url,
-        storage_provider:primaryUpload?"supabase":(primary.storage_provider||provider),published:true,created_by:user.id,
+        storage_provider:primaryUpload?(primaryUpload.storage_provider||provider):(primary.storage_provider||provider),published:true,created_by:user.id,
         poster_url:isShort?null:($("addPoster")?.value.trim()||null),
         genre:isShort?"Shorts":($("addGenre")?.value||"Drama"),
         language:isShort?"":($("addLang")?.value.trim()||""),
@@ -264,12 +305,13 @@
         screenshots:isShort?[]:($("addScreenshots")?.value.split(",").map(value=>value.trim()).filter(Boolean)||[]),
         duration:isShort?"":($("addDuration")?.value.trim()||""),
         trailer_url:isShort?null:($("addTrailer")?.value.trim()||null),
+        subtitle_tracks:isShort?[]:parseSubtitleLines($("vhSubtitleTracks")?.value||""),
         industry:isShort?"All":((($("addLang")?.value||"").toLowerCase().includes("hindi"))?"Bollywood":"All")
       };
       const {data:created,error}=await db.from("vh_content").insert(row).select("*").single();
       if(error)throw error;
       const assetRows=[
-        ...uploaded.map(x=>({content_id:created.id,asset_type:"video",asset_url:"private://"+x.path,storage_path:x.path,storage_provider:"supabase",resolution:dbResolution(x.resolution),is_primary:x.is_primary,language:isShort?"":($("vhMediaLanguages")?.value.trim()||"")})),
+        ...uploaded.map(x=>({content_id:created.id,asset_type:"video",asset_url:"private://"+x.path,storage_path:x.path,storage_provider:x.storage_provider||provider,resolution:dbResolution(x.resolution),is_primary:x.is_primary,language:isShort?"":($("vhMediaLanguages")?.value.trim()||"")})),
         ...links.map(x=>({content_id:created.id,asset_type:"video",asset_url:x.url,storage_path:x.url,storage_provider:x.storage_provider||provider,resolution:dbResolution(x.resolution),is_primary:x.is_primary,language:isShort?"":($("vhMediaLanguages")?.value.trim()||"")}))
       ];
       if(assetRows.length){
@@ -284,9 +326,16 @@
       await loadPublished();
     } catch(error) {
       if(uploaded.length){
-        const paths=uploaded.map(x=>x.path);
-        const {error:cleanupError}=await db.storage.from(PRIVATE_BUCKET).remove(paths);
-        if(cleanupError)console.warn("Uploaded file cleanup needs attention:",cleanupError.message);
+        const {data:{session}}=await db.auth.getSession();
+        for(const asset of uploaded){
+          try{
+            const response=await fetch("/api/media/delete",{
+              method:"POST",headers:{"Authorization":"Bearer "+(session?.access_token||""),"Content-Type":"application/json"},
+              body:JSON.stringify({storagePath:asset.path,provider:asset.storage_provider||provider})
+            });
+            if(!response.ok)console.warn("Uploaded file cleanup needs attention:",await response.text());
+          }catch(cleanupError){console.warn("Uploaded file cleanup needs attention:",cleanupError.message);}
+        }
       }
       throw error;
     }
@@ -319,7 +368,56 @@
     select.onchange=()=>playAsset(item,choices[Number(select.value)]);
     const preferred=choices.findIndex(asset=>asset.is_primary);
     select.value=String(preferred>=0?preferred:0);
+    ensurePlaybackExtras(controls,item);
     if(choices.length)playAsset(item,choices[Number(select.value)]);
+  }
+
+  function ensurePlaybackExtras(controls,item) {
+    let wrap=$("vhPlayerExtras");
+    if(!wrap){
+      wrap=document.createElement("div");
+      wrap.id="vhPlayerExtras";
+      wrap.className="vh-player-extras";
+      wrap.innerHTML='<label>Speed <select id="vhPlayerSpeed"><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1">1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label><label>Subtitles <select id="vhPlayerSubtitle"><option value="-1">Off</option></select></label>';
+      controls.appendChild(wrap);
+    }
+    const speed=$("vhPlayerSpeed");
+    let savedSpeed="1";try{savedSpeed=localStorage.getItem("vh_playback_speed")||"1";}catch(_){}
+    if(!["0.5","0.75","1","1.25","1.5","2"].includes(savedSpeed))savedSpeed="1";
+    if(speed){speed.value=savedSpeed;speed.onchange=()=>{const value=speed.value;if(activeVideo)activeVideo.playbackRate=Number(value);try{localStorage.setItem("vh_playback_speed",value)}catch(_){}};}
+    const tracks=(item.subtitle_tracks||[]).filter(track=>track.url);
+    const subtitle=$("vhPlayerSubtitle");
+    if(subtitle){
+      subtitle.innerHTML='<option value="-1">Off</option>'+tracks.map((track,index)=>'<option value="'+index+'">'+esc(track.label||track.language||("Subtitle "+(index+1)))+'</option>').join("");
+      subtitle.value="-1";
+      subtitle.onchange=()=>setSubtitleMode(Number(subtitle.value));
+    }
+  }
+
+  function setSubtitleMode(selectedIndex) {
+    if(!activeVideo)return;
+    Array.from(activeVideo.textTracks||[]).forEach((track,index)=>{track.mode=index===selectedIndex?"showing":"disabled";});
+  }
+
+  function attachSubtitleTracks(item) {
+    if(!activeVideo)return;
+    activeVideo.querySelectorAll("track[data-vh-subtitle]").forEach(track=>track.remove());
+    const tracks=(item.subtitle_tracks||[]).filter(track=>track.url);
+    tracks.forEach(track=>{
+      const node=document.createElement("track");
+      node.kind="subtitles";
+      node.label=String(track.label||track.language||"Subtitle");
+      node.srclang=String(track.language||"en");
+      node.src=track.url;
+      node.dataset.vhSubtitle="1";
+      node.addEventListener("load",()=>{node.track.mode="disabled";});
+      activeVideo.appendChild(node);
+    });
+    const select=$("vhPlayerSubtitle");
+    if(select)select.value="-1";
+    setSubtitleMode(-1);
+    const speed=$("vhPlayerSpeed");
+    if(speed)activeVideo.playbackRate=Number(speed.value)||1;
   }
 
   function playAsset(item,asset) {
@@ -332,6 +430,8 @@
     }
     activeVideo=$("playerFallback")?.querySelector("video");
     if(!activeVideo)return;
+    activeVideo.crossOrigin="anonymous";
+    attachSubtitleTracks(item);
     $("playerIframe")?.classList.add("hidden");
     $("playerFallback")?.classList.add("active");
     activeVideo.onerror=()=>toast("Video stream nahi chal paayi. Direct file URL aur storage access check karein.");
