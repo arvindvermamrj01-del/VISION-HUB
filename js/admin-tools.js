@@ -14,6 +14,15 @@
     if (profile?.role !== "admin") throw new Error("Admin permission required.");
     return user;
   }
+  async function requireCatalogStaff() {
+    if (!db) throw new Error("Supabase connection missing.");
+    const { data: { user }, error } = await db.auth.getUser();
+    if (error || !user) throw new Error("Staff login required.");
+    const { data: profile, error: pErr } = await db.from("profiles").select("role").eq("id", user.id).maybeSingle();
+    if (pErr) throw pErr;
+    if (!["admin","sub_admin"].includes(profile?.role)) throw new Error("Catalog management permission required.");
+    return user;
+  }
   let users = [];
   async function loadUsers() {
     const body = $("adminUsersTableBody");
@@ -135,7 +144,7 @@
   async function loadCategories() {
     const host=$("categoriesList"); if(!host)return;
     try {
-      await requireAdmin();
+      await requireCatalogStaff();
       const {data,error}=await db.from("vh_categories").select("*").order("name");
       if(error)throw error;
       host.innerHTML=(data||[]).length?(data||[]).map(x=>'<div class="manage-item" style="display:flex;justify-content:space-between;gap:12px;padding:12px;border-bottom:1px solid var(--border)"><span><strong>'+esc(x.name)+'</strong><small style="display:block">'+esc(x.description||"")+'</small></span><button type="button" class="btn-delete" onclick="deleteCategory('+Number(x.id)+')">Delete</button></div>').join(""):"<p>No categories added.</p>";
@@ -145,19 +154,19 @@
     event?.preventDefault();const name=$("catName")?.value.trim();const description=$("catDesc")?.value.trim()||null;
     if(!name)return toast("Category name is required.");
     const button=event?.currentTarget?.querySelector('[type="submit"]');if(button)button.disabled=true;
-    try{const user=await requireAdmin();const {error}=await db.from("vh_categories").insert({name,description});if(error)throw error;
+    try{const user=await requireCatalogStaff();const {error}=await db.from("vh_categories").insert({name,description});if(error)throw error;
       event.currentTarget.reset();toast("Category saved.");await loadCategories();}
     catch(e){toast(e.message||"Category could not be saved.");}finally{if(button)button.disabled=false;}
   };
   window.deleteCategory=async id=>{
     if(!window.confirm("Delete this category?"))return;
-    try{await requireAdmin();const {error}=await db.from("vh_categories").delete().eq("id",id);if(error)throw error;toast("Category deleted.");await loadCategories();}
+    try{await requireCatalogStaff();const {error}=await db.from("vh_categories").delete().eq("id",id);if(error)throw error;toast("Category deleted.");await loadCategories();}
     catch(e){toast(e.message||"Delete failed.");}
   };
 
   async function loadSongs(){
     const host=$("songsList");if(!host)return;
-    try{await requireAdmin();const {data,error}=await db.from("vh_songs").select("*").order("created_at",{ascending:false});if(error)throw error;
+    try{await requireCatalogStaff();const {data,error}=await db.from("vh_songs").select("*").order("created_at",{ascending:false});if(error)throw error;
       host.innerHTML=(data||[]).length?(data||[]).map(x=>'<div class="manage-item" style="display:flex;justify-content:space-between;gap:12px;padding:12px;border-bottom:1px solid var(--border)"><span><strong>'+esc(x.title)+'</strong><small style="display:block">'+esc(x.artist||"")+' · '+(x.is_published?"Published":"Draft")+'</small></span><button type="button" class="btn-delete" onclick="deleteSong('+Number(x.id)+')">Delete</button></div>').join(""):"<p>No songs added.</p>";
     }catch(e){host.textContent=e.message||"Songs unavailable.";}
   }
@@ -165,13 +174,13 @@
     event?.preventDefault();const title=$("songTitle")?.value.trim(),artist=$("songArtist")?.value.trim(),audio=$("songFileUrl")?.value.trim(),poster=$("songPoster")?.value.trim()||null;
     if(!title||!audio)return toast("Song title and authorised audio URL are required.");
     const button=event?.currentTarget?.querySelector('[type="submit"]');if(button)button.disabled=true;
-    try{const user=await requireAdmin();const {error}=await db.from("vh_songs").insert({title,artist,audio_url:audio,poster_url:poster,is_published:true,created_by:user.id});if(error)throw error;
+    try{const user=await requireCatalogStaff();const {error}=await db.from("vh_songs").insert({title,artist,audio_url:audio,poster_url:poster,is_published:true,created_by:user.id});if(error)throw error;
       event.currentTarget.reset();toast("Song added.");await loadSongs();}
     catch(e){toast(e.message||"Song could not be added.");}finally{if(button)button.disabled=false;}
   };
   window.deleteSong=async id=>{
     if(!window.confirm("Delete this song?"))return;
-    try{await requireAdmin();const {error}=await db.from("vh_songs").delete().eq("id",id);if(error)throw error;toast("Song deleted.");await loadSongs();}
+    try{await requireCatalogStaff();const {error}=await db.from("vh_songs").delete().eq("id",id);if(error)throw error;toast("Song deleted.");await loadSongs();}
     catch(e){toast(e.message||"Delete failed.");}
   };
 
@@ -220,12 +229,41 @@
     }catch(e){toast(e.message||"Password update failed.");}finally{if(button)button.disabled=false;}
   };
 
-  // These actions require trusted server-side credentials; browser-only code must never create Auth users or OAuth tokens.
-  window.addSubAdmin=event=>{event?.preventDefault();toast("Sub-admin creation requires a Supabase Edge Function with server-side Auth Admin API. No unsafe browser-side account creation was enabled.");};
+  async function loadSubAdmins(){
+    const host=$("subAdminsList");if(!host)return;
+    try{
+      await requireAdmin();
+      const {data:{session}}=await db.auth.getSession();
+      const response=await fetch("/api/admin/subadmins",{headers:{authorization:"Bearer "+session.access_token}});
+      const payload=await response.json();
+      if(!response.ok)throw new Error(payload.error||"Could not load staff accounts.");
+      const staff=payload.staff||[];
+      host.innerHTML=staff.length?staff.map(person=>'<div class="request-item"><strong>'+esc(person.fullname||"Staff")+'</strong><small>'+esc(person.role)+' · '+esc(new Date(person.created_at).toLocaleDateString())+'</small><code>'+esc(person.id)+'</code></div>').join(""):"<p>No staff accounts created yet.</p>";
+    }catch(error){host.textContent=error.message||"Staff list unavailable.";}
+  }
+  window.addSubAdmin=async event=>{
+    event?.preventDefault();
+    const form=event?.currentTarget;
+    const fullname=$("subName")?.value.trim(),email=$("subUsername")?.value.trim(),password=$("subPassword")?.value,role=$("subRole")?.value;
+    if(!fullname||!email||!password)return toast("Name, login email and temporary password are required.");
+    if(password.length<12)return toast("Temporary password must contain at least 12 characters.");
+    const button=form?.querySelector('[type="submit"]');if(button)button.disabled=true;
+    try{
+      await requireAdmin();
+      const {data:{session}}=await db.auth.getSession();
+      const response=await fetch("/api/admin/subadmins",{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer "+session.access_token},body:JSON.stringify({fullname,email,password,role})});
+      const payload=await response.json();
+      if(!response.ok)throw new Error(payload.error||"Staff account could not be created.");
+      form.reset();toast("Staff account created. Share the temporary password securely.");
+      await loadSubAdmins();
+    }catch(error){toast(error.message||"Staff account could not be created.");}
+    finally{if(button)button.disabled=false;}
+  };
+  // Browser code never receives the Supabase service-role key. Staff provisioning is server-only.
   window.importFromDrive=()=>{const log=$("driveImportLog");if(log)log.textContent="Google Drive OAuth/Picker connector is not configured. A server-side OAuth function and Google credentials are required; a share URL alone cannot securely import private files.";toast("Drive import needs a secure Google OAuth connector.");};
 
   document.addEventListener("DOMContentLoaded",()=>{
-    const watchers=[["tab-users-admin",loadUsers],["tab-dashboard",loadDashboard],["tab-reports",loadReports],["tab-categories",loadCategories],["tab-songs",loadSongs],["tab-settings",loadWebsiteSettings]];
+    const watchers=[["tab-users-admin",loadUsers],["tab-team-admin",loadSubAdmins],["tab-dashboard",loadDashboard],["tab-reports",loadReports],["tab-categories",loadCategories],["tab-songs",loadSongs],["tab-settings",loadWebsiteSettings]];
     watchers.forEach(([id,fn])=>{const el=$(id);if(el)new MutationObserver(()=>{if(el.classList.contains("active"))fn();}).observe(el,{attributes:true,attributeFilter:["class"]});});
     db?.auth.onAuthStateChange((_event,session)=>{if(session?.user){loadDashboard();if($("tab-users-admin")?.classList.contains("active"))loadUsers();}});
     if(window.VH_IS_ADMIN)loadDashboard();
