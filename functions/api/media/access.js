@@ -37,21 +37,21 @@ export async function onRequestPost({ request, env }) {
     if (!assetRows.length) return json({ error: "This media file is not attached to the published title." }, 404);
 
     if (provider === "cloudflare_r2") {
-      const signed = await presignR2(env, "GET", storagePath, "", 3600);
-      return json({ url: signed.url, expiresIn: 3600 });
+      const signed = await presignR2(env, "GET", storagePath, "", 21600);
+      return json({ url: signed.url, expiresIn: 21600 });
     }
     const bucket = "vh-private-media";
     const signResponse = await fetch(base + "/storage/v1/object/sign/" + bucket + "/" + encodePath(storagePath), {
       method: "POST",
       headers,
-      body: JSON.stringify({ expiresIn: 3600 })
+      body: JSON.stringify({ expiresIn: 21600 })
     });
     const signData = await signResponse.json().catch(() => ({}));
     if (!signResponse.ok || !signData.signedURL) {
       return json({ error: signData.message || signData.error || "Private media URL could not be generated." }, 502);
     }
     const signedURL = signData.signedURL.startsWith("http") ? signData.signedURL : base + signData.signedURL;
-    return json({ url: signedURL, expiresIn: 3600 });
+    return json({ url: signedURL, expiresIn: 21600 });
   } catch (error) {
     return json({ error: error.message || "Secure media access failed." }, 503);
   }
