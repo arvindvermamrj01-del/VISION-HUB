@@ -11,6 +11,7 @@ export async function onRequestDelete({request,env}){
   const rows=await lookup.json(),item=rows?.[0];
   if(!item||item.storage_provider!=="google_drive"||!item.storage_path)return json({error:"Google Drive-backed catalogue item not found"},404);
   if(role==="content_editor"&&item.content_type!=="Movie")return json({error:"Movie-only editor cannot remove this item"},403);
+  if(role==="content_editor"&&item.content_type!=="Movie")return json({error:"Movie-only editor cannot remove this item"},403);
   const deleted=await supabase(env,"vh_content?id=eq."+id,{method:"DELETE"});
   if(!deleted.ok)return json({error:"Could not remove catalogue item"},503);
   try{
