@@ -78,6 +78,18 @@
     if(index>=0)list[index]=item;else list.unshift(item);
   }
 
+  async function loadUserWatchProgress() {
+    try {
+      const {data:{user}}=await db.auth.getUser();
+      if(!user)return;
+      const {data,error}=await db.from("vh_watch_progress").select("content_id,position_seconds").eq("user_id",user.id);
+      if(error)throw error;
+      (data||[]).forEach(row=>{try{localStorage.setItem("vh_progress_"+String(row.content_id),String(row.position_seconds||0));}catch(_){}});
+    } catch(error) {
+      console.debug("Continue-watching cloud sync unavailable:",error.message);
+    }
+  }
+
   async function loadPublished() {
     const {data:rows,error}=await db.from("vh_content").select("*").eq("published",true).order("created_at",{ascending:false});
     if(error){console.error("Published content load failed:",error);toast("Catalog load failed: "+error.message);return;}
@@ -97,6 +109,7 @@
       grouped.set(String(asset.content_id),list);
     }
     (rows||[]).forEach(row=>addToCatalog(row,grouped.get(String(row.id))||[]));
+    await loadUserWatchProgress();
     window.renderVisionHub?.();
     renderManageList($("manageSearch")?.value||"");
     document.dispatchEvent(new CustomEvent("visionhub:content-loaded"));
