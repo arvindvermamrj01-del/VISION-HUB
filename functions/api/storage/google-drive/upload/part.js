@@ -1,0 +1,23 @@
+import {json,requireGoogleContentStaff,getFreshGoogleDriveConnection} from "../../../../lib/google-drive.js";
+export async function onRequestPost({request,env}){
+  const auth=await requireGoogleContentStaff(request,env);if(auth.response)return auth.response;
+  try{
+    const data=await request.formData(),sessionUrl=String(data.get("session_url")||"");
+    const start=Number(data.get("start")),total=Number(data.get("total")),file=data.get("file");
+    let parsed;try{parsed=new URL(sessionUrl);}catch(_){return json({error:"Invalid Google Drive upload session"},400);}
+    if(parsed.protocol!=="https:"||!parsed.hostname.endsWith(".googleapis.com")||parsed.pathname!=="/upload/drive/v3/files")return json({error:"Invalid Google Drive upload session host"},400);
+    if(!Number.isSafeInteger(start)||start<0||!Number.isSafeInteger(total)||total<=0||!file||typeof file.arrayBuffer!=="function"||file.size<1||file.size>10*1024*1024||start+file.size>total)return json({error:"Invalid Google Drive upload chunk"},400);
+    if(start+file.size<total&&file.size%(256*1024)!==0)return json({error:"Google Drive non-final chunks must be multiples of 256 KiB"},400);
+    const connection=await getFreshGoogleDriveConnection(env);if(!connection)return json({error:"Google Drive account is not connected"},409);
+    const end=start+file.size-1;
+    const response=await fetch(sessionUrl,{method:"PUT",headers:{"content-type":"application/octet-stream","content-range":"bytes "+start+"-"+end+"/"+total},body:file});
+    if(response.status===308)return json({complete:false,range:response.headers.get("Range")||""});
+    const payload=await response.json().catch(()=>({}));
+    if(!response.ok||!payload.id)throw new Error(payload.error?.message||"Google Drive rejected the upload chunk.");
+    const permission=await fetch("https://www.googleapis.com/drive/v3/files/"+encodeURIComponent(payload.id)+"/permissions?supportsAllDrives=true&fields=id",{
+      method:"POST",headers:{authorization:"Bearer "+connection.access_token,"content-type":"application/json"},body:JSON.stringify({type:"anyone",role:"reader"})
+    });
+    if(!permission.ok)throw new Error("Upload completed, but Google Drive could not make the file public for playback.");
+    return json({complete:true,file:{id:payload.id,name:payload.name||"",size:Number(payload.size||total),webViewLink:payload.webViewLink||""},preview_url:"https://drive.google.com/file/d/"+encodeURIComponent(payload.id)+"/preview"});
+  }catch(error){return json({error:error.message||"Google Drive chunk upload failed"},502);}
+}
