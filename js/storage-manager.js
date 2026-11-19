@@ -5,7 +5,7 @@
   if (!db) return;
   const $ = id => document.getElementById(id);
   const providers = ["supabase", "terabox", "mega", "degoo", "google_drive", "mediafire", "pcloud", "box", "icedrive", "koofr", "internxt", "telegram"];
-  const directUploadProviders = ["supabase","terabox"];
+  const directUploadProviders = ["supabase","terabox","google_drive"];
   let teraboxDevice = null;
   const isAdmin = async () => {
     const { data: { user }, error } = await db.auth.getUser();
@@ -118,6 +118,30 @@
     }catch(error){status.textContent=error.message||"Could not connect TeraBox.";}
     finally{if(button)button.disabled=false;}
   };
-  document.addEventListener("DOMContentLoaded",()=>{loadSettings();loadTeraBoxStatus();});
-  db.auth.onAuthStateChange((_event, session) => { if (session?.user) { loadSettings(); loadTeraBoxStatus(); } });
+  async function loadGoogleDriveStatus(){
+    const status=$("googleDriveConnectionStatus"),quota=$("googleDriveQuota");if(!status)return;
+    try{
+      const {data:{session}}=await db.auth.getSession();if(!session){status.textContent="Primary Admin login required.";return;}
+      const response=await fetch("/api/storage/google-drive/status",{headers:sessionHeaders(session)});
+      const payload=await response.json();
+      if(!response.ok)throw new Error(payload.error||"Google Drive status unavailable.");
+      if(!payload.connected){status.textContent="Google Drive account not connected.";if(quota)quota.textContent="";return;}
+      status.textContent="Google Drive connected · "+(payload.email||"Connected account");
+      if(quota)quota.textContent="Storage used: "+bytesLabel(payload.used_bytes)+" of "+bytesLabel(payload.total_bytes);
+    }catch(error){status.textContent=error.message||"Google Drive status unavailable.";}
+  }
+  window.connectGoogleDrive=async function(){
+    const button=$("connectGoogleDriveButton"),status=$("googleDriveConnectionStatus");
+    if(button)button.disabled=true;
+    try{
+      const {data:{session}}=await db.auth.getSession();if(!session)throw new Error("Primary Admin login required.");
+      status.textContent="Opening Google OAuth consent…";
+      const response=await fetch("/api/storage/google-drive/connect",{method:"POST",headers:sessionHeaders(session)});
+      const payload=await response.json();if(!response.ok)throw new Error(payload.error||"Google Drive OAuth is not configured.");
+      window.location.href=payload.authorization_url;
+    }catch(error){status.textContent=error.message||"Could not connect Google Drive.";}
+    finally{if(button)button.disabled=false;}
+  };
+  document.addEventListener("DOMContentLoaded",()=>{loadSettings();loadTeraBoxStatus();loadGoogleDriveStatus();});
+  db.auth.onAuthStateChange((_event, session) => { if (session?.user) { loadSettings(); loadTeraBoxStatus(); loadGoogleDriveStatus(); } });
 })();
