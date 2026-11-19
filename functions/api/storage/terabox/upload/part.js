@@ -4,9 +4,9 @@ export async function onRequestPost({request,env}){
   try{
     const data=await request.formData();
     const path=String(data.get("path")||""),uploadid=String(data.get("uploadid")||"");
-    const partseq=Number(data.get("partseq")),file=data.get("file");
+    const partseq=Number(data.get("partseq")),file=data.get("file"),expectedMd5=String(data.get("expected_md5")||"");
     if(!path.startsWith(teraboxFolder(env))||path.includes(".."))return json({error:"Invalid TeraBox upload path"},400);
-    if(!uploadid||uploadid.length>2048||!Number.isInteger(partseq)||partseq<0||!file||typeof file.arrayBuffer!=="function")return json({error:"Invalid upload chunk"},400);
+    if(!uploadid||uploadid.length>2048||!Number.isInteger(partseq)||partseq<0||!(/^[a-f0-9]{32}$/i.test(expectedMd5))||!file||typeof file.arrayBuffer!=="function")return json({error:"Invalid upload chunk"},400);
     if(file.size<1||file.size>10*1024*1024)return json({error:"Each upload chunk must be 1 byte to 10 MiB"},400);
     const connection=await getFreshTeraBoxConnection(env);if(!connection)return json({error:"TeraBox account is not connected"},409);
     const target=new URL("/rest/2.0/pcs/superfile2",connection.upload_domain);
@@ -17,6 +17,7 @@ export async function onRequestPost({request,env}){
     const response=await fetch(target.toString(),{method:"POST",body:form});
     const payload=await response.json().catch(()=>({}));
     if(!response.ok||Number(payload.errno||0)!==0)throw new Error(payload.show_msg||"TeraBox chunk upload failed.");
-    return json({ok:true,partseq,md5:payload.md5||null});
+    if(String(payload.md5||"").toLowerCase()!==expectedMd5.toLowerCase())throw new Error("TeraBox chunk checksum mismatch; retry this upload.");
+    return json({ok:true,partseq,md5:payload.md5});
   }catch(error){return json({error:error.message||"TeraBox chunk upload failed"},502);}
 }
