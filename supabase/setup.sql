@@ -179,3 +179,18 @@ on conflict (setting_key) do nothing;
 -- After the first admin signs up, promote only that account manually:
 -- update public.profiles set role='admin' where id='AUTH_USER_UUID';
 -- Get the UUID from Authentication -> Users. Never expose service_role keys in frontend.
+
+-- Private video storage bucket. File size is capped at 1 GiB; adjust to your plan.
+insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
+values ('vh-media','vh-media',true,1073741824,array['video/mp4','video/webm','video/quicktime','video/x-m4v'])
+on conflict (id) do update set public=true, file_size_limit=excluded.file_size_limit, allowed_mime_types=excluded.allowed_mime_types;
+
+drop policy if exists "public read published media" on storage.objects;
+create policy "public read published media" on storage.objects for select to anon, authenticated
+using (bucket_id='vh-media');
+drop policy if exists "users upload own media" on storage.objects;
+create policy "users upload own media" on storage.objects for insert to authenticated
+with check (bucket_id='vh-media' and (storage.foldername(name))[1]=auth.uid()::text);
+drop policy if exists "owner or admin delete media" on storage.objects;
+create policy "owner or admin delete media" on storage.objects for delete to authenticated
+using (bucket_id='vh-media' and ((storage.foldername(name))[1]=auth.uid()::text or public.vh_is_admin()));
