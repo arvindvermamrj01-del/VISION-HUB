@@ -22,7 +22,7 @@ Never put the service-role key or Telegram bot token in any browser JavaScript f
 
 ## Telegram setup
 1. Run `supabase/cloudflare-telegram.sql` in the Supabase SQL Editor after reviewing it.
-2. Add the variables/secrets required by the features you enable to Cloudflare Pages. Telegram needs SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, TELEGRAM_BOT_TOKEN and TELEGRAM_WEBHOOK_SECRET. TeraBox additionally needs TERABOX_CLIENT_ID, TERABOX_CLIENT_SECRET, TERABOX_PRIVATE_SECRET and PROVIDER_TOKEN_ENCRYPTION_KEY. Keep the service-role key and bot token marked Secret.
+2. Add the variables/secrets required by the features you enable to Cloudflare Pages. Telegram needs SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, TELEGRAM_BOT_TOKEN and TELEGRAM_WEBHOOK_SECRET. TeraBox additionally needs TERABOX_CLIENT_ID, TERABOX_CLIENT_SECRET, TERABOX_PRIVATE_SECRET, TERABOX_APP_FOLDER and PROVIDER_TOKEN_ENCRYPTION_KEY. Keep the service-role key and bot token marked Secret.
 3. Deploy the Pages project so `/api/telegram/webhook` exists.
 4. Register the webhook with Telegram's setWebhook API, using the deployed URL `https://YOUR-DOMAIN/api/telegram/webhook` and the exact TELEGRAM_WEBHOOK_SECRET as `secret_token`.
 5. Open the bot in Telegram and send `/start` to opt in. Send `/stop` to opt out.
