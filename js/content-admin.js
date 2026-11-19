@@ -68,14 +68,16 @@
       await requireContentStaff();
       const { data: row, error: readError } = await db.from("vh_content").select("storage_path,storage_provider,content_type").eq("id", Number(id)).maybeSingle();
       if (readError) throw readError;
-      if(row?.storage_provider==="terabox"&&row.storage_path){
+      if(row?.storage_provider==="terabox"){
         const {data:{session}}=await db.auth.getSession();
-        const response=await fetch("/api/storage/terabox/file?path="+encodeURIComponent(row.storage_path),{method:"DELETE",headers:{authorization:"Bearer "+session.access_token}});
-        const payload=await response.json();if(!response.ok)throw new Error(payload.error||"Could not remove TeraBox file.");
+        const response=await fetch("/api/storage/terabox/file?id="+encodeURIComponent(id),{method:"DELETE",headers:{authorization:"Bearer "+session.access_token}});
+        const payload=await response.json();if(!response.ok)throw new Error(payload.error||"Could not remove TeraBox-backed item.");
+        if(payload.cleanup_pending)toast("Catalogue item removed. TeraBox file cleanup is pending; check provider storage later.");
+      }else{
+        const { error } = await db.from("vh_content").delete().eq("id", Number(id));
+        if (error) throw error;
+        if (row?.storage_path) await db.storage.from(BUCKET).remove([row.storage_path]);
       }
-      const { error } = await db.from("vh_content").delete().eq("id", Number(id));
-      if (error) throw error;
-      if (row?.storage_path&&row.storage_provider!=="terabox") await db.storage.from(BUCKET).remove([row.storage_path]);
       window.VISION_HUB_DATA = (window.VISION_HUB_DATA || []).filter(item => !(item.isSupabaseContent && Number(item.id) === Number(id)));
       window.renderVisionHub?.();
       renderManageList($("manageSearch")?.value || "");
