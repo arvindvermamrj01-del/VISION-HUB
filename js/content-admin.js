@@ -62,8 +62,11 @@
     if (!Number.isFinite(Number(id)) || !window.confirm("Delete this published item permanently?")) return;
     try {
       await requireAdmin();
+      const { data: row, error: readError } = await db.from("vh_content").select("storage_path").eq("id", Number(id)).maybeSingle();
+      if (readError) throw readError;
       const { error } = await db.from("vh_content").delete().eq("id", Number(id));
       if (error) throw error;
+      if (row?.storage_path) await db.storage.from(BUCKET).remove([row.storage_path]);
       window.VISION_HUB_DATA = (window.VISION_HUB_DATA || []).filter(item => !(item.isSupabaseContent && Number(item.id) === Number(id)));
       window.renderVisionHub?.();
       renderManageList($("manageSearch")?.value || "");
