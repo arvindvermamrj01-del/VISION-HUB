@@ -19,8 +19,11 @@
     if (!profile || profile.role !== "admin") throw new Error("Admin permission nahi hai.");
     return user;
   }
-  async function uploadVideo(file, user) {
+  async function uploadVideo(file, user, provider) {
     if (!file) return null;
+    if (provider !== "supabase") {
+      throw new Error("Is provider ke liye file upload API abhi connect nahi hai. Abhi authorised video/post URL paste karein, ya Supabase select karein.");
+    }
     if (!file.type.startsWith("video/")) throw new Error("Sirf video file upload karein.");
     const path = user.id + "/" + Date.now() + "-" + slug(file.name || "video");
     const { error } = await db.storage.from(BUCKET).upload(path, file, { upsert: false, contentType: file.type });
@@ -50,18 +53,21 @@
       const el = $(id);
       if (el) el.dispatchEvent(new Event("visionhub:catalog-updated"));
     });
-    window.renderVisionHub?.();\n    document.dispatchEvent(new CustomEvent("visionhub:content-loaded"));
+    window.renderVisionHub?.();
+    document.dispatchEvent(new CustomEvent("visionhub:content-loaded"));
   }
   async function publish(form, type) {
     const user = await requireAdmin();
     const title = $(type === "Short" ? "shortTitle" : "addTitle")?.value.trim();
     const file = $(type === "Short" ? "shortVideoFile" : "addVideoFile")?.files?.[0] || null;
-    const urlInput = type === "Short" ? "" : $("addVideo")?.value.trim();
+    const urlInput = type === "Short" ? $("shortVideoUrl")?.value.trim() : $("addVideo")?.value.trim();
+    const providerSelect = $(type === "Short" ? "shortStorageProvider" : "addStorageProvider");
+    const provider = providerSelect?.value || window.VH_STORAGE_DEFAULT || "supabase";
     if (!title) throw new Error("Title required hai.");
     if (!file && !urlInput) throw new Error("Video file upload karein ya authorised video URL dein.");
-    const videoUrl = await uploadVideo(file, user) || urlInput;
+    const videoUrl = await uploadVideo(file, user, provider) || urlInput;
     const row = {
-      title, content_type: type, video_url: videoUrl, published: true, created_by: user.id,
+      title, content_type: type, video_url: videoUrl, storage_provider: provider, published: true, created_by: user.id,
       poster_url: type === "Short" ? null : ($("addPoster")?.value.trim() || null),
       genre: type === "Short" ? "Shorts" : ($("addGenre")?.value || "Drama"),
       language: type === "Short" ? "" : ($("addLang")?.value.trim() || ""),
