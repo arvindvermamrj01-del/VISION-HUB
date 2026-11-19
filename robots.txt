@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /control-center
+Sitemap: https://vision-hub-bat.pages.dev/sitemap.xml
