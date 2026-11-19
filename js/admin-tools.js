@@ -14,6 +14,15 @@
     if (profile?.role !== "admin") throw new Error("Admin permission required.");
     return user;
   }
+  async function requireStaff() {
+    if (!db) throw new Error("Supabase connection missing.");
+    const { data: { user }, error } = await db.auth.getUser();
+    if (error || !user) throw new Error("Staff login required.");
+    const { data: profile, error: pErr } = await db.from("profiles").select("role").eq("id", user.id).maybeSingle();
+    if (pErr) throw pErr;
+    if (!["admin","sub_admin","content_editor","moderator"].includes(profile?.role)) throw new Error("Staff permission required.");
+    return user;
+  }
   async function requireCatalogStaff() {
     if (!db) throw new Error("Supabase connection missing.");
     const { data: { user }, error } = await db.auth.getUser();
@@ -223,7 +232,7 @@
     if(next.length<10)return toast("New password must be at least 10 characters.");
     if(next!==confirm)return toast("New password and confirmation do not match.");
     const button=event?.currentTarget?.querySelector('[type="submit"]');if(button)button.disabled=true;
-    try{const user=await requireAdmin();if(!user.email)throw new Error("Admin email unavailable; use Supabase password reset.");
+    try{const user=await requireStaff();if(!user.email)throw new Error("Admin email unavailable; use Supabase password reset.");
       const {error:reauthError}=await db.auth.signInWithPassword({email:user.email,password:current});if(reauthError)throw new Error("Current password is incorrect.");
       const {error:updateError}=await db.auth.updateUser({password:next});if(updateError)throw updateError;event.currentTarget.reset();toast("Admin password updated.");
     }catch(e){toast(e.message||"Password update failed.");}finally{if(button)button.disabled=false;}
@@ -275,7 +284,7 @@
   window.importFromDrive=()=>{const log=$("driveImportLog");if(log)log.textContent="Google Drive OAuth/Picker connector is not configured. A server-side OAuth function and Google credentials are required; a share URL alone cannot securely import private files.";toast("Drive import needs a secure Google OAuth connector.");};
 
   document.addEventListener("DOMContentLoaded",()=>{
-    const watchers=[["tab-users-admin",loadUsers],["tab-team-admin",loadSubAdmins],["tab-dashboard",loadDashboard],["tab-reports",loadReports],["tab-categories",loadCategories],["tab-songs",loadSongs],["tab-settings",loadWebsiteSettings]];
+    const watchers=[["tab-users-admin",loadUsers],["tab-team-admin",()=>{if(window.VH_IS_ADMIN)loadSubAdmins();}],["tab-dashboard",loadDashboard],["tab-reports",loadReports],["tab-categories",loadCategories],["tab-songs",loadSongs],["tab-settings",loadWebsiteSettings]];
     watchers.forEach(([id,fn])=>{const el=$(id);if(el)new MutationObserver(()=>{if(el.classList.contains("active"))fn();}).observe(el,{attributes:true,attributeFilter:["class"]});});
     db?.auth.onAuthStateChange((_event,session)=>{if(session?.user){loadDashboard();if($("tab-users-admin")?.classList.contains("active"))loadUsers();}});
     if(window.VH_IS_ADMIN)loadDashboard();
