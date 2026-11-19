@@ -11,7 +11,7 @@ create table if not exists public.vh_content (
   release_year integer,
   rating numeric(3,1),
   description text,
-  cast text,
+  "cast" text,
   duration text,
   trailer_url text,
   industry text,
