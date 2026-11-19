@@ -1,0 +1,5 @@
+supabase/
+*.sql
+*.pdf
+README*
+wrangler.jsonc
