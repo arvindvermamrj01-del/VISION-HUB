@@ -932,7 +932,7 @@
 
             <!-- Section 2: Sub-Admin setup placeholder -->
             <div id="superAdminOnlySection" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px;">
-              <h3 style="margin-bottom: 6px;"><i class="fas fa-users-cog" style="color: var(--accent2);"></i> Sub-Admin Team Management</h3>
+              <h3 style="margin-bottom: 6px;"><i class="fas fa-users-cog" style="color: var(--accent2);"></i> Staff Team Management</h3>
               <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">Create staff accounts securely through the server-side Supabase Admin API. Choose only the permissions each team member needs.</p>
 
               <form class="admin-form" onsubmit="addSubAdmin(event)">
@@ -948,20 +948,20 @@
                 </div>
                 <div class="form-row">
                   <div class="form-group">
-                    <label>Sub-Admin Password *</label>
+                    <label>Staff Account Password *</label>
                     <input type="password" id="subPassword" placeholder="At least 12 characters" minlength="12" required autocomplete="new-password"/>
                   </div>
                   <div class="form-group">
                     <label>Assigned Role *</label>
                     <select id="subRole">
                       <option value="sub_admin">Sub-Admin (Catalog & Requests)</option>
-                      <option value="content_editor">Content Editor (Movies Only)</option>
+                      <option value="content_editor">Content Editor (Movies & Series)</option>
                       <option value="moderator">Moderator (Requests Only)</option>
                     </select>
                   </div>
                 </div>
                 <button type="submit" class="btn-primary full-width">
-                  <i class="fas fa-user-plus"></i> Create Sub-Admin Account
+                  <i class="fas fa-user-plus"></i> Create Staff Account
                 </button>
               </form>
 
