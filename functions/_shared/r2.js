@@ -29,7 +29,7 @@ export async function presignR2(env, method, key, contentType = "", expires = 90
     "X-Amz-Algorithm": "AWS4-HMAC-SHA256",
     "X-Amz-Credential": accessKey + "/" + scope,
     "X-Amz-Date": amzDate,
-    "X-Amz-Expires": String(Math.max(60, Math.min(3600, Number(expires) || 900))),
+    "X-Amz-Expires": String(Math.max(60, Math.min(21600, Number(expires) || 900))),
     "X-Amz-SignedHeaders": contentType ? "content-type;host" : "host"
   };
   const canonicalQuery = Object.entries(params).sort(([a], [b]) => a.localeCompare(b))
