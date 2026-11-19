@@ -220,14 +220,21 @@
 
   function playAsset(item,asset) {
     if(!asset?.url){toast("Is quality ka playable URL available nahi hai.");return;}
+    const provider=String(asset.storage_provider||"supabase").toLowerCase();
+    if(provider!=="supabase" && provider!=="direct"){
+      window.open(asset.url,"_blank","noopener");
+      toast("Ye external provider link hai; playback provider ke page par khulega.");
+      return;
+    }
     activeVideo=$("playerFallback")?.querySelector("video");
     if(!activeVideo)return;
     $("playerIframe")?.classList.add("hidden");
     $("playerFallback")?.classList.add("active");
+    activeVideo.onerror=()=>toast("Video stream nahi chal paayi. Direct file URL aur storage access check karein.");
     if(activeVideo.src!==asset.url){activeVideo.pause();activeVideo.src=asset.url;activeVideo.load();}
     activeVideo.play().catch(()=>{});
     const status=$("playerOverlay")?.querySelector(".player-controls span:nth-child(2)");
-    if(status)status.textContent=(asset.resolution||"Original")+" · source quality";
+    if(status)status.textContent=(asset.resolution||"Original")+" · supplied source";
   }
 
   window.openMovie=function(id){
