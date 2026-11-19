@@ -38,7 +38,8 @@ function showPage(id) {
 
 function showSignedOut() {
 window.VH_IS_ADMIN = false;
-el("authNav")?.classList.add("hidden");
+window.VH_ROLE = "guest";
+el("authNav")?.classList.remove("hidden");
 el("userNav")?.classList.add("hidden");
 el("adminNav")?.classList.add("hidden");
 el("adminNavLink")?.classList.add("hidden");
@@ -46,7 +47,7 @@ el("adminNavLink")?.classList.add("hidden");
 
 async function showSignedIn(user) {
 el("authNav")?.classList.add("hidden");
-el("userNav")?.classList.add("hidden");
+el("userNav")?.classList.remove("hidden");
 
 let name =
   user.user_metadata?.full_name ||
@@ -66,35 +67,119 @@ if (el("profileEmail")) {
   el("profileEmail").textContent = user.email || "";
 }
 
-window.VH_IS_ADMIN = false;
-
 const { data: profile, error } = await db
   .from("profiles")
-  .select("id, role, fullname")
+  .select("id, role, fullname, created_at")
   .eq("id", user.id)
   .maybeSingle();
 
 if (error) {
   console.error("Profile lookup failed:", error.message);
-  msg("Profile check failed.");
+  msg("Profile check failed. Please refresh and try again.");
   return;
 }
 
 if (profile?.fullname) {
   name = profile.fullname;
   if (el("profileName")) el("profileName").textContent = name;
+  if (el("userProfileName")) el("userProfileName").value = name;
+} else if (el("userProfileName")) {
+  el("userProfileName").value = user.user_metadata?.full_name || "";
 }
+if (el("statJoined")) {
+  el("statJoined").textContent = profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : "—";
+}
+window.VH_ROLE = profile?.role || "user";
+window.VH_IS_ADMIN = ["admin", "sub_admin", "content_editor", "moderator"].includes(window.VH_ROLE);
+const roleBadge = el("adminRoleBadge");
+if (roleBadge) roleBadge.textContent = window.VH_ROLE.replaceAll("_", " ");
 
-if (profile && profile.role === "admin") {
-  window.VH_IS_ADMIN = true;
+if (window.VH_IS_ADMIN) {
   el("adminNav")?.classList.remove("hidden");
   el("adminNavLink")?.classList.remove("hidden");
+  const rootOnly = ["users-admin", "team-admin", "settings", "storage-manager", "categories", "songs", "reports", "dashboard"];
+  const allowed = window.VH_ROLE === "admin" ? null :
+    window.VH_ROLE === "moderator" ? ["requests-admin"] :
+    window.VH_ROLE === "content_editor" ? ["add-movie", "add-shorts", "manage"] :
+    ["add-movie", "add-shorts", "manage", "requests-admin"];
+  document.querySelectorAll("#page-admin .admin-nav-btn").forEach(button => {
+    const match = button.getAttribute("onclick")?.match(/adminTab\('([^']+)'/);
+    const tab = match?.[1];
+    if (tab) button.classList.toggle("hidden", !!allowed && !allowed.includes(tab));
+    if (tab && allowed && rootOnly.includes(tab)) button.classList.add("hidden");
+  });
+  const firstTab = allowed?.[0] || "dashboard";
+  if (allowed) {
+    document.querySelectorAll("#page-admin .admin-nav-btn").forEach(button => button.classList.remove("active"));
+    document.querySelectorAll("#page-admin .admin-tab").forEach(tab => tab.classList.remove("active"));
+    const nav = document.querySelector("#page-admin .admin-nav-btn[onclick*=\"'" + firstTab + "'\"]");
+    nav?.classList.add("active");
+    el("tab-" + firstTab)?.classList.add("active");
+  }
 } else {
   el("adminNav")?.classList.add("hidden");
   el("adminNavLink")?.classList.add("hidden");
 }
 
 }
+
+window.loginUser = async function (event) {
+  event?.preventDefault();
+  const email = el("userLoginEmail")?.value?.trim().toLowerCase();
+  const password = el("userLoginPassword")?.value || "";
+  const button = event?.currentTarget?.querySelector('[type="submit"]');
+  if (!email || !password) return msg("Email and password are required.");
+  if (button) button.disabled = true;
+  try {
+    const { data, error } = await db.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    await showSignedIn(data.user);
+    showPage("home");
+    msg("Welcome back to Vision Hub.");
+  } catch (error) {
+    msg(error.message || "Sign-in failed.");
+  } finally { if (button) button.disabled = false; }
+};
+
+window.registerUser = async function (event) {
+  event?.preventDefault();
+  const name = el("userRegisterName")?.value?.trim();
+  const email = el("userRegisterEmail")?.value?.trim().toLowerCase();
+  const password = el("userRegisterPassword")?.value || "";
+  const confirm = el("userRegisterConfirm")?.value || "";
+  const button = event?.currentTarget?.querySelector('[type="submit"]');
+  if (!name || !email) return msg("Name and email are required.");
+  if (password.length < 12) return msg("Use a password with at least 12 characters.");
+  if (password !== confirm) return msg("The two passwords do not match.");
+  if (button) button.disabled = true;
+  try {
+    const { data, error } = await db.auth.signUp({
+      email, password, options: { data: { full_name: name } }
+    });
+    if (error) throw error;
+    event.currentTarget.reset();
+    if (data.session?.user) {
+      await showSignedIn(data.user);
+      showPage("home");
+      msg("Your Vision Hub account is ready.");
+    } else {
+      msg("Account created. Check your email to confirm the address, then sign in.");
+      showPage("login");
+    }
+  } catch (error) {
+    msg(error.message || "Account creation failed.");
+  } finally { if (button) button.disabled = false; }
+};
+
+window.resetUserPassword = async function () {
+  const email = el("userLoginEmail")?.value?.trim().toLowerCase();
+  if (!email) return msg("Enter your email address first.");
+  try {
+    const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+    if (error) throw error;
+    msg("Password reset email sent. Check your inbox.");
+  } catch (error) { msg(error.message || "Password reset could not be sent."); }
+};
 
 window.adminLogin = async function (e) {
 e?.preventDefault();
@@ -177,6 +262,12 @@ window.adminLogout = function () {
   window.VH_IS_ADMIN = false;
   return signOutAndReset("local", "Admin session ended.");
 };
+
+document.addEventListener("DOMContentLoaded", () => {
+  el("userLoginForm")?.addEventListener("submit", window.loginUser);
+  el("userRegisterForm")?.addEventListener("submit", window.registerUser);
+  el("forgotPasswordLink")?.addEventListener("click", event => { event.preventDefault(); window.resetUserPassword(); });
+});
 
 db.auth.onAuthStateChange(async (event, session) => {
 if (session?.user) {
