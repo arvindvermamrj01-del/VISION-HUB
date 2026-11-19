@@ -52,7 +52,7 @@
       const items=contentRes.data||[],people=profileRes.data||[];
       if($("totalMovies"))$("totalMovies").textContent=items.filter(x=>x.content_type==="Movie").length;
       if($("totalSeries"))$("totalSeries").textContent=items.filter(x=>x.content_type==="Web Series").length;
-      if($("totalUsers"))$("totalUsers").textContent=people.filter(x=>x.role!=="admin").length;
+      if($("totalUsers"))$("totalUsers").textContent=people.filter(x=>x.role==="user").length;
       if($("totalViews"))$("totalViews").textContent=eventRes.error?"—":(eventRes.count??0);
       const recent=$("recentMoviesAdmin");
       if(recent)recent.innerHTML=items.slice().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,8)
