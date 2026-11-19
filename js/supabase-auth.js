@@ -150,7 +150,7 @@
       if (!["admin","sub_admin","content_editor","moderator"].includes(profile?.role)) {
         await db.auth.signOut({ scope: "local" });
         signedOutUI();
-        throw new Error("Is account ko database mein admin role nahi diya gaya hai.");
+        throw new Error("Is account ko database mein valid staff role nahi diya gaya hai.");
       }
       await hydrateUser(data.user);
       await recordLogin(data.user);
