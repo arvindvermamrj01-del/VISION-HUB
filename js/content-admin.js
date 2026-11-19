@@ -33,7 +33,7 @@
   }
   function addToCatalog(row) {
     const item = {
-      id: row.id, title: row.title, type: row.content_type, industry: row.industry || "All",
+      id: row.id, isSupabaseContent: true, title: row.title, type: row.content_type, industry: row.industry || "All",
       genre: row.genre || "Drama", year: row.release_year || new Date().getFullYear(),
       rating: row.rating || "—", language: row.language || "", duration: row.duration || "",
       poster: row.poster_url || "https://placehold.co/400x600/171b2b/ffffff?text=Vision+Hub",
@@ -44,6 +44,36 @@
     const index = list.findIndex(x => x.id === item.id);
     if (index >= 0) list[index] = item; else list.unshift(item);
   }
+  function renderManageList(query = "") {
+    const host = $("manageList");
+    if (!host) return;
+    const term = String(query || "").trim().toLowerCase();
+    const items = (window.VISION_HUB_DATA || []).filter(item =>
+      item.isSupabaseContent &&
+      [item.title, item.type, item.genre, item.language, item.industry].join(" ").toLowerCase().includes(term)
+    );
+    host.innerHTML = items.length ? items.map(item => `
+      <article class="manage-item" style="display:flex;justify-content:space-between;gap:14px;align-items:center;padding:12px;border-bottom:1px solid var(--border);">
+        <div><strong>${safe(item.title)}</strong><small style="display:block;color:var(--text-muted)">${safe(item.type)} · ${safe(item.year)} · ${safe(item.genre)}</small></div>
+        <button type="button" class="btn-delete" onclick="deletePublishedContent(${Number(item.id)})">Delete</button>
+      </article>`).join("") : "<p>No published Supabase content found.</p>";
+  }
+  window.filterManageList = value => renderManageList(value);
+  window.deletePublishedContent = async id => {
+    if (!Number.isFinite(Number(id)) || !window.confirm("Delete this published item permanently?")) return;
+    try {
+      await requireAdmin();
+      const { error } = await db.from("vh_content").delete().eq("id", Number(id));
+      if (error) throw error;
+      window.VISION_HUB_DATA = (window.VISION_HUB_DATA || []).filter(item => !(item.isSupabaseContent && Number(item.id) === Number(id)));
+      window.renderVisionHub?.();
+      renderManageList($("manageSearch")?.value || "");
+      toast("Content deleted.");
+    } catch (error) {
+      console.error("Content delete failed:", error);
+      toast(error.message || "Could not delete content.");
+    }
+  };
   async function loadPublished() {
     const { data, error } = await db.from("vh_content").select("*").eq("published", true).order("created_at", { ascending: false });
     if (error) { console.warn("Published content could not be loaded:", error.message); return; }
@@ -54,6 +84,7 @@
       if (el) el.dispatchEvent(new Event("visionhub:catalog-updated"));
     });
     window.renderVisionHub?.();
+    renderManageList($("manageSearch")?.value || "");
     document.dispatchEvent(new CustomEvent("visionhub:content-loaded"));
   }
   async function publish(form, type) {
