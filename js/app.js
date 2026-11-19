@@ -50,13 +50,8 @@ window.adminTab=(tab,el)=>{
   el?.parentElement?.querySelectorAll("button").forEach(x=>x.classList.toggle("active",x===el));
 };
 
-["addMovie","importFromDrive","updateAdminCredentials","addSubAdmin","addCategory","addSong","saveWebsiteSettings"].forEach(fn=>window[fn]=e=>{
-  e?.preventDefault?.();
-  toast("Publishing requires a secure backend and verified content rights.");
-});
-
-window.filterManageList=()=>{};
-window.filterUsersList=()=>{};
+// Admin actions are implemented by the dedicated content-admin.js and admin-tools.js modules.
+// Do not install fallback handlers here: they can overwrite real backend-backed functions.
 
 document.addEventListener("DOMContentLoaded",()=>{
   render();
