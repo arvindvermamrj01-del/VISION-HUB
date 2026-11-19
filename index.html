@@ -381,7 +381,7 @@
         <aside class="admin-sidebar">
           <div class="admin-logo">
             <span>⚙️</span> Control Center
-            <div><span id="adminRoleBadge" class="admin-role-badge">Super Admin</span></div>
+            <div><span id="adminRoleBadge" class="admin-role-badge">Admin</span></div>
           </div>
           <nav class="admin-nav">
             <button class="admin-nav-btn active" onclick="adminTab('dashboard',this)">
@@ -756,7 +756,7 @@
             </div>
           </div>
 
-          <!-- TAB 7: User Management (With Privacy Protection: Phone Numbers Only for Super Admin) -->
+          <!-- TAB 7: User Management -->
           <div id="tab-users-admin" class="admin-tab">
             <h2>👥 Registered Users & Privacy Management</h2>
             <p style="color: var(--text-muted); margin-bottom: 16px;">
@@ -820,11 +820,11 @@
               </form>
             </div>
 
-            <!-- Section 2: Sub-Admin Creation & Management (Super Admin Only) -->
+            <!-- Section 2: Sub-Admin setup placeholder -->
             <div id="superAdminOnlySection" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px;">
               <h3 style="margin-bottom: 6px;"><i class="fas fa-users-cog" style="color: var(--accent2);"></i> Sub-Admin Team Management</h3>
               <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">
-                Create Sub-Admin accounts to help manage movies and user requests. Sub-Admins cannot access user phone numbers or change master credentials.
+                Sub-Admin creation is not active yet. It requires a Supabase Edge Function using the server-side Auth Admin API. This form is a placeholder and will not create an account until that secure function is deployed.
               </p>
 
               <form class="admin-form" onsubmit="addSubAdmin(event)">
