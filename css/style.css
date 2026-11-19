@@ -163,3 +163,17 @@ body{background:radial-gradient(ellipse at 8% -12%,rgba(88,111,220,.15),transpar
 :root[data-theme="light"] .vh-edit-panel>p{color:#65728a}
 :root[data-theme="light"] .vh-edit-grid label{color:#34425e}
 :root[data-theme="light"] .vh-edit-grid input,:root[data-theme="light"] .vh-edit-grid textarea{background:#fff;color:#1c2941;border-color:#dce3ef}
+
+
+/* Request workflow: searchable moderation and account history */
+.request-admin-toolbar{display:flex;gap:10px;flex-wrap:wrap;padding:12px;position:sticky;top:0;background:var(--panel);z-index:1}
+.request-admin-toolbar input,.request-admin-toolbar select{min-height:40px;padding:9px 12px;border:1px solid var(--vh-line);border-radius:10px;background:var(--bg);color:var(--text)}
+.request-history-panel{margin-top:22px;padding:18px;border:1px solid var(--vh-line);border-radius:16px;background:var(--vh-glass)}
+.request-history-panel h3{margin-top:0}
+.request-history-item{padding:12px 0;border-bottom:1px solid var(--vh-line)}
+.request-history-item:last-child{border-bottom:0}
+.request-history-item strong,.request-history-item small{display:block}
+.request-history-item small{margin-top:5px;color:var(--muted)}
+.request-history-item p{margin:8px 0 0;color:var(--muted)}
+.request-admin-toolbar input{flex:1;min-width:180px}
+@media(max-width:520px){.request-admin-toolbar{flex-direction:column}.request-admin-toolbar input,.request-admin-toolbar select{width:100%}}
