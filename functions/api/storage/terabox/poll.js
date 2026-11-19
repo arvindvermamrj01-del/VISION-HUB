@@ -16,7 +16,7 @@ export async function onRequestPost({request,env}){
     await saveTeraBoxTokens(env,auth.user,tokens,info);
     return json({connected:true,account_id:info.user_id});
   }catch(error){
-    if(String(error.message||"").includes("400001"))return json({pending:true},202);
+    if(error.code===400001||String(error.message||"").includes("400001"))return json({pending:true},202);
     return json({error:error.message||"TeraBox authorization failed"},502);
   }
 }
