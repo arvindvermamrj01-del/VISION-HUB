@@ -94,7 +94,7 @@
     const { data: profile, error: profileError } = await db.from("profiles")
       .select("role").eq("id", user.id).maybeSingle();
     if (profileError) throw profileError;
-    if (profile?.role !== "admin") throw new Error("Admin permission required.");
+    if (!["admin","sub_admin","moderator"].includes(profile?.role)) throw new Error("Request moderation permission required.");
     return user;
   }
   async function loadRequests() {
