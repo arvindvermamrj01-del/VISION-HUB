@@ -17,10 +17,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Check JavaScript syntax
+      - name: Check all JavaScript syntax
         run: |
           set -e
-          for file in js/*.js; do
+          find . -type f -name '*.js' -not -path './node_modules/*' -print0 | while IFS= read -r -d '' file; do
             echo "Checking $file"
             node --check "$file"
           done
