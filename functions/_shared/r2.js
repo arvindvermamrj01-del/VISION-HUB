@@ -34,7 +34,10 @@ export async function presignR2(env, method, key, contentType = "", expires = 90
   };
   const canonicalQuery = Object.entries(params).sort(([a], [b]) => a.localeCompare(b))
     .map(([name, value]) => encode(name) + "=" + encode(value)).join("&");
-  const canonicalHeaders = "host:" + host + "\n" + (contentType ? "content-type:" + contentType.trim() + "\n" : "");
+  // SigV4 canonical headers must be lexicographically sorted (content-type before host).
+  const canonicalHeaders = contentType
+    ? "content-type:" + contentType.trim() + "\nhost:" + host + "\n"
+    : "host:" + host + "\n";
   const signedHeaders = contentType ? "content-type;host" : "host";
   const canonicalRequest = [method.toUpperCase(), uri, canonicalQuery, canonicalHeaders, signedHeaders, "UNSIGNED-PAYLOAD"].join("\n");
   const stringToSign = ["AWS4-HMAC-SHA256", amzDate, scope, hex(await sha256(canonicalRequest))].join("\n");
