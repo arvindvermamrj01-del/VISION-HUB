@@ -184,7 +184,10 @@
         site_name:$("settingSiteName")?.value.trim()||"Vision Hub",
         telegram_url:$("settingTelegram")?.value.trim()||"",
         seo_description:$("settingSeo")?.value.trim()||"",
-        maintenance_mode:$("settingMaintenance")?.value||"off"
+        maintenance_mode:$("settingMaintenance")?.value||"off",
+        donation_upi_id:$("settingDonationUpi")?.value.trim()||"",
+        donation_qr_url:$("settingDonationQr")?.value.trim()||"",
+        donation_message:$("settingDonationMessage")?.value.trim()||"Support Vision Hub development"
       };
       const rows=Object.entries(settings).map(([setting_key,setting_value])=>({setting_key,setting_value,updated_by:user.id,updated_at:new Date().toISOString()}));
       const {error}=await db.from("vh_site_settings").upsert(rows,{onConflict:"setting_key"});if(error)throw error;
@@ -199,6 +202,9 @@
       if($("settingTelegram")&&map.telegram_url)$("settingTelegram").value=map.telegram_url;
       if($("settingSeo")&&map.seo_description)$("settingSeo").value=map.seo_description;
       if($("settingMaintenance")&&map.maintenance_mode)$("settingMaintenance").value=map.maintenance_mode;
+      if($("settingDonationUpi"))$("settingDonationUpi").value=map.donation_upi_id||"";
+      if($("settingDonationQr"))$("settingDonationQr").value=map.donation_qr_url||"";
+      if($("settingDonationMessage"))$("settingDonationMessage").value=map.donation_message||"";
     }catch(e){console.warn("Site settings not loaded:",e.message);}
   }
 
