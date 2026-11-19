@@ -24,12 +24,13 @@ alert(message);
 }
 
 function showPage(id) {
-document.querySelectorAll("[id^='page-']").forEach(page => {
-page.classList.add("hidden");
-});
-
-if (el(id)) el(id).classList.remove("hidden");
-
+  const pageName = String(id || "").replace(/^page-/, "");
+  if (typeof window.showPage === "function") {
+    window.showPage(pageName);
+    return;
+  }
+  document.querySelectorAll(".page").forEach(page => page.classList.remove("active"));
+  el("page-" + pageName)?.classList.add("active");
 }
 
 function showSignedOut() {
@@ -98,10 +99,7 @@ if (!username || !password) {
   return;
 }
 
-const email =
-  username.toLowerCase() === "admin"
-    ? "arvindvermamrj01@gmail.com"
-    : username;
+const email = username;
 
 const btn = el("adminSubmitBtn");
 if (btn) btn.disabled = true;
@@ -129,7 +127,7 @@ try {
   }
 
   await showSignedIn(data.user);
-  showPage("page-admin");
+  showPage("admin");
   msg("Admin login successful.");
 } catch (err) {
   console.error(err);
@@ -160,7 +158,7 @@ try {
   if (error) throw error;
 
   await showSignedIn(data.user);
-  showPage("page-home");
+  showPage("home");
   msg("Login successful.");
 } catch (err) {
   console.error(err);
@@ -198,19 +196,8 @@ try {
 
   if (error) throw error;
 
-  if (data.user && data.session) {
-    const { error: profileError } = await db
-      .from("profiles")
-      .upsert({
-        id: data.user.id,
-        fullname: name,
-        role: "user"
-      });
-
-    if (profileError) throw profileError;
-  }
-
-  msg("Registration successful. Email confirmation check karo.");
+  // The database trigger creates the basic profile. Browser code never assigns roles.
+  msg(data.session ? "Registration successful." : "Registration received. Email confirmation check karo.");
 } catch (err) {
   console.error(err);
   msg(err.message || "Registration failed.");
