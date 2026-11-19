@@ -14,6 +14,7 @@ export async function onRequestPost({request,env}){
     });
     if(Number(result.return_type)===2)return json({already_exists:true,path,file:result.info||null});
     if(!result.uploadid||!Array.isArray(result.block_list))throw new Error("TeraBox pre-upload returned an incomplete upload session.");
-    return json({path,uploadid:result.uploadid,parts:result.block_list.map(Number),block_md5s:hashes});
+    const requestedParts=result.block_list.length?result.block_list:[0];
+    return json({path,uploadid:result.uploadid,parts:requestedParts.map(Number),block_md5s:hashes});
   }catch(error){return json({error:error.message||"TeraBox upload could not be initialized"},502);}
 }
