@@ -18,6 +18,7 @@
     return user;
   }
   function injectPanel() {
+    if(!window.VH_IS_ADMIN) return;
     if($("tab-media-library")) return;
     const host=$("tab-manage")?.parentElement;
     if(!host) return;
@@ -186,6 +187,6 @@
     wrapped.__vhTracksInstalled=true;window.openMovie=wrapped;
   }
   document.addEventListener("DOMContentLoaded",()=>{injectPanel();loadTitles();installPlayerTracks();});
-  db.auth.onAuthStateChange((_event,session)=>{if(session?.user){injectPanel();loadTitles();}});
-  window.addEventListener("vh:page-shown",name=>{if(name.detail==="admin"){injectPanel();loadTitles();injectLoginAudit();loadLoginAudit();}});
+  db.auth.onAuthStateChange((_event,session)=>{if(session?.user&&window.VH_IS_ADMIN){injectPanel();loadTitles();}});
+  window.addEventListener("vh:page-shown",name=>{if(name.detail==="admin"&&window.VH_IS_ADMIN){injectPanel();loadTitles();}});
 })();
