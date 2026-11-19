@@ -18,6 +18,25 @@ as $$
   );
 $$;
 
+create or replace function public.vh_can_manage_content_item(p_content_id bigint)
+returns boolean language sql stable security definer
+set search_path = ''
+as $
+  select exists (
+    select 1
+    from public.profiles p
+    join public.vh_content c on c.id = p_content_id
+    where p.id = (select auth.uid())
+      and (
+        p.role in ('admin','sub_admin')
+        or (p.role = 'content_editor' and c.content_type <> 'Short')
+      )
+  );
+$;
+
+revoke all on function public.vh_can_manage_content_item(bigint) from public;
+grant execute on function public.vh_can_manage_content_item(bigint) to authenticated;
+
 create or replace function public.vh_can_manage_requests()
 returns boolean language sql stable security definer
 set search_path = ''
@@ -117,8 +136,26 @@ create policy "vh_media_assets_public_read" on public.vh_media_assets
   ));
 create policy "vh_media_assets_staff_all" on public.vh_media_assets
   for all to authenticated
-  using (public.vh_can_manage_content())
-  with check (public.vh_can_manage_content());
+  using (
+    exists (
+      select 1 from public.profiles p
+      where p.id = (select auth.uid())
+        and (
+          p.role in ('admin','sub_admin')
+          or (p.role = 'content_editor' and vh_content.content_type <> 'Short')
+        )
+    )
+  )
+  with check (
+    exists (
+      select 1 from public.profiles p
+      where p.id = (select auth.uid())
+        and (
+          p.role in ('admin','sub_admin')
+          or (p.role = 'content_editor' and vh_content.content_type <> 'Short')
+        )
+    )
+  );
 grant select on public.vh_media_assets to anon, authenticated;
 grant insert, update, delete on public.vh_media_assets to authenticated;
 grant usage, select on sequence public.vh_media_assets_id_seq to authenticated;
@@ -136,8 +173,8 @@ drop policy if exists "Admins can manage content" on public.vh_content;
 drop policy if exists "vh_content_staff_all" on public.vh_content;
 create policy "vh_content_staff_all" on public.vh_content
   for all to authenticated
-  using (public.vh_can_manage_content())
-  with check (public.vh_can_manage_content());
+  using (public.vh_can_manage_content_item(content_id))
+  with check (public.vh_can_manage_content_item(content_id));
 
 drop policy if exists "vh_requests_admin_select" on public.vh_requests;
 drop policy if exists "vh_requests_admin_update" on public.vh_requests;
