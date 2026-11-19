@@ -31,3 +31,8 @@ test("private media bucket is private and provider OAuth credentials are server-
   assert.match(providers, /revoke all on public\.vh_provider_connections from anon, authenticated/i);
   assert.match(providers, /grant all on public\.vh_provider_connections to service_role/i);
 });
+
+test("private media writes are staff-scoped and deletes require linked content authority", () => {
+  assert.match(setup, /create policy "staff upload private media"[\s\S]*?vh_can_manage_content\(\)/i);
+  assert.match(setup, /create policy "staff delete linked private media"[\s\S]*?vh_can_manage_content_item\(c\.content_type\)/i);
+});
