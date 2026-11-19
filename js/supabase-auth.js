@@ -80,7 +80,12 @@ if (error) {
   return;
 }
 
-if (profile?.fullname) {\n  name = profile.fullname;\n  if (el("profileName")) el("profileName").textContent = name;\n}\n\nif (profile && profile.role === "admin") {
+if (profile?.fullname) {
+  name = profile.fullname;
+  if (el("profileName")) el("profileName").textContent = name;
+}
+
+if (profile && profile.role === "admin") {
   window.VH_IS_ADMIN = true;
   el("adminNav")?.classList.remove("hidden");
   el("adminNavLink")?.classList.remove("hidden");
