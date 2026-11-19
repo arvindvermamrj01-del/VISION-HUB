@@ -16,7 +16,12 @@ Add these in Cloudflare Dashboard → Workers & Pages → your Pages project →
 - `SUPABASE_ANON_KEY` — Supabase publishable/anon key (not service role).
 - `SUPABASE_SERVICE_ROLE_KEY` — Supabase service-role key; mark as Secret. Server-side only.
 - `TELEGRAM_BOT_TOKEN` — token from BotFather; mark as Secret.
-- `TELEGRAM_WEBHOOK_SECRET` — a long random secret (letters/numbers/underscore/hyphen); mark as Secret.\n- `TERABOX_CLIENT_ID` — approved TeraBox Open Platform AppKey; mark as Secret/variable.\n- `TERABOX_CLIENT_SECRET` — TeraBox Open Platform SecretKey; mark as Secret.\n- `TERABOX_PRIVATE_SECRET` — TeraBox Open Platform signing secret; mark as Secret.\n- `TERABOX_APP_FOLDER` — exact app folder path assigned by TeraBox, for example `/From: Other Applications/Vision Hub-<assigned-app-id>/`; configure as a variable.\n- `PROVIDER_TOKEN_ENCRYPTION_KEY` — 32 random bytes as 64 hex characters or Base64; mark as Secret.
+- `TELEGRAM_WEBHOOK_SECRET` — a long random secret (letters/numbers/underscore/hyphen); mark as Secret.
+- `TERABOX_CLIENT_ID` — approved TeraBox Open Platform AppKey; mark as Secret/variable.
+- `TERABOX_CLIENT_SECRET` — TeraBox Open Platform SecretKey; mark as Secret.
+- `TERABOX_PRIVATE_SECRET` — TeraBox Open Platform signing secret; mark as Secret.
+- `TERABOX_APP_FOLDER` — exact app folder path assigned by TeraBox, for example `/From: Other Applications/Vision Hub-<assigned-app-id>/`; configure as a variable.
+- `PROVIDER_TOKEN_ENCRYPTION_KEY` — 32 random bytes as 64 hex characters or Base64; mark as Secret.
 
 Never put the service-role key or Telegram bot token in any browser JavaScript file or commit them to Git.
 
