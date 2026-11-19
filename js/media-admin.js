@@ -171,15 +171,19 @@
             if(videoRows.length||isTeraBox){
               const q=document.createElement("select");q.setAttribute("aria-label","Video quality");
               if(isTeraBox){
-                q.innerHTML='<option value="1080">TeraBox Auto 1080p</option><option value="720">720p</option><option value="480">480p</option>';
-                q.addEventListener("change",()=>setMediaSource(teraBoxStream(q.value)));
+                q.innerHTML='<option value="terabox:1080">TeraBox Auto 1080p</option><option value="terabox:720">TeraBox 720p</option><option value="terabox:480">TeraBox 480p</option>';
+              }else{
+                q.innerHTML='<option value="">Auto / Original</option>';
               }
               if(videoRows.length){
                 const other=document.createElement("optgroup");other.label="Uploaded renditions";
                 other.innerHTML=videoRows.map(v=>'<option value="'+esc(v.playUrl)+'">'+esc(v.resolution)+'</option>').join("");
                 q.appendChild(other);
-                q.addEventListener("change",()=>{if(q.value.startsWith("/api/storage/terabox/stream"))return;setMediaSource(q.value||baseUrl);});
               }
+              q.addEventListener("change",()=>{
+                if(q.value.startsWith("terabox:"))setMediaSource(teraBoxStream(q.value.split(":")[1]));
+                else setMediaSource(q.value||baseUrl);
+              });
               controls.append("Quality ",q);
             }
             if(subtitleRows.length){
