@@ -1,51 +1,73 @@
-showSignedIn(data.user, profile);
-      if (typeof window.showPage === "function") {
-        window.showPage("admin");
-      }
-      msg("Admin login successful.");
-    } catch (err) {
-      await db.auth.signOut();
-      msg("Profile error: " + err.message);
-    }
-  };
+(() => {
+  "use strict";
 
-  window.logoutUser = async function () {
-    const { error } = await db.auth.signOut();
-    if (error) return msg(error.message);
+  const url = window.VH_SUPABASE_URL;
+  const key = window.VH_SUPABASE_PUBLISHABLE_KEY;
+
+  if (!window.supabase  !url  !key) {
+    console.error("Supabase configuration missing.");
+    return;
+  }
+
+  const db = window.supabase.createClient(url, key);
+  window.VH_SUPABASE = db;
+  window.VH_IS_ADMIN = false;
+
+  const el = id => document.getElementById(id);
+
+  function msg(message) {
+    if (typeof window.toast === "function") {
+      window.toast(message);
+    } else {
+      alert(message);
+    }
+  }
+
+  function showSignedOut() {
+    window.VH_IS_ADMIN = false;
 
     el("authNav")?.classList.remove("hidden");
     el("userNav")?.classList.add("hidden");
     el("adminNav")?.classList.add("hidden");
+    el("adminNavLink")?.classList.add("hidden");
+  }
 
-    if (typeof window.showPage === "function") {
-      window.showPage("home");
+  async function showSignedIn(user) {
+    el("authNav")?.classList.add("hidden");
+    el("userNav")?.classList.remove("hidden");
+
+    const name =
+      user.user_metadata?.full_name ||
+      user.email ||
+      user.phone ||
+      "User";
+
+    const initial = name.trim().charAt(0).toUpperCase();
+
+    ["userAvatar", "profileAvatar"].forEach(id => {
+      if (el(id)) el(id).textContent = initial;
+    });
+
+    if (el("profileName")) {
+      el("profileName").textContent = name;
     }
-    msg("Logged out.");
-  };
 
-  window.logoutAllDevices = async function () {
-    const { error } = await db.auth.signOut({ scope: "global" });
-    if (error) return msg(error.message);
-    location.reload();
-  };
-
-  window.loginGuest = () => msg("Guest browsing is available.");
-
-  window.togglePassword = id => {
-    const input = el(id);
-    if (input) {
-      input.type = input.type === "password" ? "text" : "password";
+    if (el("profileEmail")) {
+      el("profileEmail").textContent =
+        user.email  user.phone  "";
     }
-  };
 
-  db.auth.getSession().then(async ({ data }) => {
-    if (!data.session) return;
+    window.VH_IS_ADMIN = false;
 
-    try {
-      const profile = await getProfile(data.session.user);
-      showSignedIn(data.session.user, profile);
-    } catch (err) {
-      console.error("Profile load error:", err.message);
+    const { data: profile, error } = await db
+      .from("profiles")
+      .select("id, fullname, role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Profile lookup failed:", error.message);
+      throw error;
     }
-  });
-})();
+
+    window.VH_IS_ADMIN = profile?.role
