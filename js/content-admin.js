@@ -5,6 +5,7 @@
   if (!db) { console.error("VISION HUB: Supabase client is unavailable; publishing is disabled."); return; }
   const PRIVATE_BUCKET = "vh-private-media";
   const $ = id => document.getElementById(id);
+  const originalOpenMovie = window.openMovie;
   let activeItem = null;
   let activeVideo = null;
 
@@ -233,8 +234,7 @@
     const item=(window.VISION_HUB_DATA||[]).find(entry=>String(entry.id)===String(id));
     if(!item)return;
     activeItem=item;
-    const original=window.__vhOriginalOpenMovie;
-    if(typeof original==="function")original(id);
+    if(typeof originalOpenMovie==="function")originalOpenMovie(id);
     else {
       $("modalTitle").textContent=item.title;
       $("modalDesc").textContent=item.description||"";
