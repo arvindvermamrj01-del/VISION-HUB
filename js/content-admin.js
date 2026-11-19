@@ -189,6 +189,11 @@
       };
     };
   }
+  window.addEventListener("vh:terabox-upload-progress", event => {
+    const detail=event.detail||{};
+    const text="TeraBox upload: chunk "+Number(detail.completed||0)+" of "+Number(detail.total||0)+" complete.";
+    ["teraboxUploadProgress","teraboxShortUploadProgress"].forEach(id=>{const node=$(id);if(node)node.textContent=text;});
+  });
   document.addEventListener("DOMContentLoaded", loadPublished);
   db.auth.onAuthStateChange((event, session) => {
     if (session?.user) loadPublished();
