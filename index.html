@@ -437,7 +437,7 @@
             <button data-vh-roles="admin" class="admin-nav-btn" onclick="adminTab('login-activity',this);loadLoginActivity()">
               <i class="fas fa-history"></i> Login Activity
             </button>
-            <button data-vh-roles="admin" class="admin-nav-btn" onclick="adminTab('team-admin',this)">
+            <button data-vh-roles="admin,sub_admin,content_editor,moderator" class="admin-nav-btn" onclick="adminTab('team-admin',this)">
               <i class="fas fa-user-shield"></i> Admins & Password
             </button>
             <button data-vh-roles="admin" class="admin-nav-btn" onclick="adminTab('settings',this)">
@@ -829,13 +829,13 @@
           </div>
 
           <!-- TAB 8: Admins, Sub-Admins & Password Management -->
-          <div data-vh-roles="admin" id="tab-team-admin" class="admin-tab">
+          <div data-vh-roles="admin,sub_admin,content_editor,moderator" id="tab-team-admin" class="admin-tab">
             <h2>🛡️ Primary Admin Credentials & Staff Roles</h2>
             
             <!-- Section 1: Change Password & Username Form -->
             <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 28px;">
-              <h3 style="margin-bottom: 6px;"><i class="fas fa-key" style="color: var(--accent);"></i> Change Admin Credentials</h3>
-              <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">Change your secure admin password. Login email is managed in Supabase; it cannot be changed here.</p>
+              <h3 style="margin-bottom: 6px;"><i class="fas fa-key" style="color: var(--accent);"></i> Change Your Password</h3>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">Update your own staff login password. Login email is managed in Supabase and cannot be changed here.</p>
               
               <form class="admin-form" onsubmit="updateAdminCredentials(event)">
                 <div class="form-row">
@@ -865,7 +865,7 @@
             </div>
 
             <!-- Section 2: Sub-Admin setup placeholder -->
-            <div id="superAdminOnlySection" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px;">
+            <div data-vh-roles="admin" id="superAdminOnlySection" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px;">
               <h3 style="margin-bottom: 6px;"><i class="fas fa-users-cog" style="color: var(--accent2);"></i> Sub-Admin Team Management</h3>
               <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">
                 Only the primary Admin can create or revoke staff accounts. Credentials are processed by a server-side Cloudflare Function; staff passwords are never stored in the website database.
