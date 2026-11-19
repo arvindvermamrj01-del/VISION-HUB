@@ -110,6 +110,8 @@
             (status!=="declined"?'<button type="button" onclick="moderateRequest('+Number(item.id)+',\'declined\')">Decline</button>':'') +
             (status!=="completed"?'<button type="button" onclick="moderateRequest('+Number(item.id)+',\'completed\')">Complete</button>':'') +
             '<button type="button" onclick="addRequestNote('+Number(item.id)+')">Add note</button><button type="button" onclick="deleteRequest('+Number(item.id)+')">Delete</button></div>' +
+            '<button type="button" onclick="setRequestPriority('+Number(item.id)+')">Priority</button></div>' +
+            '<small>Priority: '+escapeHTML(item.priority||"normal")+'</small>' +
             (item.admin_note?'<p><strong>Admin note:</strong> '+escapeHTML(item.admin_note)+'</p>':'')+'</article>';
         }).join(""):"<p>No matching requests.</p>";
       };
@@ -130,6 +132,19 @@
       notify("Request status updated.");
       await loadRequests();
     } catch (error) { notify(error.message || "Could not update request."); }
+  };
+  window.setRequestPriority = async id => {
+    const priority=window.prompt("Priority: low, normal, high, urgent","normal");
+    if(priority===null)return;
+    const value=priority.trim().toLowerCase();
+    if(!["low","normal","high","urgent"].includes(value))return notify("Choose low, normal, high or urgent.");
+    try {
+      await isAdmin();
+      const {error}=await db.from("vh_requests").update({priority:value}).eq("id",id);
+      if(error)throw error;
+      notify("Priority updated.");
+      await loadRequests();
+    } catch(error) { notify(error.message||"Could not update priority."); }
   };
   window.addRequestNote = async id => {
     const note=window.prompt("Admin note / response for this request:");
