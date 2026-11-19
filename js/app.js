@@ -29,7 +29,20 @@ window.openMovie=id=>{const m=data.find(x=>String(x.id)===String(id));if(!m)retu
 window.closeModal=()=> $("movieModal")?.classList.remove("open");window.closeModalBtn=window.closeModal;window.playMovie=()=>current?.trailer?window.open(current.trailer,"_blank","noopener"):toast("Official trailer unavailable");window.toggleWatchlist=()=>current&&toggleItem(current.id);
 window.downloadMovie=()=>toast("Only official trailers and authorised viewing links are supported.");window.openTelegram=()=>{const link=document.querySelector("a.telegram-target-link")?.href||"https://t.me/visionhub_official";window.open(link,"_blank","noopener");};window.triggerDownload=()=>toast("Unverified downloads are disabled. Use an authorised provider.");window.closePlayer=()=>{ $("playerOverlay")?.classList.remove("open");if($("playerIframe"))$("playerIframe").src=""};window.closeDownloadModal=()=> $("downloadModal")?.classList.remove("open");
 window.toggleSearch=()=>{const o=$("searchOverlay");o?.classList.toggle("open");if(o?.classList.contains("open"))$("searchInput")?.focus()};
-window.liveSearch=q=>{const t=q.trim().toLowerCase(),a=data.filter(m=>(m.title+" "+m.genre+" "+m.cast+" "+m.industry).toLowerCase().includes(t));if($("searchResults"))$("searchResults").innerHTML=t?(a.map(m=>`<button class="search-result" onclick="toggleSearch();openMovie('${safe(m.id)}')"><img src="${safe(m.poster)}" alt=""><span>${safe(m.title)}<small>${safe(m.year)} · ${safe(m.type)}</small></span></button>`).join("")||"<p>No results found.</p>"):""};
+window.liveSearch=q=>{
+  const t=String(q||"").trim().toLowerCase(),host=$("searchResults");
+  if(!host)return;
+  if(!t){
+    let recent=[];try{recent=JSON.parse(localStorage.getItem("vh_recent_searches")||"[]")}catch(_){}
+    host.innerHTML=recent.length?'<p class="search-hint">Recent searches</p>'+recent.map(term=>'<button type="button" class="search-chip" onclick="document.getElementById(\'searchInput\').value='+JSON.stringify(term)+';liveSearch('+JSON.stringify(term)+')">'+safe(term)+'</button>').join(""):'<p class="search-hint">Search by title, actor, director, genre, language, year or content type.</p>';
+    return;
+  }
+  let recent=[];try{recent=JSON.parse(localStorage.getItem("vh_recent_searches")||"[]")}catch(_){}
+  if(!recent.includes(t)){recent.unshift(t);try{localStorage.setItem("vh_recent_searches",JSON.stringify(recent.slice(0,8)))}catch(_){}}
+  const fields=m=>[m.title,m.genre,m.cast,m.director,m.industry,m.language,m.year,m.type,m.rating,m.description].join(" ").toLowerCase();
+  const matches=data.filter(m=>fields(m).includes(t));
+  host.innerHTML='<p class="search-hint">'+matches.length+' result(s)</p>'+(matches.map(m=>'<button class="search-result" onclick="toggleSearch();openMovie(\''+safe(m.id)+'\')"><img src="'+safe(m.poster)+'" alt="" loading="lazy"><span>'+safe(m.title)+'<small>'+safe([m.year,m.type,m.genre,m.language,m.director].filter(Boolean).join(" · "))+'</small></span></button>').join("")||'<div class="empty-state"><h3>No matching titles</h3><p>Try a different actor, director, genre, language or year.</p></div>');
+};
 window.toggleMenu=()=> $("navLinks")?.classList.toggle("open");
 window.submitRequest=e=>{e.preventDefault();const r={title:$("reqTitle").value.trim(),type:$("reqType").value,year:$("reqYear").value,language:$("reqLang").value,notes:$("reqNotes").value,date:new Date().toLocaleDateString()};let a=getList("vh_requests");a.unshift(r);setList("vh_requests",a);$("reqTitle").value="";$("reqNotes").value="";renderRequests();toast("Saved on this device. Backend setup is needed for team review.")};
 function renderRequests(){const a=getList("vh_requests");if($("requestsList"))$("requestsList").innerHTML=a.length?a.slice(0,8).map(x=>`<div class="request-item"><b>${safe(x.title)}</b><small>${safe(x.type)} · ${safe(x.date)}</small></div>`).join(""):"<p>No requests yet.</p>";if($("statRequests"))$("statRequests").textContent=a.length}
