@@ -54,6 +54,7 @@
           <span class="user-avatar" id="userAvatar">U</span>
           <div class="dropdown-menu" id="userDropdown">
             <a onclick="showPage('profile')"><i class="fas fa-user"></i> My Profile</a>
+            <a id="adminNavLink" class="hidden" onclick="showPage('admin')"><i class="fas fa-shield-alt"></i> Control Center</a>
             <a onclick="showPage('watchlist')"><i class="fas fa-heart"></i> Watchlist</a>
             <a onclick="showPage('request')"><i class="fas fa-paper-plane"></i> My Requests</a>
             <a onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i> Logout</a>
@@ -438,13 +439,13 @@
           </p>
 
           <div class="admin-security-pill">
-            <i class="fas fa-shield-alt"></i> Sign-in is verified by Supabase Auth, and Control Center access requires the database profile role <strong>admin</strong>.
+            <i class="fas fa-shield-alt"></i> Sign-in is verified by Supabase Auth, and Control Center access requires an authorised database staff role.
           </div>
 
           <!-- Admin Authentication Form -->
           <form id="adminLoginForm" onsubmit="adminLogin(event)">
             <div class="form-group">
-              <label>Admin Email or Username</label>
+              <label>Owner Username or Staff Email</label>
               <input type="text" id="adminUser" placeholder="admin or admin email" autocomplete="username" required/>
             </div>
             <div class="form-group">
