@@ -20,6 +20,8 @@ grid("trendingGrid",f.filter(x=>x.type==="Movie").slice(0,6));
 grid("seriesGrid",data.filter(x=>x.type==="Web Series"));
 grid("newGrid",[...data].sort((a,b)=>Number(b.year||0)-Number(a.year||0)).slice(0,6));
 grid("topRatedGrid",[...data].filter(x=>x.rating!==""&&x.rating!=null).sort((a,b)=>Number(b.rating)-Number(a.rating)).slice(0,6));
+let progressItems=[];try{progressItems=data.filter(item=>Number(localStorage.getItem("vh_progress_"+String(item.id))||0)>5).sort((a,b)=>Number(localStorage.getItem("vh_progress_"+String(b.id))||0)-Number(localStorage.getItem("vh_progress_"+String(a.id))||0)).slice(0,6);}catch(_){}
+grid("continueWatchingGrid",progressItems);$("continueWatchingSection")?.classList.toggle("hidden",!progressItems.length);
 grid("homeShortsGrid",data.filter(x=>x.type==="Short").slice(0,6));
 grid("allMoviesGrid",data.filter(x=>x.type==="Movie"&&(movieGenre==="All"||x.genre===movieGenre)));
 grid("allSeriesGrid",data.filter(x=>x.type==="Web Series"));
