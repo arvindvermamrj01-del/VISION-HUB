@@ -241,21 +241,6 @@ alter table public.vh_content add column if not exists storage_path text;
 drop policy if exists "admins upload private media" on storage.objects;
 create policy "admins upload private media" on storage.objects for insert to authenticated
 with check (bucket_id='vh-private-media' and (storage.foldername(name))[1]=auth.uid()::text and public.vh_can_manage_content());
-drop policy if exists "admins delete private media" on storage.objects;
-drop policy if exists "staff delete linked private media" on storage.objects;
-create policy "staff delete linked private media" on storage.objects for delete to authenticated
-using (
-  bucket_id='vh-private-media' and (
-    public.vh_is_admin()
-    or exists(select 1 from public.vh_content c
-              where c.storage_path=storage.objects.name
-              and public.vh_can_manage_content_item(c.content_type))
-    or exists(select 1 from public.vh_media_assets a join public.vh_content c on c.id=a.content_id
-              where a.storage_path=storage.objects.name
-              and a.storage_provider='supabase'
-              and public.vh_can_manage_content_item(c.content_type))
-  )
-);
 
 -- Legacy bucket retained for existing published links; new uploads must use vh-private-media.
 insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
@@ -401,6 +386,23 @@ create policy "main admins manage media tracks" on public.vh_media_assets for al
 using (public.vh_is_admin()) with check (public.vh_is_admin());
 grant select on public.vh_media_assets to anon, authenticated;
 grant insert, update, delete on public.vh_media_assets to authenticated;
+
+-- Staff can delete only private objects linked to content they are allowed to manage.
+drop policy if exists "admins delete private media" on storage.objects;
+drop policy if exists "staff delete linked private media" on storage.objects;
+create policy "staff delete linked private media" on storage.objects for delete to authenticated
+using (
+  bucket_id='vh-private-media' and (
+    public.vh_is_admin()
+    or exists(select 1 from public.vh_content c
+              where c.storage_path=storage.objects.name
+              and public.vh_can_manage_content_item(c.content_type))
+    or exists(select 1 from public.vh_media_assets a join public.vh_content c on c.id=a.content_id
+              where a.storage_path=storage.objects.name
+              and a.storage_provider='supabase'
+              and public.vh_can_manage_content_item(c.content_type))
+  )
+);
 
 -- Allow signed URLs only for private objects attached to published content.
 drop policy if exists "published private media signed read" on storage.objects;
