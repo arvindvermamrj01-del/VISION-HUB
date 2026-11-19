@@ -4,7 +4,7 @@
   const db = window.VH_SUPABASE;
   if (!db) return;
   const $ = id => document.getElementById(id);
-  const providers = ["supabase", "google_drive", "terabox", "telegram"];
+  const providers = ["supabase", "terabox", "mega", "degoo", "google_drive", "mediafire", "pcloud", "box", "icedrive", "koofr", "internxt", "telegram"];
   const isAdmin = async () => {
     const { data: { user }, error } = await db.auth.getUser();
     if (error || !user) throw new Error("Admin login required.");
