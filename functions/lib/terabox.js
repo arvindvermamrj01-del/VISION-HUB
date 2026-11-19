@@ -18,7 +18,7 @@ export async function supabase(env,path,options={}){
     "content-type":"application/json",...(options.headers||{})
   }});
 }
-function md5(text){
+export function md5(text){
   const bytes=new TextEncoder().encode(String(text));
   const bitLength=bytes.length*8;
   const length=Math.ceil((bytes.length+9)/64)*64;
