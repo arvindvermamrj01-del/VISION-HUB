@@ -24,12 +24,16 @@ alert(message);
 }
 
 function showPage(id) {
-document.querySelectorAll("[id^='page-']").forEach(page => {
-page.classList.add("hidden");
-});
-
-if (el(id)) el(id).classList.remove("hidden");
-
+  // Use the site's own page router so .active and .hidden never conflict.
+  const pageName = String(id || "").replace(/^page-/, "");
+  if (typeof window.showPage === "function") {
+    window.showPage(pageName);
+    return;
+  }
+  document.querySelectorAll(".page").forEach(page => {
+    page.classList.toggle("active", page.id === "page-" + pageName);
+    page.classList.toggle("hidden", page.id !== "page-" + pageName);
+  });
 }
 
 function showSignedOut() {
@@ -218,18 +222,33 @@ try {
 
 };
 
-window.logoutUser = async function () {
-const { error } = await db.auth.signOut();
+async function signOutAndReset(scope, successMessage) {
+  try {
+    const { error } = await db.auth.signOut({ scope });
+    if (error) throw error;
 
-if (error) {
-  msg(error.message);
-  return;
+    showSignedOut();
+    showPage("page-home");
+    msg(successMessage);
+  } catch (err) {
+    console.error("Sign out failed:", err);
+    msg(err.message || "Logout failed. Please try again.");
+  }
 }
 
-showSignedOut();
-showPage("page-home");
-msg("Logged out.");
+// Normal logout signs out this browser only. Use the separate button
+// when the user explicitly wants to end every active session.
+window.logoutUser = function () {
+  return signOutAndReset("local", "You have been logged out.");
+};
 
+window.logoutAllDevices = function () {
+  return signOutAndReset("global", "You have been logged out on all devices.");
+};
+
+window.adminLogout = function () {
+  window.VH_IS_ADMIN = false;
+  return signOutAndReset("local", "Admin session ended.");
 };
 
 db.auth.onAuthStateChange(async (event, session) => {
