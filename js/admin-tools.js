@@ -188,7 +188,8 @@
       };
       const rows=Object.entries(settings).map(([setting_key,setting_value])=>({setting_key,setting_value,updated_by:user.id,updated_at:new Date().toISOString()}));
       const {error}=await db.from("vh_site_settings").upsert(rows,{onConflict:"setting_key"});if(error)throw error;
-      toast("Website settings saved to Supabase. Maintenance mode is stored but does not block public pages yet.");
+      window.dispatchEvent(new CustomEvent("vh:site-settings-updated", {detail:settings}));
+      toast("Website settings saved and public site updated.");
     }catch(e){toast(e.message||"Settings could not be saved.");}finally{if(button)button.disabled=false;}
   };
   async function loadWebsiteSettings(){
