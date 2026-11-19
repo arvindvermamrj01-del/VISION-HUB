@@ -48,7 +48,7 @@ async function showSignedIn(user) {
 el("authNav")?.classList.add("hidden");
 el("userNav")?.classList.add("hidden");
 
-const name =
+let name =
   user.user_metadata?.full_name ||
   user.user_metadata?.fullname ||
   user.email ||
@@ -70,7 +70,7 @@ window.VH_IS_ADMIN = false;
 
 const { data: profile, error } = await db
   .from("profiles")
-  .select("id, role")
+  .select("id, role, fullname")
   .eq("id", user.id)
   .maybeSingle();
 
@@ -80,7 +80,7 @@ if (error) {
   return;
 }
 
-if (profile && profile.role === "admin") {
+if (profile?.fullname) {\n  name = profile.fullname;\n  if (el("profileName")) el("profileName").textContent = name;\n}\n\nif (profile && profile.role === "admin") {
   window.VH_IS_ADMIN = true;
   el("adminNav")?.classList.remove("hidden");
   el("adminNavLink")?.classList.remove("hidden");
