@@ -8,6 +8,7 @@
   const originalOpenMovie = window.openMovie;
   let activeItem = null;
   let activeVideo = null;
+  let lastProgressSave = 0;
 
   const toast = message => typeof window.toast === "function" ? window.toast(message) : window.alert(message);
   const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -322,6 +323,35 @@
     $("playerFallback")?.classList.add("active");
     activeVideo.onerror=()=>toast("Video stream nahi chal paayi. Direct file URL aur storage access check karein.");
     if(activeVideo.src!==asset.url){activeVideo.pause();activeVideo.src=asset.url;activeVideo.load();}
+    const progressKey="vh_progress_"+String(item.id);
+    let resumeApplied=false;
+    activeVideo.onloadedmetadata=async()=>{
+      if(resumeApplied)return;
+      resumeApplied=true;
+      let position=0;
+      try{position=Number(localStorage.getItem(progressKey)||0)}catch(_){}
+      try{
+        const {data:{user}}=await db.auth.getUser();
+        if(user){
+          const {data,error}=await db.from("vh_watch_progress").select("position_seconds").eq("user_id",user.id).eq("content_id",String(item.id)).maybeSingle();
+          if(!error&&data?.position_seconds)position=Number(data.position_seconds);
+        }
+      }catch(error){console.debug("Cloud resume point unavailable:",error.message);}
+      if(Number.isFinite(position)&&position>5&&position<activeVideo.duration-5)activeVideo.currentTime=position;
+    };
+    activeVideo.ontimeupdate=()=>{
+      if(!Number.isFinite(activeVideo.currentTime)||activeVideo.currentTime<1)return;
+      const position=activeVideo.currentTime;
+      try{localStorage.setItem(progressKey,String(position))}catch(_){}
+      const now=Date.now();
+      if(now-lastProgressSave<20000)return;
+      lastProgressSave=now;
+      db.auth.getUser().then(async({data:{user}})=>{
+        if(!user)return;
+        const {error}=await db.from("vh_watch_progress").upsert({user_id:user.id,content_id:String(item.id),position_seconds:position,duration_seconds:Number(activeVideo.duration)||0,updated_at:new Date().toISOString()},{onConflict:"user_id,content_id"});
+        if(error)console.debug("Watch progress sync unavailable:",error.message);
+      }).catch(()=>{});
+    };
     activeVideo.play().catch(()=>{});
     const status=$("playerOverlay")?.querySelector(".player-controls span:nth-child(2)");
     if(status)status.textContent=(asset.resolution||"Original")+" · supplied source";
