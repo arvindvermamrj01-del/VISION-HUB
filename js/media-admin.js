@@ -138,8 +138,11 @@
               }
               return "";
             };
+            const isTeraBox=item.storage_provider==="terabox"&&item.storage_path;
+            const teraBoxStream=quality=>"/api/storage/terabox/stream?path="+encodeURIComponent(item.storage_path)+"&quality="+quality;
             let baseUrl=item.video_url;
-            if(item.storage_path){
+            if(isTeraBox)baseUrl=teraBoxStream("1080");
+            else if(item.storage_path){
               const {data:signed,error:signedError}=await db.storage.from(bucket).createSignedUrl(item.storage_path,21600);
               if(signedError)throw signedError;
               baseUrl=signed.signedUrl;
@@ -152,10 +155,31 @@
             ]);
             const prior=$("vhPlayerTrackControls");prior?.remove();
             const controls=document.createElement("div");controls.id="vhPlayerTrackControls";controls.style.cssText="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0";
-            if(videoRows.length){
+            const setMediaSource=src=>{
+              const time=video.currentTime,playing=!video.paused;
+              if(window.__VH_ACTIVE_HLS){window.__VH_ACTIVE_HLS.destroy();window.__VH_ACTIVE_HLS=null;}
+              if(src.includes("/api/storage/terabox/stream")&&window.Hls&&window.Hls.isSupported()){
+                const hls=new window.Hls({enableWorker:true});window.__VH_ACTIVE_HLS=hls;
+                hls.loadSource(src);hls.attachMedia(video);
+                hls.on(window.Hls.Events.MANIFEST_PARSED,()=>{video.currentTime=time;if(playing)video.play().catch(()=>{});});
+              }else{
+                if(src.includes("/api/storage/terabox/stream")&&!video.canPlayType("application/vnd.apple.mpegurl"))throw new Error("HLS playback is not supported in this browser.");
+                video.src=src;video.load();
+                video.addEventListener("loadedmetadata",()=>{try{video.currentTime=time;}catch(_){}if(playing)video.play().catch(()=>{});},{once:true});
+              }
+            };
+            if(videoRows.length||isTeraBox){
               const q=document.createElement("select");q.setAttribute("aria-label","Video quality");
-              q.innerHTML='<option value="">Auto / Original</option>'+videoRows.map(v=>'<option value="'+esc(v.playUrl)+'">'+esc(v.resolution)+'</option>').join("");
-              q.addEventListener("change",()=>{const time=video.currentTime,playing=!video.paused;video.src=q.value||baseUrl;video.load();video.currentTime=time;if(playing)video.play().catch(()=>{});});
+              if(isTeraBox){
+                q.innerHTML='<option value="1080">TeraBox Auto 1080p</option><option value="720">720p</option><option value="480">480p</option>';
+                q.addEventListener("change",()=>setMediaSource(teraBoxStream(q.value)));
+              }
+              if(videoRows.length){
+                const other=document.createElement("optgroup");other.label="Uploaded renditions";
+                other.innerHTML=videoRows.map(v=>'<option value="'+esc(v.playUrl)+'">'+esc(v.resolution)+'</option>').join("");
+                q.appendChild(other);
+                q.addEventListener("change",()=>{if(q.value.startsWith("/api/storage/terabox/stream"))return;setMediaSource(q.value||baseUrl);});
+              }
               controls.append("Quality ",q);
             }
             if(subtitleRows.length){
@@ -174,7 +198,7 @@
               video.addEventListener("timeupdate",()=>{if(audio?.dataset.trackSelected==="1"&&Math.abs(audio.currentTime-video.currentTime)>0.35)audio.currentTime=video.currentTime;});
               controls.append("Audio ",a);
             }
-            video.src=baseUrl;video.load();
+            setMediaSource(baseUrl);
             video.parentElement.insertBefore(controls,video);
             $("playerTitle").textContent="▶ "+item.title;
             $("playerFallback").classList.add("active");$("playerOverlay").classList.add("open");
