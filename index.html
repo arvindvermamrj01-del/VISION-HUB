@@ -434,9 +434,6 @@
             <button class="admin-nav-btn" onclick="adminTab('users-admin',this)">
               <i class="fas fa-users-cog"></i> User Management
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('login-activity',this);loadLoginActivity()">
-              <i class="fas fa-history"></i> Login Activity
-            </button>
             <button class="admin-nav-btn" onclick="adminTab('team-admin',this)">
               <i class="fas fa-user-shield"></i> Admins & Password
             </button>
@@ -808,22 +805,6 @@
                   </tr>
                 </thead>
                 <tbody id="adminUsersTableBody"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Main-admin-only login audit view; SELECT is also restricted by Supabase RLS. -->
-          <div id="tab-login-activity" class="admin-tab">
-            <h2>🔐 User Login Activity</h2>
-            <p style="color: var(--text-muted); margin-bottom: 16px;">Recent sign-ins recorded by Vision Hub. Only the primary Admin account can read these records.</p>
-            <div class="admin-toolbar">
-              <button class="btn-primary" type="button" onclick="loadLoginActivity()"><i class="fas fa-sync-alt"></i> Refresh</button>
-            </div>
-            <p id="loginActivityStatus" role="status" aria-live="polite">Open this tab to load recent login events.</p>
-            <div class="user-table-container">
-              <table class="user-table">
-                <thead><tr><th>#</th><th>User</th><th>Profile ID</th><th>Role</th><th>Login Time</th></tr></thead>
-                <tbody id="loginActivityTableBody"></tbody>
               </table>
             </div>
           </div>
@@ -1241,6 +1222,5 @@
 <script src="js/maintenance-mode.js"></script>
 <script src="js/public-settings.js"></script>
 <script src="js/community-hub.js"></script>
-  <script src="js/login-activity.js"></script>
 </body>
 </html>
