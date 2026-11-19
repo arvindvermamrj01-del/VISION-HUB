@@ -1,10 +1,13 @@
-import {json,requireContentStaff,getFreshTeraBoxConnection,teraboxFolder} from "../../../../lib/terabox.js";
+import {json,requireContentStaff,getFreshTeraBoxConnection,teraboxFolder,verifyTeraBoxUploadToken} from "../../../../lib/terabox.js";
 export async function onRequestPost({request,env}){
   const auth=await requireContentStaff(request,env);if(auth.response)return auth.response;
   try{
     const data=await request.formData();
-    const path=String(data.get("path")||""),uploadid=String(data.get("uploadid")||"");
+    const uploadToken=String(data.get("upload_token")||"");
     const partseq=Number(data.get("partseq")),file=data.get("file"),expectedMd5=String(data.get("expected_md5")||"");
+    let session;try{session=await verifyTeraBoxUploadToken(uploadToken,env);}catch(_){return json({error:"TeraBox upload token is invalid or expired"},401);}
+    if(session.uid!==auth.user.id)return json({error:"TeraBox upload session belongs to another user"},403);
+    const path=String(session.path||""),uploadid=String(session.uploadid||"");
     if(!path.startsWith(teraboxFolder(env))||path.includes(".."))return json({error:"Invalid TeraBox upload path"},400);
     if(!uploadid||uploadid.length>2048||!Number.isInteger(partseq)||partseq<0||!(/^[a-f0-9]{32}$/i.test(expectedMd5))||!file||typeof file.arrayBuffer!=="function")return json({error:"Invalid upload chunk"},400);
     if(file.size<1||file.size>10*1024*1024)return json({error:"Each upload chunk must be 1 byte to 10 MiB"},400);
