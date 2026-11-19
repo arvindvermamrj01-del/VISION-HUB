@@ -83,7 +83,7 @@ async function encryptionKey(env){
 async function uploadHmacKey(env){
   return crypto.subtle.importKey("raw",encryptionKeyBytes(env),{name:"HMAC",hash:"SHA-256"},false,["sign","verify"]);
 }
-function b64url(bytes){let binary="";for(const b of bytes)binary+=String.fromCharCode(b);return btoa(binary).replace(/\\+/g,"-").replace(/\\//g,"_").replace(/=+$/g,"");}
+function b64url(bytes){let binary="";for(const b of bytes)binary+=String.fromCharCode(b);return btoa(binary).replaceAll("+","-").replaceAll("/","_").replace(/=+$/g,"");}
 function fromB64url(value){let encoded=String(value).replace(/-/g,"+").replace(/_/g,"/");while(encoded.length%4)encoded+="=";return base64ToBytes(encoded);}
 export async function signTeraBoxUploadToken(payload,env){
   const body=b64url(new TextEncoder().encode(JSON.stringify(payload)));
