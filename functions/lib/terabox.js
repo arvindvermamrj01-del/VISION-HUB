@@ -55,7 +55,7 @@ async function encryptionKey(env){
   if(!value)throw new Error("PROVIDER_TOKEN_ENCRYPTION_KEY is not configured");
   let bytes;
   if(/^[0-9a-f]{64}$/i.test(value))bytes=Uint8Array.from(value.match(/.{2}/g),x=>parseInt(x,16));
-  else bytes=base64ToBytes(value.replace(/-/g,"+").replace(/_/g,"/"));
+  else {let encoded=value.replace(/-/g,"+").replace(/_/g,"/");while(encoded.length%4)encoded+="=";bytes=base64ToBytes(encoded);}
   if(bytes.length!==32)throw new Error("PROVIDER_TOKEN_ENCRYPTION_KEY must decode to exactly 32 bytes");
   return crypto.subtle.importKey("raw",bytes,{name:"AES-GCM"},false,["encrypt","decrypt"]);
 }
