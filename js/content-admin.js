@@ -423,7 +423,7 @@
   function playAsset(item,asset) {
     if(!asset?.url){toast("Is quality ka playable URL available nahi hai.");return;}
     const provider=String(asset.storage_provider||"supabase").toLowerCase();
-    if(provider!=="supabase" && provider!=="direct"){
+    if(provider!=="supabase" && provider!=="cloudflare_r2" && provider!=="direct"){
       window.open(asset.url,"_blank","noopener");
       toast("Ye external provider link hai; playback provider ke page par khulega.");
       return;
