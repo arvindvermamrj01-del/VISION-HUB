@@ -21,7 +21,7 @@ $$;
 create or replace function public.vh_can_manage_content_item(p_content_id bigint)
 returns boolean language sql stable security definer
 set search_path = ''
-as $
+as $$
   select exists (
     select 1
     from public.profiles p
@@ -32,7 +32,7 @@ as $
         or (p.role = 'content_editor' and c.content_type <> 'Short')
       )
   );
-$;
+$$;
 
 revoke all on function public.vh_can_manage_content_item(bigint) from public;
 grant execute on function public.vh_can_manage_content_item(bigint) to authenticated;
