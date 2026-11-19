@@ -38,7 +38,7 @@ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
 $("page-"+name)?.classList.add("active");
 document.querySelectorAll(".nav-link").forEach(a=>a.classList.toggle("active",a.getAttribute("href")==="#"+name));
 $("navLinks")?.classList.remove("open");
-const pageTitles={home:"Vision Hub | Movies, Web Series & Shorts",movies:"All Movies | Vision Hub",series:"Web Series | Vision Hub",shorts:"Shorts | Vision Hub",watchlist:"My Watchlist | Vision Hub",request:"Request Content | Vision Hub",profile:"My Account | Vision Hub",login:"Sign In | Vision Hub",register:"Create Account | Vision Hub","admin-login":"Admin Login | Vision Hub",admin:"Control Center | Vision Hub"};
+const pageTitles={home:"Vision Hub | Movies, Web Series & Shorts",movies:"All Movies | Vision Hub",series:"Web Series | Vision Hub",shorts:"Shorts | Vision Hub",watchlist:"My Watchlist | Vision Hub",request:"Request Content | Vision Hub",profile:"My Account | Vision Hub",login:"Sign In | Vision Hub",register:"Create Account | Vision Hub","reset-password":"Reset Password | Vision Hub","admin-login":"Admin Login | Vision Hub",admin:"Control Center | Vision Hub"};
 document.title=pageTitles[name]||"Vision Hub";
 window.scrollTo({top:0,behavior:"smooth"});
 if(name==="watchlist")renderWatchlist();
