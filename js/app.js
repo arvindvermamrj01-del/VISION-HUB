@@ -36,6 +36,15 @@ window.togglePassword=id=>{
 };
 
 window.adminTab=(tab,el)=>{
+  const role=window.VH_ROLE||"user";
+  const access={
+    dashboard:["admin"],"add-movie":["admin","sub_admin","content_editor"],
+    "add-shorts":["admin","sub_admin","content_editor"],manage:["admin","sub_admin","content_editor"],
+    "requests-admin":["admin","sub_admin","moderator"],categories:["admin","sub_admin"],songs:["admin","sub_admin"],
+    "drive-import":["admin"],"storage-manager":["admin"],reports:["admin"],"users-admin":["admin"],
+    "login-activity":["admin"],"team-admin":["admin"],settings:["admin"]
+  };
+  if(!(access[tab]||[]).includes(role)){toast("Is section ke liye permission nahi hai.");return;}
   document.querySelectorAll(".admin-tab").forEach(x=>x.classList.remove("active"));
   $("tab-"+tab)?.classList.add("active");
   el?.parentElement?.querySelectorAll("button").forEach(x=>x.classList.toggle("active",x===el));
