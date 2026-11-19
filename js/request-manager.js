@@ -125,8 +125,7 @@
             (status!=="approved"?'<button type="button" onclick="moderateRequest('+Number(item.id)+',\'approved\')">Approve</button>':'') +
             (status!=="declined"?'<button type="button" onclick="moderateRequest('+Number(item.id)+',\'declined\')">Decline</button>':'') +
             (status!=="completed"?'<button type="button" onclick="moderateRequest('+Number(item.id)+',\'completed\')">Complete</button>':'') +
-            '<button type="button" onclick="addRequestNote('+Number(item.id)+')">Add note</button><button type="button" onclick="deleteRequest('+Number(item.id)+')">Delete</button></div>' +
-            '<button type="button" onclick="setRequestPriority('+Number(item.id)+')">Priority</button></div>' +
+            '<button type="button" onclick="addRequestNote('+Number(item.id)+')">Add note</button><button type="button" onclick="setRequestPriority('+Number(item.id)+')">Priority</button><button type="button" onclick="deleteRequest('+Number(item.id)+')">Delete</button></div>' +
             '<small>Priority: '+escapeHTML(item.priority||"normal")+'</small>' +
             (item.admin_note?'<p><strong>Admin note:</strong> '+escapeHTML(item.admin_note)+'</p>':'')+'</article>';
         }).join(""):"<p>No matching requests.</p>";
