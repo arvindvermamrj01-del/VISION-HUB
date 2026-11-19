@@ -197,10 +197,12 @@ create table if not exists public.vh_songs (
   title text not null,
   artist text,
   audio_url text not null,
+  poster_url text,
   is_published boolean not null default false,
   created_at timestamptz not null default now(),
   created_by uuid references auth.users(id) on delete set null
 );
+alter table public.vh_songs add column if not exists poster_url text;
 alter table public.vh_songs enable row level security;
 drop policy if exists "vh_songs_public_read" on public.vh_songs;
 drop policy if exists "vh_songs_admin_all" on public.vh_songs;
