@@ -14,7 +14,20 @@ return '<article class="movie-card"><button class="poster-button" onclick="openM
 }
 function grid(id,items){const el=$(id);if(el)el.innerHTML=items.length?items.map(card).join(""):'<div class="empty-state"><h3>No titles found</h3><p>Try another filter or search.</p></div>'}
 function hero(){const m=data[heroIndex%data.length];if(!m)return;current=m;if($("heroBg"))$("heroBg").style.backgroundImage=(m.backdrop||m.poster)?`url("${m.backdrop||m.poster}")`:"none";if($("heroTitle"))$("heroTitle").textContent=m.title;if($("heroDesc"))$("heroDesc").textContent=m.description;if($("heroMeta"))$("heroMeta").textContent=`${m.year} · ${m.duration} · ★ ${m.rating}`;if($("heroPlayBtn"))$("heroPlayBtn").onclick=()=>openMovie(m.id);if($("heroListBtn"))$("heroListBtn").onclick=()=>toggleItem(m.id)}
-function render(){const f=data.filter(m=>(industry==="All"||m.industry===industry)&&(genre==="All"||m.genre===genre));grid("trendingGrid",f.filter(x=>x.type==="Movie").slice(0,6));grid("seriesGrid",data.filter(x=>x.type==="Web Series"));grid("newGrid",[...data].sort((a,b)=>b.year-a.year).slice(0,6));grid("allMoviesGrid",data.filter(x=>x.type==="Movie"&&(movieGenre==="All"||x.genre===movieGenre)));grid("allSeriesGrid",data.filter(x=>x.type==="Web Series"));grid("shortsGrid",data.filter(x=>x.type==="Short"));renderWatchlist();hero()}
+function render(){
+const f=data.filter(m=>(industry==="All"||m.industry===industry)&&(genre==="All"||m.genre===genre));
+grid("trendingGrid",f.filter(x=>x.type==="Movie").slice(0,6));
+grid("seriesGrid",data.filter(x=>x.type==="Web Series"));
+grid("newGrid",[...data].sort((a,b)=>Number(b.year||0)-Number(a.year||0)).slice(0,6));
+grid("topRatedGrid",[...data].filter(x=>x.rating!==""&&x.rating!=null).sort((a,b)=>Number(b.rating)-Number(a.rating)).slice(0,6));
+grid("homeShortsGrid",data.filter(x=>x.type==="Short").slice(0,6));
+grid("allMoviesGrid",data.filter(x=>x.type==="Movie"&&(movieGenre==="All"||x.genre===movieGenre)));
+grid("allSeriesGrid",data.filter(x=>x.type==="Web Series"));
+grid("shortsGrid",data.filter(x=>x.type==="Short"));
+const genreHost=$("popularGenreLinks");
+if(genreHost){const counts=new Map();data.forEach(item=>{if(item.genre&&item.genre!=="Uncategorised")counts.set(item.genre,(counts.get(item.genre)||0)+1)});genreHost.innerHTML=[...counts].sort((a,b)=>b[1]-a[1]).slice(0,12).map(([name,count])=>'<button class="filter-btn" onclick="filterByGenre(\''+safe(name)+'\')">'+safe(name)+' · '+count+'</button>').join("")||'<p>Genres will appear as the catalog grows.</p>';}
+renderWatchlist();hero();
+}
 window.renderVisionHub=render;
 window.showPage=name=>{if(name==="login"||name==="register")name="home";if(name==="admin"&&!window.VH_IS_ADMIN){name="admin-login"}document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));$("page-"+name)?.classList.add("active");document.querySelectorAll(".nav-link").forEach(a=>a.classList.toggle("active",a.getAttribute("href")==="#"+name));$("navLinks")?.classList.remove("open");window.scrollTo({top:0,behavior:"smooth"});if(name==="watchlist")renderWatchlist()};
 window.openHiddenAdminLogin=()=>window.showPage("admin-login");
