@@ -40,6 +40,7 @@
     el("userNav")?.classList.add("hidden");
     el("adminNav")?.classList.add("hidden");
     el("adminNavLink")?.classList.add("hidden");
+    document.querySelectorAll("[data-vh-roles]").forEach(node => node.classList.add("hidden"));
   }
   async function hydrateUser(user) {
     el("authNav")?.classList.add("hidden");
@@ -136,7 +137,7 @@
     event?.preventDefault();
     const email = el("adminUser")?.value.trim();
     const password = el("adminPass")?.value;
-    if (!email || !password) return notify("Admin email aur password bharein.");
+    if (!email || !password) return notify("Staff email aur password bharein.");
     if (!email.includes("@")) return notify("Admin username login supported nahi hai. Supabase Auth email use karein.");
     const button = el("adminSubmitBtn");
     if (button) button.disabled = true;
@@ -146,7 +147,7 @@
       const { data: profile, error: profileError } = await db.from("profiles")
         .select("role").eq("id", data.user.id).maybeSingle();
       if (profileError) throw profileError;
-      if (profile?.role !== "admin") {
+      if (!["admin","sub_admin","content_editor","moderator"].includes(profile?.role)) {
         await db.auth.signOut({ scope: "local" });
         signedOutUI();
         throw new Error("Is account ko database mein admin role nahi diya gaya hai.");
@@ -154,7 +155,12 @@
       await hydrateUser(data.user);
       await recordLogin(data.user);
       navigate("admin");
-      notify("Admin login successful.");
+      const firstTab = data.user && ["admin","sub_admin","content_editor","moderator"].includes(profile.role)
+        ? (profile.role === "admin" ? "dashboard" : profile.role === "moderator" ? "requests-admin" : "add-movie")
+        : "dashboard";
+      const firstButton = document.querySelector('.admin-nav-btn[onclick*="adminTab(\\'' + firstTab + '\\'"]');
+      window.adminTab?.(firstTab, firstButton);
+      notify(profile.role === "admin" ? "Admin login successful." : "Staff login successful.");
     } catch (error) {
       console.error("Admin login failed:", error);
       notify(error.message || "Admin login failed.");
