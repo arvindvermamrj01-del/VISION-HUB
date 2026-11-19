@@ -73,6 +73,13 @@
       await requireContentStaff();
       const { data: row, error: readError } = await db.from("vh_content").select("storage_path,storage_provider,content_type").eq("id", Number(id)).maybeSingle();
       if (readError) throw readError;
+      const {data:tracks,error:tracksError}=await db.from("vh_media_assets").select("storage_path,storage_provider,asset_url").eq("content_id",Number(id));
+      if(tracksError)throw tracksError;
+      const privateTrackPaths=(tracks||[]).filter(asset=>asset.storage_provider==="supabase"&&asset.storage_path&&!String(asset.asset_url||"").includes("/object/public/vh-media/")).map(asset=>asset.storage_path);
+      if(privateTrackPaths.length){
+        const {error:removeTracksError}=await db.storage.from(BUCKET).remove(privateTrackPaths);
+        if(removeTracksError)throw removeTracksError;
+      }
       if(row?.storage_provider==="terabox"||row?.storage_provider==="google_drive"){
         const {data:{session}}=await db.auth.getSession();
         const endpoint=row.storage_provider==="terabox"?"/api/storage/terabox/file?id=":"/api/storage/google-drive/file?id=";
@@ -80,14 +87,17 @@
         const payload=await response.json();if(!response.ok)throw new Error(payload.error||"Could not remove external-storage item.");
         cleanupPending=Boolean(payload.cleanup_pending);
       }else{
+        if(row?.storage_path){
+          const {error:removeVideoError}=await db.storage.from(BUCKET).remove([row.storage_path]);
+          if(removeVideoError)throw removeVideoError;
+        }
         const { error } = await db.from("vh_content").delete().eq("id", Number(id));
         if (error) throw error;
-        if (row?.storage_path) await db.storage.from(BUCKET).remove([row.storage_path]);
       }
       window.VISION_HUB_DATA = (window.VISION_HUB_DATA || []).filter(item => !(item.isSupabaseContent && Number(item.id) === Number(id)));
       window.renderVisionHub?.();
       renderManageList($("manageSearch")?.value || "");
-      toast(cleanupPending?"Content deleted; TeraBox file cleanup is pending.":"Content deleted.");
+      toast(cleanupPending?"Content deleted; external storage cleanup is pending.":"Content deleted.");
     } catch (error) {
       console.error("Content delete failed:", error);
       toast(error.message || "Could not delete content.");
