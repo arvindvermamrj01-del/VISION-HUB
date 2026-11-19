@@ -968,6 +968,21 @@
                   <option value="on">On (Staff Access Only)</option>
                 </select>
               </div>
+              <hr/>
+              <h3>❤️ Donation Settings</h3>
+              <div class="form-group">
+                <label>UPI ID</label>
+                <input type="text" id="settingDonationUpi" placeholder="yourname@upi" autocomplete="off"/>
+              </div>
+              <div class="form-group">
+                <label>Donation QR Code Image URL (HTTPS)</label>
+                <input type="url" id="settingDonationQr" placeholder="https://.../upi-qr.png"/>
+              </div>
+              <div class="form-group">
+                <label>Donation Message</label>
+                <textarea id="settingDonationMessage" rows="2" maxlength="300">Support Vision Hub development</textarea>
+              </div>
+              <small style="color:var(--text-muted)">Only publish a UPI ID and QR code you own or are authorised to use. Payments are made in the user's UPI app and are not automatically verified by this website.</small>
               <div class="form-group">
                 <label>Google Drive Integration Status</label>
                 <p style="color: var(--success); font-weight: 600; font-size: 0.9rem;">
