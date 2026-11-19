@@ -1,120 +1,51 @@
-if (email) {
-      credentials = {
-        email,
-        password,
-        options: {
-          data: {
-            full_name: name
-          }
-        }
-      };
-    } else if (phoneNumber) {
-      credentials = {
-        phone: countryCode + phoneNumber,
-        password,
-        options: {
-          data: {
-            full_name: name
-          }
-        }
-      };
-    } else {
-      notify("Email ya phone number bhariye.");
-      return;
-    }
-
-    const { data, error } =
-      await client.auth.signUp(credentials);
-
-    if (error) {
-      notify(error.message);
-      return;
-    }
-
-    if (data.session && data.user) {
-      await showSignedIn(data.user);
-      notify("Account created successfully!");
-    } else {
-      notify(
-        "Account created. Agar email confirmation on hai, " +
-        "to email verify karke login karein."
-      );
+showSignedIn(data.user, profile);
+      if (typeof window.showPage === "function") {
+        window.showPage("admin");
+      }
+      msg("Admin login successful.");
+    } catch (err) {
+      await db.auth.signOut();
+      msg("Profile error: " + err.message);
     }
   };
 
-  // Admin login
-  window.adminLogin = async function (event) {
-    event.preventDefault();
-
-    let email = (el("adminUser")?.value || "").trim();
-    const password = el("adminPass")?.value || "";
-
-    if (!email || !password) {
-      notify("Admin username aur password bhariye.");
-      return;
-    }
-
-    if (email.toLowerCase() === "admin") {
-      email = "arvindvermamrj01@gmail.com";
-    }
-
-    const { data, error } =
-      await client.auth.signInWithPassword({
-        email,
-        password
-      });
-
-    if (error) {
-      notify(error.message);
-      return;
-    }
-
-    await showSignedIn(data.user);
-
-    if (!window.VH_IS_ADMIN) {
-      await client.auth.signOut();
-      notify("Access denied. Admin account required.");
-      return;
-    }
-
-    notify("Admin login successful!");
-
-    if (typeof window.showPage === "function") {
-      window.showPage("admin");
-    }
-  };
-
-  // Logout
   window.logoutUser = async function () {
-    const { error } = await client.auth.signOut();
+    const { error } = await db.auth.signOut();
+    if (error) return msg(error.message);
 
-    if (error) {
-      notify(error.message);
-      return;
-    }
-
-    window.VH_IS_ADMIN = false;
-
-    if (el("userNav")) {
-      el("userNav").classList.add("hidden");
-    }
-
-    if (el("authNav")) {
-      el("authNav").classList.remove("hidden");
-    }
-
-    notify("Logout successful!");
+    el("authNav")?.classList.remove("hidden");
+    el("userNav")?.classList.add("hidden");
+    el("adminNav")?.classList.add("hidden");
 
     if (typeof window.showPage === "function") {
       window.showPage("home");
     }
+    msg("Logged out.");
   };
 
   window.logoutAllDevices = async function () {
-    const { error } = await client.auth.signOut({
-      scope: "global"
-    });
+    const { error } = await db.auth.signOut({ scope: "global" });
+    if (error) return msg(error.message);
+    location.reload();
+  };
 
-    if (error) {
-      notify(error.message);
+  window.loginGuest = () => msg("Guest browsing is available.");
+
+  window.togglePassword = id => {
+    const input = el(id);
+    if (input) {
+      input.type = input.type === "password" ? "text" : "password";
     }
+  };
+
+  db.auth.getSession().then(async ({ data }) => {
+    if (!data.session) return;
+
+    try {
+      const profile = await getProfile(data.session.user);
+      showSignedIn(data.session.user, profile);
+    } catch (err) {
+      console.error("Profile load error:", err.message);
+    }
+  });
+})();
