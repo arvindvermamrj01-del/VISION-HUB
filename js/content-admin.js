@@ -21,8 +21,12 @@
   }
   async function uploadVideo(file, user, provider) {
     if (!file) return null;
+    if (provider === "terabox") {
+      if (typeof window.VH_TERABOX_UPLOAD !== "function") throw new Error("TeraBox upload module did not load.");
+      return await window.VH_TERABOX_UPLOAD(file);
+    }
     if (provider !== "supabase") {
-      throw new Error("Is provider ke liye file upload API abhi connect nahi hai. Abhi authorised video/post URL paste karein, ya Supabase select karein.");
+      throw new Error("Is provider ke liye direct upload abhi connect nahi hai. Authorised share/direct URL use karein ya Supabase/TeraBox select karein.");
     }
     if (!file.type.startsWith("video/")) throw new Error("Sirf video file upload karein.");
     const path = user.id + "/" + Date.now() + "-" + slug(file.name || "video");
@@ -37,7 +41,7 @@
       rating: row.rating || "—", language: row.language || "", duration: row.duration || "",
       poster: row.poster_url || "https://placehold.co/400x600/171b2b/ffffff?text=Vision+Hub",
       backdrop: row.poster_url || "", description: row.description || "", cast: row.cast || "",
-      trailer: row.trailer_url || "", video_url: row.video_url, storage_path: row.storage_path || null, is_short: row.content_type === "Short"
+      trailer: row.trailer_url || "", video_url: row.video_url, storage_path: row.storage_path || null, storage_provider: row.storage_provider || "supabase", is_short: row.content_type === "Short"
     };
     const list = window.VISION_HUB_DATA || (window.VISION_HUB_DATA = []);
     const index = list.findIndex(x => x.id === item.id);
@@ -62,11 +66,16 @@
     if (!Number.isFinite(Number(id)) || !window.confirm("Delete this published item permanently?")) return;
     try {
       await requireContentStaff();
-      const { data: row, error: readError } = await db.from("vh_content").select("storage_path").eq("id", Number(id)).maybeSingle();
+      const { data: row, error: readError } = await db.from("vh_content").select("storage_path,storage_provider,content_type").eq("id", Number(id)).maybeSingle();
       if (readError) throw readError;
+      if(row?.storage_provider==="terabox"&&row.storage_path){
+        const {data:{session}}=await db.auth.getSession();
+        const response=await fetch("/api/storage/terabox/file?path="+encodeURIComponent(row.storage_path),{method:"DELETE",headers:{authorization:"Bearer "+session.access_token}});
+        const payload=await response.json();if(!response.ok)throw new Error(payload.error||"Could not remove TeraBox file.");
+      }
       const { error } = await db.from("vh_content").delete().eq("id", Number(id));
       if (error) throw error;
-      if (row?.storage_path) await db.storage.from(BUCKET).remove([row.storage_path]);
+      if (row?.storage_path&&row.storage_provider!=="terabox") await db.storage.from(BUCKET).remove([row.storage_path]);
       window.VISION_HUB_DATA = (window.VISION_HUB_DATA || []).filter(item => !(item.isSupabaseContent && Number(item.id) === Number(id)));
       window.renderVisionHub?.();
       renderManageList($("manageSearch")?.value || "");
