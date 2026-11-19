@@ -213,12 +213,56 @@
     }catch(e){toast(e.message||"Password update failed.");}finally{if(button)button.disabled=false;}
   };
 
-  // These actions require trusted server-side credentials; browser-only code must never create Auth users or OAuth tokens.
-  window.addSubAdmin=event=>{event?.preventDefault();toast("Sub-admin creation requires a Supabase Edge Function with server-side Auth Admin API. No unsafe browser-side account creation was enabled.");};
-  window.importFromDrive=()=>{const log=$("driveImportLog");if(log)log.textContent="Google Drive OAuth/Picker connector is not configured. A server-side OAuth function and Google credentials are required; a share URL alone cannot securely import private files.";toast("Drive import needs a secure Google OAuth connector.");};
+  async function teamRequest(method="GET",body=null) {
+    const {data:{session},error}=await db.auth.getSession();
+    if(error||!session?.access_token)throw new Error("Admin session expired. Sign in again.");
+    const response=await fetch("/api/admin/subadmins",{
+      method,headers:{"Authorization":"Bearer "+session.access_token,"Content-Type":"application/json"},
+      ...(body?{body:JSON.stringify(body)}:{})
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Staff management request failed.");
+    return result;
+  }
+  async function loadSubAdmins() {
+    const host=$("subAdminsList");if(!host)return;
+    try {
+      await requireAdmin();
+      const result=await teamRequest("GET");
+      host.innerHTML=result.team?.length?result.team.map(member=>
+        '<article class="request-item" style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">'+
+        '<span><strong>'+esc(member.fullname||"Staff member")+'</strong><small>'+esc(String(member.role||"").replaceAll("_"," "))+' · '+esc(member.created_at?new Date(member.created_at).toLocaleDateString():"")+'</small></span>'+
+        '<button type="button" class="btn-delete" onclick="revokeSubAdmin(\''+esc(member.id)+'\')">Revoke staff access</button></article>'
+      ).join(""):"<p>No staff accounts have been created.</p>";
+    } catch(error) { host.textContent=error.message||"Staff list unavailable."; }
+  }
+  window.addSubAdmin=async event=>{
+    event?.preventDefault();
+    const form=event?.currentTarget;
+    const name=$("subName")?.value.trim();
+    const email=$("subEmail")?.value.trim().toLowerCase();
+    const password=$("subPassword")?.value||"";
+    const role=$("subRole")?.value||"";
+    const button=form?.querySelector('[type="submit"]');if(button)button.disabled=true;
+    try {
+      if(!name||!email)throw new Error("Staff name and email are required.");
+      if(password.length<12)throw new Error("Use a password with at least 12 characters.");
+      const result=await teamRequest("POST",{name,email,password,role});
+      form.reset();
+      toast("Staff account created with "+role.replaceAll("_"," ")+" permissions.");
+      await loadSubAdmins();
+    } catch(error) { toast(error.message||"Staff account could not be created."); }
+    finally { if(button)button.disabled=false; }
+  };
+  window.revokeSubAdmin=async userId=>{
+    if(!window.confirm("Remove this staff member's Vision Hub permissions? The sign-in account will remain active as a normal user."))return;
+    try{await teamRequest("DELETE",{userId});toast("Staff permissions revoked.");await loadSubAdmins();}
+    catch(error){toast(error.message||"Could not revoke staff permissions.");}
+  };
+  window.importFromDrive=()=>{const log=$("driveImportLog");if(log)log.textContent="Google Drive import is not connected yet. It still needs a Google OAuth client, Cloudflare server secret and provider consent flow.";toast("Drive import needs Google OAuth configuration.");};
 
   document.addEventListener("DOMContentLoaded",()=>{
-    const watchers=[["tab-users-admin",loadUsers],["tab-dashboard",loadDashboard],["tab-reports",loadReports],["tab-categories",loadCategories],["tab-songs",loadSongs],["tab-settings",loadWebsiteSettings]];
+    const watchers=[["tab-users-admin",loadUsers],["tab-team-admin",loadSubAdmins],["tab-dashboard",loadDashboard],["tab-reports",loadReports],["tab-categories",loadCategories],["tab-songs",loadSongs],["tab-settings",loadWebsiteSettings]];
     watchers.forEach(([id,fn])=>{const el=$(id);if(el)new MutationObserver(()=>{if(el.classList.contains("active"))fn();}).observe(el,{attributes:true,attributeFilter:["class"]});});
     db?.auth.onAuthStateChange((_event,session)=>{if(session?.user){loadDashboard();if($("tab-users-admin")?.classList.contains("active"))loadUsers();}});
     if(window.VH_IS_ADMIN)loadDashboard();
