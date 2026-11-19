@@ -116,7 +116,7 @@ create policy "Admins can delete media" on storage.objects
 create table if not exists public.vh_storage_settings (
   id smallint primary key default 1 check (id = 1),
   default_provider text not null default 'supabase'
-    check (default_provider in ('supabase','google_drive','terabox','telegram')),
+    check (default_provider in ('supabase','terabox','mega','degoo','google_drive','mediafire','pcloud','box','icedrive','koofr','internxt','telegram')),
   updated_by uuid references auth.users(id) on delete set null,
   updated_at timestamptz not null default now()
 );
@@ -144,3 +144,32 @@ on conflict (id) do nothing;
 
 alter table public.vh_content
   add column if not exists storage_provider text not null default 'supabase';
+
+
+-- Block role escalation even if another permissive UPDATE policy exists.
+create or replace function public.prevent_profile_role_escalation()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare actor_role text;
+begin
+  if new.role is distinct from old.role then
+    if auth.uid() is null then return new; end if;
+    select p.role into actor_role
+      from public.profiles as p
+     where p.id = auth.uid();
+    if actor_role is distinct from 'admin' then
+      raise exception 'Only an administrator may change profile roles'
+        using errcode = '42501';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists prevent_profile_role_escalation on public.profiles;
+create trigger prevent_profile_role_escalation
+before update of role on public.profiles
+for each row execute function public.prevent_profile_role_escalation();
