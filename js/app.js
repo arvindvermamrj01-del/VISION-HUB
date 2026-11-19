@@ -39,7 +39,7 @@ window.adminTab=(tab,el)=>{
   const role=window.VH_ROLE||"user";
   const access={
     dashboard:["admin"],"add-movie":["admin","sub_admin","content_editor"],
-    "add-shorts":["admin","sub_admin","content_editor"],manage:["admin","sub_admin","content_editor"],
+    "add-shorts":["admin","sub_admin"],manage:["admin","sub_admin","content_editor"],
     "requests-admin":["admin","sub_admin","moderator"],categories:["admin","sub_admin"],songs:["admin","sub_admin"],
     "drive-import":["admin"],"storage-manager":["admin"],reports:["admin"],"users-admin":["admin"],
     "login-activity":["admin"],"team-admin":["admin"],settings:["admin"]
