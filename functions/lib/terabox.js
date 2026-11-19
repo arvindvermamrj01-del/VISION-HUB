@@ -12,6 +12,24 @@ export async function requirePrimaryAdmin(request,env){
   if(rows?.[0]?.role!=="admin")return {response:json({error:"Only the primary Admin can connect storage providers"},403)};
   return {user};
 }
+export async function requireContentStaff(request,env){
+  if(!env.SUPABASE_URL||!env.SUPABASE_ANON_KEY||!env.SUPABASE_SERVICE_ROLE_KEY)return {response:json({error:"Supabase server configuration is missing"},503)};
+  const token=(request.headers.get("Authorization")||"").replace(/^Bearer\\s+/i,"");
+  if(!token)return {response:json({error:"Authentication required"},401)};
+  const auth=await fetch(env.SUPABASE_URL+"/auth/v1/user",{headers:{apikey:env.SUPABASE_ANON_KEY,authorization:"Bearer "+token}});
+  if(!auth.ok)return {response:json({error:"Invalid session"},401)};
+  const user=await auth.json();
+  const role=await supabase(env,"/rest/v1/profiles?id=eq."+encodeURIComponent(user.id)+"&select=role");
+  if(!role.ok)return {response:json({error:"Could not verify staff role"},503)};
+  const rows=await role.json();
+  if(!["admin","sub_admin","content_editor"].includes(rows?.[0]?.role))return {response:json({error:"Content upload permission required"},403)};
+  return {user};
+}
+export function teraboxFolder(env){
+  const folder=String(env.TERABOX_APP_FOLDER||"");
+  if(!folder.startsWith("/From: Other Applications/")||!folder.endsWith("/")||folder.includes(".."))throw new Error("Set TERABOX_APP_FOLDER to the exact application folder assigned by TeraBox.");
+  return folder;
+}
 export async function supabase(env,path,options={}){
   return fetch(env.SUPABASE_URL+"/rest/v1/"+path,{...options,headers:{
     apikey:env.SUPABASE_SERVICE_ROLE_KEY,authorization:"Bearer "+env.SUPABASE_SERVICE_ROLE_KEY,
