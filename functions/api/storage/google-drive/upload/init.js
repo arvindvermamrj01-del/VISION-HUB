@@ -18,7 +18,7 @@ export async function onRequestPost({request,env}){
     if(!sessionUrl)throw new Error("Google Drive did not return a resumable upload URL.");
     const parsed=new URL(sessionUrl);
     if(parsed.protocol!=="https:"||!parsed.hostname.endsWith(".googleapis.com")||parsed.pathname!=="/upload/drive/v3/files")throw new Error("Google Drive returned an unexpected upload URL.");
-    const uploadToken=await signGoogleState({uid:auth.user.id,exp:Date.now()+6*60*60*1000,size,session_url:sessionUrl},env.GOOGLE_OAUTH_STATE_SECRET);
+    const uploadToken=await signGoogleState({uid:auth.user.id,exp:Date.now()+24*60*60*1000,size,session_url:sessionUrl},env.GOOGLE_OAUTH_STATE_SECRET);
     return json({upload_token:uploadToken,chunk_size:8*1024*1024});
   }catch(error){return json({error:error.message||"Google Drive upload could not be initialized"},502);}
 }
