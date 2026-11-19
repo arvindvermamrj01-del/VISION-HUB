@@ -24,12 +24,13 @@ alert(message);
 }
 
 function showPage(id) {
-document.querySelectorAll("[id^='page-']").forEach(page => {
-page.classList.add("hidden");
-});
-
-if (el(id)) el(id).classList.remove("hidden");
-
+  const pageName = String(id || "").replace(/^page-/, "");
+  if (typeof window.showPage === "function") {
+    window.showPage(pageName);
+    return;
+  }
+  document.querySelectorAll(".page").forEach(page => page.classList.remove("active"));
+  el("page-" + pageName)?.classList.add("active");
 }
 
 function showSignedOut() {
@@ -129,7 +130,7 @@ try {
   }
 
   await showSignedIn(data.user);
-  showPage("page-admin");
+  showPage("admin");
   msg("Admin login successful.");
 } catch (err) {
   console.error(err);
@@ -160,7 +161,7 @@ try {
   if (error) throw error;
 
   await showSignedIn(data.user);
-  showPage("page-home");
+  showPage("home");
   msg("Login successful.");
 } catch (err) {
   console.error(err);
