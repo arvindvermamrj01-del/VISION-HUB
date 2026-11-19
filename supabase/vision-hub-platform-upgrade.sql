@@ -142,6 +142,10 @@ grant select on public.vh_media_assets to anon, authenticated;
 grant insert, update, delete on public.vh_media_assets to authenticated;
 grant usage, select on sequence public.vh_media_assets_id_seq to authenticated;
 
+-- The Category Manager supports an optional public description.
+alter table public.vh_categories
+  add column if not exists description text;
+
 -- Extend provider selectors without storing credentials in SQL.
 alter table public.vh_storage_settings drop constraint if exists vh_storage_settings_default_provider_check;
 alter table public.vh_storage_settings add constraint vh_storage_settings_default_provider_check
