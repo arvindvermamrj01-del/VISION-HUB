@@ -204,7 +204,7 @@
 
   window.updateAdminCredentials=async event=>{
     event?.preventDefault();const current=$("changeCurrPass")?.value||"",next=$("changeNewPass")?.value||"",confirm=$("changeConfirmPass")?.value||"";
-    if(next.length<10)return toast("New password must be at least 10 characters.");
+    if(next.length<12)return toast("New password must be at least 12 characters.");
     if(next!==confirm)return toast("New password and confirmation do not match.");
     const button=event?.currentTarget?.querySelector('[type="submit"]');if(button)button.disabled=true;
     try{const user=await requireAdmin();if(!user.email)throw new Error("Admin email unavailable; use Supabase password reset.");
