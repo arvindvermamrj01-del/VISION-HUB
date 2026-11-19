@@ -238,7 +238,8 @@
       const payload=await response.json();
       if(!response.ok)throw new Error(payload.error||"Could not load staff accounts.");
       const staff=payload.staff||[];
-      host.innerHTML=staff.length?staff.map(person=>'<div class="request-item"><strong>'+esc(person.fullname||"Staff")+'</strong><small>'+esc(person.role)+' · '+esc(new Date(person.created_at).toLocaleDateString())+'</small><code>'+esc(person.id)+'</code><button type="button" class="btn-delete" onclick="removeSubAdmin(\\''+esc(person.id)+'\\')">Remove access</button></div>').join(""):"<p>No staff accounts created yet.</p>";
+      host.innerHTML=staff.length?staff.map(person=>'<div class="request-item"><strong>'+esc(person.fullname||"Staff")+'</strong><small>'+esc(person.role)+' · '+esc(new Date(person.created_at).toLocaleDateString())+'</small><code>'+esc(person.id)+'</code><button type="button" class="btn-delete" data-remove-staff="'+esc(person.id)+'">Remove access</button></div>').join(""):"<p>No staff accounts created yet.</p>";
+      host.querySelectorAll("[data-remove-staff]").forEach(button=>button.addEventListener("click",()=>window.removeSubAdmin(button.dataset.removeStaff)));
     }catch(error){host.textContent=error.message||"Staff list unavailable.";}
   }
   window.addSubAdmin=async event=>{
