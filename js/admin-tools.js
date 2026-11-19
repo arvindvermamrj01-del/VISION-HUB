@@ -232,9 +232,9 @@
     if(next.length<10)return toast("New password must be at least 10 characters.");
     if(next!==confirm)return toast("New password and confirmation do not match.");
     const button=event?.currentTarget?.querySelector('[type="submit"]');if(button)button.disabled=true;
-    try{const user=await requireStaff();if(!user.email)throw new Error("Admin email unavailable; use Supabase password reset.");
+    try{const user=await requireStaff();if(!user.email)throw new Error("Staff email unavailable; use Supabase password reset.");
       const {error:reauthError}=await db.auth.signInWithPassword({email:user.email,password:current});if(reauthError)throw new Error("Current password is incorrect.");
-      const {error:updateError}=await db.auth.updateUser({password:next});if(updateError)throw updateError;event.currentTarget.reset();toast("Admin password updated.");
+      const {error:updateError}=await db.auth.updateUser({password:next});if(updateError)throw updateError;event.currentTarget.reset();toast("Password updated.");
     }catch(e){toast(e.message||"Password update failed.");}finally{if(button)button.disabled=false;}
   };
 
