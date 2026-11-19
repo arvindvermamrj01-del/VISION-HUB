@@ -463,8 +463,8 @@
               </div>
               <div class="stat-card orange">
                 <i class="fas fa-eye"></i>
-                <span id="totalViews">0</span>
-                <small>Total Stream Views</small>
+                <span id="totalViews">—</span>
+                <small>Stream Views (tracking not connected)</small>
               </div>
             </div>
 
@@ -797,7 +797,7 @@
             <!-- Section 1: Change Password & Username Form -->
             <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 28px;">
               <h3 style="margin-bottom: 6px;"><i class="fas fa-key" style="color: var(--accent);"></i> Change Admin Credentials</h3>
-              <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">Update your administrative username or set a new secure password.</p>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">Change your secure admin password. Login email is managed in Supabase; it cannot be changed here.</p>
               
               <form class="admin-form" onsubmit="updateAdminCredentials(event)">
                 <div class="form-row">
@@ -806,8 +806,8 @@
                     <input type="password" id="changeCurrPass" placeholder="Enter current password" required/>
                   </div>
                   <div class="form-group">
-                    <label>New Username (Optional)</label>
-                    <input type="text" id="changeAdminUser" placeholder="Leave blank to keep current"/>
+                    <label>Admin Login</label>
+                    <input type="text" value="Managed securely by Supabase" disabled/>
                   </div>
                 </div>
                 <div class="form-row">
@@ -1175,5 +1175,6 @@
 <script src="js/content-admin.js"></script>
 <script src="js/storage-manager.js"></script>
 <script src="js/request-manager.js"></script>
+<script src="js/admin-tools.js"></script>
 </body>
 </html>
