@@ -32,6 +32,13 @@
   });
   const originalOpen=window.openMovie;
   if(typeof originalOpen==="function"){
-    window.openMovie=function(id){track("content_view",Number(id)||null);window.VH_CURRENT_CONTENT_ID=Number(id)||null;return originalOpen.apply(this,arguments);};
+    window.openMovie=function(id){
+      // content_id is a foreign key to vh_content; demo catalogue IDs must not be sent.
+      const item=(window.VISION_HUB_DATA||[]).find(entry=>String(entry.id)===String(id));
+      const contentId=item?.isSupabaseContent?(Number(id)||null):null;
+      track("content_view",contentId);
+      window.VH_CURRENT_CONTENT_ID=contentId;
+      return originalOpen.apply(this,arguments);
+    };
   }
 })();
