@@ -1,0 +1,117 @@
+/* Vision Hub community features: feedback, improvement ideas/voting, and public changelog. */
+(() => {
+  "use strict";
+  const db = window.VH_SUPABASE;
+  const $ = id => document.getElementById(id);
+  const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const toast = message => typeof window.toast === "function" ? window.toast(message) : window.alert(message);
+  const style = "background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px;margin:14px 0;";
+  const inputStyle = "width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-primary);color:var(--text-primary);";
+  function ensurePages() {
+    const app = $("app"); if (!app || $("page-feedback")) return;
+    const nav = $("navLinks");
+    if (nav) nav.insertAdjacentHTML("beforeend",
+      '<a href="#feedback" class="nav-link" onclick="showPage(\'feedback\')">Feedback</a>' +
+      '<a href="#improvements" class="nav-link" onclick="showPage(\'improvements\')">Improvements</a>');
+    const pages = document.createElement("div");
+    pages.innerHTML = `
+      <section id="page-feedback" class="page section" style="max-width:900px;margin:32px auto;padding:24px;">
+        <h1>Send Feedback</h1><p>Report a bug, share your experience, or tell us what should improve.</p>
+        <form id="vhFeedbackForm" style="${style}">
+          <label>Feedback type</label><select id="vhFeedbackType" required style="${inputStyle};margin:8px 0 14px"><option value="Suggestion">Suggestion</option><option value="Bug report">Bug report</option><option value="Complaint">Complaint</option><option value="General">General feedback</option></select>
+          <label>Subject</label><input id="vhFeedbackSubject" maxlength="120" required placeholder="Short subject" style="${inputStyle};margin:8px 0 14px">
+          <label>Details</label><textarea id="vhFeedbackMessage" maxlength="3000" rows="5" required placeholder="Describe your feedback..." style="${inputStyle};margin:8px 0 14px"></textarea>
+          <button class="btn-primary" type="submit">Submit Feedback</button>
+        </form><div id="vhFeedbackAdmin" style="margin-top:24px"></div>
+      </section>
+      <section id="page-improvements" class="page section" style="max-width:1000px;margin:32px auto;padding:24px;">
+        <h1>Improvements & Updates</h1><p>Suggest a feature, vote for ideas, and see what has changed on Vision Hub.</p>
+        <form id="vhIdeaForm" style="${style}">
+          <h2>Suggest an Improvement</h2><input id="vhIdeaTitle" maxlength="140" required placeholder="Your idea title" style="${inputStyle};margin:8px 0 14px">
+          <textarea id="vhIdeaDescription" maxlength="2000" rows="3" placeholder="Explain how it would help..." style="${inputStyle};margin:0 0 14px"></textarea>
+          <button class="btn-primary" type="submit">Submit Idea</button>
+        </form>
+        <h2>Community Suggestions</h2><div id="vhIdeasList">Loading suggestions…</div>
+        <h2 style="margin-top:32px">Website Changelog</h2><div id="vhChangelog">Loading updates…</div>
+        <div id="vhChangelogAdmin"></div>
+      </section>`;
+    app.appendChild(pages);
+    const footer = document.querySelector(".footer-links");
+    if (footer) footer.insertAdjacentHTML("beforeend",
+      '<a href="#feedback" onclick="showPage(\'feedback\')">Feedback</a><a href="#improvements" onclick="showPage(\'improvements\')">Improvements & Updates</a>');
+    $("vhFeedbackForm")?.addEventListener("submit", submitFeedback);
+    $("vhIdeaForm")?.addEventListener("submit", submitIdea);
+  }
+  async function currentUser() {
+    if (!db) return null;
+    const {data:{user}} = await db.auth.getUser(); return user || null;
+  }
+  async function submitFeedback(event) {
+    event.preventDefault();
+    if (!db) return toast("Feedback service is not connected. Please try again later.");
+    const row = {feedback_type:$("vhFeedbackType").value,subject:$("vhFeedbackSubject").value.trim(),message:$("vhFeedbackMessage").value.trim()};
+    if (!row.subject || !row.message) return toast("Please complete all required fields.");
+    const {error} = await db.from("vh_feedback").insert(row);
+    if (error) return toast(error.message || "Feedback could not be sent.");
+    event.currentTarget.reset(); toast("Thank you! Your feedback has been submitted.");
+  }
+  async function submitIdea(event) {
+    event.preventDefault();
+    if (!db) return toast("Suggestions service is not connected yet.");
+    const title=$("vhIdeaTitle").value.trim(), description=$("vhIdeaDescription").value.trim();
+    if (!title) return toast("Please enter an idea title.");
+    const user=await currentUser();
+    if (!user) return toast("Please log in to submit and vote on improvement ideas.");
+    const {error}=await db.from("vh_ideas").insert({title,description,user_id:user.id});
+    if (error) return toast(error.message || "Idea could not be submitted.");
+    event.currentTarget.reset(); toast("Your idea has been submitted."); loadIdeas();
+  }
+  async function loadIdeas() {
+    const host=$("vhIdeasList"); if (!host) return;
+    if (!db) {host.textContent="Suggestions will appear when the database is connected.";return;}
+    const {data,error}=await db.from("vh_ideas").select("id,title,description,status,vote_count,created_at").order("vote_count",{ascending:false}).limit(100);
+    if(error){host.textContent="Could not load suggestions: "+error.message;return;}
+    host.innerHTML=(data||[]).length?(data||[]).map(x=>'<article style="'+style+'"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><strong>'+esc(x.title)+'</strong><span>'+esc(x.status||"Under review")+' · '+Number(x.vote_count||0)+' votes</span></div><p>'+esc(x.description||"")+'</p><button type="button" class="btn-primary" onclick="window.VH_voteIdea('+Number(x.id)+')">▲ Vote</button></article>').join(""):"<p>No suggestions yet. Be the first to share an idea.</p>";
+  }
+  window.VH_voteIdea=async id=>{
+    const user=await currentUser(); if(!user)return toast("Please log in to vote.");
+    const {error}=await db.from("vh_idea_votes").insert({idea_id:id,user_id:user.id});
+    if(error)return toast(error.code==="23505"?"You have already voted for this idea.":error.message||"Vote could not be saved.");
+    toast("Vote recorded.");loadIdeas();
+  };
+  async function isAdmin(){
+    const user=await currentUser(); if(!user) return false;
+    const {data,error}=await db.from("profiles").select("role").eq("id",user.id).maybeSingle();
+    return !error && data?.role==="admin";
+  }
+  async function loadAdminFeedback(){
+    const host=$("vhFeedbackAdmin"); if(!host||!await isAdmin())return;
+    const {data,error}=await db.from("vh_feedback").select("*").order("created_at",{ascending:false}).limit(100);
+    if(error){host.textContent=error.message;return;}
+    host.innerHTML="<h2>Admin: Feedback Inbox</h2>"+((data||[]).map(x=>'<article style="'+style+'"><strong>'+esc(x.subject)+'</strong> · '+esc(x.feedback_type)+'<p>'+esc(x.message)+'</p><small>Status: '+esc(x.status)+'</small><div><select id="vhfb-'+Number(x.id)+'"><option value="pending">Pending</option><option value="reviewing">Reviewing</option><option value="resolved">Resolved</option></select> <button type="button" onclick="window.VH_updateFeedback('+Number(x.id)+')">Update status</button></div></article>').join("")||"<p>No feedback yet.</p>");
+    (data||[]).forEach(x=>{const s=$("vhfb-"+x.id);if(s)s.value=x.status;});
+  }
+  window.VH_updateFeedback=async id=>{
+    if(!await isAdmin())return toast("Admin access required.");
+    const status=$("vhfb-"+id)?.value;
+    const {error}=await db.from("vh_feedback").update({status}).eq("id",id);
+    if(error)return toast(error.message);toast("Feedback status updated.");loadAdminFeedback();
+  };
+  async function loadChangelog(){
+    const host=$("vhChangelog"); if(!host)return;
+    if(!db){host.textContent="Updates will appear here.";return;}
+    const {data,error}=await db.from("vh_changelog").select("id,title,description,update_type,created_at").order("created_at",{ascending:false}).limit(100);
+    if(error){host.textContent="Could not load updates: "+error.message;return;}
+    host.innerHTML=(data||[]).length?(data||[]).map(x=>'<article style="'+style+'"><strong>'+esc(x.title)+'</strong><small style="display:block">'+esc(x.update_type)+' · '+new Date(x.created_at).toLocaleDateString()+'</small><p>'+esc(x.description)+'</p></article>').join(""):"<p>No updates published yet.</p>";
+    if(await isAdmin()) $("vhChangelogAdmin").innerHTML='<form id="vhChangelogForm" style="'+style+'"><h3>Admin: Publish Website Update</h3><input id="vhUpdateTitle" required maxlength="140" placeholder="Update title" style="'+inputStyle+';margin:8px 0"><select id="vhUpdateType" style="'+inputStyle+';margin:8px 0"><option>New Feature</option><option>Improvement</option><option>Bug Fix</option><option>Maintenance</option></select><textarea id="vhUpdateDescription" required maxlength="3000" placeholder="What changed?" style="'+inputStyle+';margin:8px 0" rows="3"></textarea><button class="btn-primary" type="submit">Publish Update</button></form>';
+    $("vhChangelogForm")?.addEventListener("submit",publishChangelog);
+  }
+  async function publishChangelog(event){
+    event.preventDefault();if(!await isAdmin())return toast("Admin access required.");
+    const {data:{user}}=await db.auth.getUser();
+    const {error}=await db.from("vh_changelog").insert({title:$("vhUpdateTitle").value.trim(),update_type:$("vhUpdateType").value,description:$("vhUpdateDescription").value.trim(),created_by:user.id});
+    if(error)return toast(error.message);toast("Website update published.");loadChangelog();
+  }
+  document.addEventListener("DOMContentLoaded",()=>{ensurePages();loadIdeas();loadChangelog();loadAdminFeedback();});
+  window.addEventListener("vh:page-shown",event=>{if(event.detail==="feedback")loadAdminFeedback();if(event.detail==="improvements"){loadIdeas();loadChangelog();}});
+})();
