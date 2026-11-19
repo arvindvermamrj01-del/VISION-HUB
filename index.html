@@ -28,6 +28,7 @@
         <a href="#south" class="nav-link" onclick="filterByIndustry('South')">South Indian</a>
         <a href="#movies" class="nav-link" onclick="showPage('movies')">Movies</a>
         <a href="#series" class="nav-link" onclick="showPage('series')">Web Series</a>
+        <a href="#shorts" class="nav-link" onclick="showPage('shorts')">Shorts</a>
         <a href="#watchlist" class="nav-link" onclick="showPage('watchlist')">Watchlist</a>
         <a href="#request" class="nav-link" onclick="showPage('request')">Request Movie</a>
       </div>
@@ -205,6 +206,17 @@
       </div>
       <section class="section">
         <div class="movies-grid" id="allSeriesGrid"></div>
+      </section>
+    </div>
+
+    <!-- SHORTS PAGE -->
+    <div id="page-shorts" class="page">
+      <div class="page-header-banner">
+        <h1>📱 Shorts</h1>
+        <p>Short videos published by Vision Hub administrators</p>
+      </div>
+      <section class="section">
+        <div class="movies-grid" id="shortsGrid"></div>
       </section>
     </div>
 
@@ -476,6 +488,7 @@
             <button class="admin-nav-btn" onclick="adminTab('add-movie',this)">
               <i class="fas fa-plus-circle"></i> Add Content
             </button>
+            <button class="admin-nav-btn" onclick="adminTab('add-shorts',this)"><i class="fas fa-video"></i> Upload Shorts</button>
             <button class="admin-nav-btn" onclick="adminTab('manage',this)">
               <i class="fas fa-film"></i> Manage Catalog
             </button>
@@ -601,7 +614,9 @@
 
               <div class="form-group">
                 <label>Main Video Stream URL / Drive Link *</label>
-                <input type="url" id="addVideo" placeholder="https://drive.google.com/file/d/... or YouTube Embed" required/>
+                <input type="url" id="addVideo" placeholder="Optional: authorised direct video URL"/>
+                <small style="color:var(--text-muted)">Or upload a video file below. Only content you own or are licensed to publish.</small>
+                <input type="file" id="addVideoFile" accept="video/*"/>
               </div>
 
               <!-- Multi-Resolution Download Link Inputs -->
@@ -668,6 +683,27 @@
               <button type="submit" class="btn-primary full-width" style="margin-top: 10px;">
                 <i class="fas fa-save"></i> Publish to Vision Hub Catalog
               </button>
+            </form>
+          </div>
+
+          <!-- TAB: Upload Shorts -->
+          <div id="tab-add-shorts" class="admin-tab">
+            <h2>📱 Upload & Publish Shorts</h2>
+            <p style="color:var(--text-muted);margin-bottom:18px;">Only upload original or properly licensed short videos.</p>
+            <form class="admin-form" onsubmit="publishShort(event)">
+              <div class="form-group">
+                <label>Short Title *</label>
+                <input type="text" id="shortTitle" placeholder="Enter short video title" required/>
+              </div>
+              <div class="form-group">
+                <label>Video File *</label>
+                <input type="file" id="shortVideoFile" accept="video/*" required/>
+              </div>
+              <div class="form-group">
+                <label>Description (Optional)</label>
+                <textarea id="shortDesc" rows="3" placeholder="Add a short description"></textarea>
+              </div>
+              <button type="submit" class="btn-primary full-width"><i class="fas fa-cloud-upload-alt"></i> Publish Short</button>
             </form>
           </div>
 
@@ -1149,5 +1185,6 @@
 <script src="js/supabase-config.js"></script>
 <script src="js/supabase-auth.js"></script>
 <script src="js/app.js"></script>
+<script src="js/content-admin.js"></script>
 </body>
 </html>
