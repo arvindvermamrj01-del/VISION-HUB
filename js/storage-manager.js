@@ -119,5 +119,5 @@
     finally{if(button)button.disabled=false;}
   };
   document.addEventListener("DOMContentLoaded",()=>{loadSettings();loadTeraBoxStatus();});
-  db.auth.onAuthStateChange((_event, session) => { if (session?.user) loadSettings(); });
+  db.auth.onAuthStateChange((_event, session) => { if (session?.user) { loadSettings(); loadTeraBoxStatus(); } });
 })();
