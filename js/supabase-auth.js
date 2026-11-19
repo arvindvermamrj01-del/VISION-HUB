@@ -158,7 +158,8 @@
       const firstTab = data.user && ["admin","sub_admin","content_editor","moderator"].includes(profile.role)
         ? (profile.role === "admin" ? "dashboard" : profile.role === "moderator" ? "requests-admin" : "add-movie")
         : "dashboard";
-      const firstButton = document.querySelector('.admin-nav-btn[onclick*="adminTab(\\'' + firstTab + '\\'"]');
+      const firstButton = Array.from(document.querySelectorAll(".admin-nav-btn"))
+        .find(button => (button.getAttribute("onclick") || "").includes("adminTab('" + firstTab + "'"));
       window.adminTab?.(firstTab, firstButton);
       notify(profile.role === "admin" ? "Admin login successful." : "Staff login successful.");
     } catch (error) {
