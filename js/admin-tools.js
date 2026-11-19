@@ -65,6 +65,73 @@
     }
   }
 
+  async function loadReports() {
+    try {
+      await requireAdmin();
+      const [eventsRes, contentRes] = await Promise.all([
+        db.from("vh_analytics_events").select("event_type,content_id,created_at").order("created_at", {ascending:false}).limit(5000),
+        db.from("vh_content").select("id,title,genre,content_type")
+      ]);
+      if (eventsRes.error) throw eventsRes.error;
+      if (contentRes.error) throw contentRes.error;
+      const events = eventsRes.data || [];
+      const catalog = new Map((contentRes.data || []).map(item => [Number(item.id), item]));
+      const countByContent = (type) => {
+        const counts = new Map();
+        events.filter(event => event.event_type === type && event.content_id != null).forEach(event => {
+          const id = Number(event.content_id);
+          counts.set(id, (counts.get(id) || 0) + 1);
+        });
+        return [...counts.entries()].sort((a,b) => b[1] - a[1]).slice(0,10)
+          .map(([id,count]) => ({item:catalog.get(id),count})).filter(x => x.item);
+      };
+      const renderRanked = (hostId, rows, empty) => {
+        const host = $(hostId); if (!host) return;
+        host.innerHTML = rows.length ? rows.map((row,index) =>
+          '<div class="request-item"><strong>' + (index+1) + '. ' + esc(row.item.title) +
+          '</strong><small>' + esc(row.item.content_type) + ' · ' + row.count + ' events</small></div>'
+        ).join("") : '<p>' + empty + '</p>';
+      };
+      renderRanked("topViewedList", countByContent("content_view"), "No content views recorded yet.");
+      renderRanked("topDownloadedList", countByContent("play_click"), "No play clicks recorded yet.");
+      const genreCounts = new Map();
+      events.filter(event => event.event_type === "content_view" && event.content_id != null).forEach(event => {
+        const item = catalog.get(Number(event.content_id));
+        if (item) {
+          const genre = item.genre || "Uncategorised";
+          genreCounts.set(genre, (genreCounts.get(genre) || 0) + 1);
+        }
+      });
+      const genreHost = $("genreChart");
+      if (genreHost) {
+        const genres = [...genreCounts.entries()].sort((a,b) => b[1]-a[1]).slice(0,8);
+        genreHost.innerHTML = genres.length ? genres.map(([name,count]) =>
+          '<div class="request-item"><strong>' + esc(name) + '</strong><small>' + count + ' content views</small></div>'
+        ).join("") : "<p>No genre activity recorded yet.</p>";
+      }
+      const monthCounts = new Map();
+      events.forEach(event => {
+        const date = new Date(event.created_at);
+        if (!Number.isNaN(date.getTime())) {
+          const key = date.toLocaleString(undefined,{month:"short",year:"numeric"});
+          monthCounts.set(key,(monthCounts.get(key)||0)+1);
+        }
+      });
+      const monthHost = $("monthlyChart");
+      if (monthHost) {
+        const months = [...monthCounts.entries()].slice(0,12).reverse();
+        monthHost.innerHTML = months.length ? months.map(([name,count]) =>
+          '<div class="request-item"><strong>' + esc(name) + '</strong><small>' + count + ' tracked events</small></div>'
+        ).join("") : "<p>No monthly activity recorded yet.</p>";
+      }
+    } catch (error) {
+      console.warn("Reports unavailable:", error);
+      ["topViewedList","topDownloadedList","genreChart","monthlyChart"].forEach(id => {
+        const host = $(id); if (host) host.textContent = error.message || "Reports unavailable.";
+      });
+    }
+  }
+
   async function loadCategories() {
     const host=$("categoriesList"); if(!host)return;
     try {
@@ -150,7 +217,7 @@
   window.importFromDrive=()=>{const log=$("driveImportLog");if(log)log.textContent="Google Drive OAuth/Picker connector is not configured. A server-side OAuth function and Google credentials are required; a share URL alone cannot securely import private files.";toast("Drive import needs a secure Google OAuth connector.");};
 
   document.addEventListener("DOMContentLoaded",()=>{
-    const watchers=[["tab-users-admin",loadUsers],["tab-dashboard",loadDashboard],["tab-categories",loadCategories],["tab-songs",loadSongs],["tab-settings",loadWebsiteSettings]];
+    const watchers=[["tab-users-admin",loadUsers],["tab-dashboard",loadDashboard],["tab-reports",loadReports],["tab-categories",loadCategories],["tab-songs",loadSongs],["tab-settings",loadWebsiteSettings]];
     watchers.forEach(([id,fn])=>{const el=$(id);if(el)new MutationObserver(()=>{if(el.classList.contains("active"))fn();}).observe(el,{attributes:true,attributeFilter:["class"]});});
     db?.auth.onAuthStateChange((_event,session)=>{if(session?.user){loadDashboard();if($("tab-users-admin")?.classList.contains("active"))loadUsers();}});
     if(window.VH_IS_ADMIN)loadDashboard();
