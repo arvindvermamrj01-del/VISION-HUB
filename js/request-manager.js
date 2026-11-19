@@ -39,8 +39,13 @@
       release_year: Number($("reqYear")?.value) || null,
       preferred_language: $("reqLang")?.value.trim() || null,
       notes: $("reqNotes")?.value.trim() || null,
-      status: "pending"
+      status: "pending",
+      requester_id: null
     };
+    try {
+      const {data:{user}} = await db.auth.getUser();
+      if (user) request.requester_id = user.id;
+    } catch (_) { /* Guest requests remain supported. */ }
     if (!db) return notify("Request service is not connected yet. Please try again later.");
     const button = event?.submitter || event?.currentTarget?.querySelector('[type="submit"]');
     if (button) button.disabled = true;
@@ -88,21 +93,29 @@
         host.textContent = "No requests have been submitted yet.";
         return;
       }
-      host.innerHTML = data.map(item => {
-        const status = item.status || "pending";
-        return '<article class="request-item" style="padding:14px;margin:10px 0;border:1px solid var(--border);border-radius:10px">' +
-          '<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><strong>' +
-          escapeHTML(item.request_title) + '</strong><span>' + escapeHTML(status.toUpperCase()) + '</span></div>' +
-          '<small>' + escapeHTML(item.content_type) + ' · ' +
-          escapeHTML(item.release_year || "Year unknown") + ' · ' +
-          escapeHTML(item.preferred_language || "Language not specified") + ' · ' +
-          escapeHTML(new Date(item.created_at).toLocaleString()) + '</small>' +
-          (item.notes ? '<p>' + escapeHTML(item.notes) + '</p>' : '') +
-          '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">' +
-          (status !== "approved" ? '<button type="button" onclick="moderateRequest(' + Number(item.id) + ',\'approved\')">Approve</button>' : '') +
-          (status !== "declined" ? '<button type="button" onclick="moderateRequest(' + Number(item.id) + ',\'declined\')">Decline</button>' : '') +
-          '<button type="button" onclick="deleteRequest(' + Number(item.id) + ')">Delete</button></div></article>';
-      }).join("");
+      host.innerHTML = '<div class="request-admin-toolbar"><input id="vhRequestFilter" type="search" placeholder="Search requests..." aria-label="Search requests"><select id="vhRequestStatus" aria-label="Filter by status"><option value="">All statuses</option><option>pending</option><option>approved</option><option>completed</option><option>declined</option></select></div><div id="vhRequestCards"></div>';
+      const cards=host.querySelector("#vhRequestCards");
+      const render=()=>{
+        const term=(host.querySelector("#vhRequestFilter")?.value||"").toLowerCase();
+        const filter=host.querySelector("#vhRequestStatus")?.value||"";
+        const visible=data.filter(item=>(!filter||(item.status||"pending")===filter)&&[item.request_title,item.content_type,item.preferred_language,item.notes].join(" ").toLowerCase().includes(term));
+        cards.innerHTML=visible.length?visible.map(item=>{
+          const status=item.status||"pending";
+          return '<article class="request-item" style="padding:14px;margin:10px 0;border:1px solid var(--border);border-radius:10px">' +
+            '<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><strong>'+escapeHTML(item.request_title)+'</strong><span>'+escapeHTML(status.toUpperCase())+'</span></div>' +
+            '<small>'+escapeHTML(item.content_type)+' · '+escapeHTML(item.release_year||"Year unknown")+' · '+escapeHTML(item.preferred_language||"Language not specified")+' · '+escapeHTML(new Date(item.created_at).toLocaleString())+'</small>' +
+            (item.notes?'<p>'+escapeHTML(item.notes)+'</p>':'') +
+            '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">' +
+            (status!=="approved"?'<button type="button" onclick="moderateRequest('+Number(item.id)+',\'approved\')">Approve</button>':'') +
+            (status!=="declined"?'<button type="button" onclick="moderateRequest('+Number(item.id)+',\'declined\')">Decline</button>':'') +
+            (status!=="completed"?'<button type="button" onclick="moderateRequest('+Number(item.id)+',\'completed\')">Complete</button>':'') +
+            '<button type="button" onclick="addRequestNote('+Number(item.id)+')">Add note</button><button type="button" onclick="deleteRequest('+Number(item.id)+')">Delete</button></div>' +
+            (item.admin_note?'<p><strong>Admin note:</strong> '+escapeHTML(item.admin_note)+'</p>':'')+'</article>';
+        }).join(""):"<p>No matching requests.</p>";
+      };
+      host.querySelector("#vhRequestFilter").addEventListener("input",render);
+      host.querySelector("#vhRequestStatus").addEventListener("change",render);
+      render();
     } catch (error) {
       host.textContent = error.message || "Could not load requests.";
     }
@@ -117,6 +130,17 @@
       notify("Request status updated.");
       await loadRequests();
     } catch (error) { notify(error.message || "Could not update request."); }
+  };
+  window.addRequestNote = async id => {
+    const note=window.prompt("Admin note / response for this request:");
+    if(note===null)return;
+    try {
+      await isAdmin();
+      const {error}=await db.from("vh_requests").update({admin_note:note.trim()||null}).eq("id",id);
+      if(error)throw error;
+      notify("Admin note saved.");
+      await loadRequests();
+    } catch(error) { notify(error.message||"Could not save note."); }
   };
   window.deleteRequest = async id => {
     if (!window.confirm("Permanently delete this request?")) return;
