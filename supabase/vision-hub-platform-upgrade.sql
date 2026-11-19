@@ -132,7 +132,7 @@ create policy "vh_media_assets_public_read" on public.vh_media_assets
   for select to anon, authenticated
   using (exists (
     select 1 from public.vh_content c
-    where c.id = vh_media_assets.content_id and (c.published = true or public.vh_is_admin())
+    where c.id = vh_media_assets.content_id and c.published = true
   ));
 create policy "vh_media_assets_staff_all" on public.vh_media_assets
   for all to authenticated
