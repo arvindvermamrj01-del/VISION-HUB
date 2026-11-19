@@ -190,11 +190,13 @@ drop policy if exists "public read published media" on storage.objects;
 create policy "public read published media" on storage.objects for select to anon, authenticated
 using (bucket_id='vh-media');
 drop policy if exists "users upload own media" on storage.objects;
-create policy "users upload own media" on storage.objects for insert to authenticated
-with check (bucket_id='vh-media' and (storage.foldername(name))[1]=auth.uid()::text);
+drop policy if exists "admins upload media" on storage.objects;
+create policy "admins upload media" on storage.objects for insert to authenticated
+with check (bucket_id='vh-media' and (storage.foldername(name))[1]=auth.uid()::text and public.vh_is_admin());
 drop policy if exists "owner or admin delete media" on storage.objects;
-create policy "owner or admin delete media" on storage.objects for delete to authenticated
-using (bucket_id='vh-media' and ((storage.foldername(name))[1]=auth.uid()::text or public.vh_is_admin()));
+drop policy if exists "admins delete media" on storage.objects;
+create policy "admins delete media" on storage.objects for delete to authenticated
+using (bucket_id='vh-media' and public.vh_is_admin());
 
 
 -- Community features: feedback inbox, improvement ideas/voting, and public changelog.
