@@ -6,6 +6,10 @@ let industry="All",genre="All",movieGenre="All",heroIndex=0,current=null;
 const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const getList=k=>{try{return JSON.parse(localStorage.getItem(k)||"[]")}catch{return []}};
 const setList=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const watchlistStorageKey=userId=>window.VH_ACCOUNT_DATA?.watchlistKey(userId)||"vh_watchlist";
+const getWatchlist=userId=>window.VH_ACCOUNT_DATA?.readWatchlist(userId)??getList(watchlistStorageKey(userId));
+const saveWatchlist=(items,userId)=>window.VH_ACCOUNT_DATA?.writeWatchlist(items,userId)??setList(watchlistStorageKey(userId),items);
+const progressStorageKey=(id,userId=window.VH_USER_ID)=>window.VH_ACCOUNT_DATA?.progressKey(id,userId)||"vh_progress_"+String(id);
 function toast(msg){const el=$("toast");if(!el)return;el.textContent=msg;el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("show"),2800)}
 function card(m){
 const poster=m.poster?'<img loading="lazy" src="'+safe(m.poster)+'" alt="'+safe(m.title)+' poster" onerror="this.replaceWith(Object.assign(document.createElement(\'div\'),{className:\'poster-empty\',textContent:\'Poster unavailable\'}))">':'<div class="poster-empty">Poster unavailable</div>';
@@ -20,7 +24,7 @@ grid("trendingGrid",f.filter(x=>x.type==="Movie").slice(0,6));
 grid("seriesGrid",data.filter(x=>x.type==="Web Series"));
 grid("newGrid",[...data].sort((a,b)=>Number(b.year||0)-Number(a.year||0)).slice(0,6));
 grid("topRatedGrid",[...data].filter(x=>x.rating!==""&&x.rating!=null).sort((a,b)=>Number(b.rating)-Number(a.rating)).slice(0,6));
-let progressItems=[];try{progressItems=data.filter(item=>Number(localStorage.getItem("vh_progress_"+String(item.id))||0)>5).sort((a,b)=>Number(localStorage.getItem("vh_progress_"+String(b.id))||0)-Number(localStorage.getItem("vh_progress_"+String(a.id))||0)).slice(0,6);}catch(_){}
+let progressItems=[];try{progressItems=data.filter(item=>Number(localStorage.getItem(progressStorageKey(item.id))||0)>5).sort((a,b)=>Number(localStorage.getItem(progressStorageKey(b.id))||0)-Number(localStorage.getItem(progressStorageKey(a.id))||0)).slice(0,6);}catch(_){}
 grid("continueWatchingGrid",progressItems);$("continueWatchingSection")?.classList.toggle("hidden",!progressItems.length);
 grid("homeShortsGrid",data.filter(x=>x.type==="Short"&&x.is_featured===true).slice(0,6));
 grid("allMoviesGrid",data.filter(x=>x.type==="Movie"&&(movieGenre==="All"||x.genre===movieGenre)));
@@ -57,11 +61,16 @@ window.filterByIndustry=(v,el)=>{industry=v;el?.parentElement?.querySelectorAll(
 window.filterByGenre=(v,el)=>{genre=v;el?.parentElement?.querySelectorAll(".filter-btn").forEach(b=>b.classList.toggle("active",b===el));render()};
 window.filterMoviesPage=(v,el)=>{movieGenre=v;el?.parentElement?.querySelectorAll(".filter-btn").forEach(b=>b.classList.toggle("active",b===el));render()};
 window.toggleItem=async id=>{
-  let a=getList("vh_watchlist").map(String),key=String(id),adding=!a.includes(key);
-  a=adding?[...a,key]:a.filter(x=>x!==key);setList("vh_watchlist",a);renderWatchlist();
   const db=window.VH_SUPABASE;
+  let user=null;
+  try{const result=await db?.auth.getUser();user=result?.data?.user||null;}catch(_){}
+  const userId=user?.id||null;
+  if(userId)window.VH_ACCOUNT_DATA?.migrateLegacy(userId);
+  let a=getWatchlist(userId).map(String),key=String(id),adding=!a.includes(key);
+  a=adding?[...a,key]:a.filter(x=>x!==key);
+  saveWatchlist(a,userId);
+  renderWatchlist();
   try{
-    const {data:{user}}=await db?.auth.getUser()||{data:{user:null}};
     if(user&&db){
       const result=adding
         ?await db.from("vh_user_watchlist").upsert({user_id:user.id,content_id:key},{onConflict:"user_id,content_id"})
@@ -72,24 +81,27 @@ window.toggleItem=async id=>{
   }catch(error){console.warn("Cloud watchlist sync unavailable; local copy retained:",error.message);toast("Saved on this device. Cloud sync needs the watchlist migration.");}
 };
 async function loadCloudWatchlist(){
-  const db=window.VH_SUPABASE;if(!db)return;
+  const db=window.VH_SUPABASE;if(!db){renderWatchlist();return;}
   try{
-    const {data:{user}}=await db.auth.getUser();if(!user)return;
+    const {data:{user}}=await db.auth.getUser();
+    if(!user){renderWatchlist();return;}
+    window.VH_USER_ID=user.id;
+    window.VH_ACCOUNT_DATA?.migrateLegacy(user.id);
     const {data:rows,error}=await db.from("vh_user_watchlist").select("content_id").eq("user_id",user.id);
     if(error)throw error;
     const cloudIds=(rows||[]).map(row=>String(row.content_id));
-    const localIds=getList("vh_watchlist").map(String);
+    const localIds=getWatchlist(user.id).map(String);
     const merged=[...new Set([...cloudIds,...localIds])];
-    setList("vh_watchlist",merged);
+    saveWatchlist(merged,user.id);
     const missing=localIds.filter(id=>!cloudIds.includes(id));
     if(missing.length){
       const {error:syncError}=await db.from("vh_user_watchlist").upsert(missing.map(content_id=>({user_id:user.id,content_id})),{onConflict:"user_id,content_id"});
-      if(syncError)console.warn("Guest watchlist items could not be merged:",syncError.message);
+      if(syncError)console.warn("Local watchlist items could not be merged:",syncError.message);
     }
     renderWatchlist();
-  }catch(error){console.warn("Cloud watchlist load unavailable:",error.message);}
+  }catch(error){console.warn("Cloud watchlist load unavailable:",error.message);renderWatchlist();}
 }
-function renderWatchlist(){const ids=getList("vh_watchlist").map(String),a=data.filter(x=>ids.includes(String(x.id)));grid("watchlistGrid",a);grid("profileWatchlistGrid",a);$("watchlistEmpty")?.classList.toggle("hidden",a.length>0);if($("statWatchlist"))$("statWatchlist").textContent=a.length}
+function renderWatchlist(){const ids=getWatchlist().map(String),a=data.filter(x=>ids.includes(String(x.id)));grid("watchlistGrid",a);grid("profileWatchlistGrid",a);$("watchlistEmpty")?.classList.toggle("hidden",a.length>0);if($("statWatchlist"))$("statWatchlist").textContent=a.length}
 window.openMovie=id=>{const m=data.find(x=>String(x.id)===String(id));if(!m)return;current=m;document.title=m.title+" ("+(m.year||"")+") | Vision Hub";const description=document.querySelector('meta[name="description"]');if(description)description.content=String(m.description||("Discover "+m.title+" on Vision Hub.")).slice(0,300);const ogTitle=document.querySelector('meta[property="og:title"]');if(ogTitle)ogTitle.content=m.title+" | Vision Hub";const ogDescription=document.querySelector('meta[property="og:description"]');if(ogDescription)ogDescription.content=String(m.description||("Discover "+m.title+" on Vision Hub.")).slice(0,300);if($("modalTitle"))$("modalTitle").textContent=m.title;if($("modalDesc"))$("modalDesc").textContent=m.description;if($("modalMeta"))$("modalMeta").textContent=`${m.year} · ${m.genre} · ${m.language} · ★ ${m.rating}`;if($("modalPoster")){ $("modalPoster").style.display=m.poster?"":"none"; if(m.poster)$("modalPoster").src=m.poster; else $("modalPoster").removeAttribute("src"); }if($("modalCast"))$("modalCast").textContent=m.cast?"Cast: "+m.cast:"";if($("modalDirector"))$("modalDirector").textContent=m.director?"Director: "+m.director:"";const shots=$("modalScreenshots");if(shots){const list=Array.isArray(m.screenshots)?m.screenshots:String(m.screenshots||"").split(",").map(x=>x.trim()).filter(Boolean);shots.innerHTML=list.length?'<h3>Preview Screenshots</h3><div class="vh-screenshot-grid">'+list.map((url,i)=>'<a href="'+safe(url)+'" target="_blank" rel="noopener"><img loading="lazy" src="'+safe(url)+'" alt="'+safe(m.title)+' screenshot '+(i+1)+'"></a>').join("")+'</div>':"";}const trailer=$("trailerEmbed");if(trailer){const raw=String(m.trailer||"");let videoId="";try{const u=new URL(raw);if(u.hostname.includes("youtu.be"))videoId=u.pathname.slice(1);else if(u.hostname.includes("youtube.com"))videoId=u.searchParams.get("v")||u.pathname.split("/").filter(Boolean).pop()||"";}catch(_){}trailer.innerHTML=videoId?'<iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/'+safe(videoId)+'" title="Official trailer" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>':""; $("trailerSection")?.classList.toggle("hidden",!videoId);} $("movieModal")?.classList.add("open");if($("modalPlayBtn"))$("modalPlayBtn").onclick=()=>m.trailer?window.open(m.trailer,"_blank","noopener"):toast("Official trailer not available");if($("modalWatchBtn"))$("modalWatchBtn").onclick=()=>toggleItem(id)};
 window.closeModal=()=> $("movieModal")?.classList.remove("open");window.closeModalBtn=window.closeModal;window.playMovie=()=>current?.trailer?window.open(current.trailer,"_blank","noopener"):toast("Official trailer unavailable");window.toggleWatchlist=()=>current&&toggleItem(current.id);
 window.downloadMovie=()=>toast("Only official trailers and authorised viewing links are supported.");window.openTelegram=()=>{const link=document.querySelector("a.telegram-target-link")?.href||"https://t.me/visionhub_official";window.open(link,"_blank","noopener");};window.triggerDownload=()=>toast("Unverified downloads are disabled. Use an authorised provider.");window.closePlayer=()=>{ $("playerOverlay")?.classList.remove("open");if($("playerIframe"))$("playerIframe").src=""};window.closeDownloadModal=()=> $("downloadModal")?.classList.remove("open");
@@ -151,7 +163,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   initTheme();
   render();
   loadCloudWatchlist();
-  window.VH_SUPABASE?.auth.onAuthStateChange((_event,session)=>{if(session?.user)loadCloudWatchlist();});
+  window.VH_SUPABASE?.auth.onAuthStateChange((_event,session)=>{if(session?.user){window.VH_USER_ID=session.user.id;window.VH_ACCOUNT_DATA?.migrateLegacy(session.user.id);loadCloudWatchlist();}else{window.VH_USER_ID=null;renderWatchlist();render();}});
   renderRequests();
   document.addEventListener("keydown",e=>{
     if(e.key==="/"&&!["INPUT","TEXTAREA"].includes(document.activeElement.tagName)){
