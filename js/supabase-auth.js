@@ -138,7 +138,7 @@
     const email = el("adminUser")?.value.trim();
     const password = el("adminPass")?.value;
     if (!email || !password) return notify("Staff email aur password bharein.");
-    if (!email.includes("@")) return notify("Admin username login supported nahi hai. Supabase Auth email use karein.");
+    if (!email.includes("@")) return notify("Control Center ke liye Supabase Auth email use karein.");
     const button = el("adminSubmitBtn");
     if (button) button.disabled = true;
     try {
