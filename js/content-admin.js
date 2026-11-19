@@ -25,6 +25,10 @@
       if (typeof window.VH_TERABOX_UPLOAD !== "function") throw new Error("TeraBox upload module did not load.");
       return await window.VH_TERABOX_UPLOAD(file);
     }
+    if (provider === "google_drive") {
+      if (typeof window.VH_GOOGLE_DRIVE_UPLOAD !== "function") throw new Error("Google Drive upload module did not load.");
+      return await window.VH_GOOGLE_DRIVE_UPLOAD(file);
+    }
     if (provider !== "supabase") {
       throw new Error("Is provider ke liye direct upload abhi connect nahi hai. Authorised share/direct URL use karein ya Supabase/TeraBox select karein.");
     }
@@ -69,9 +73,10 @@
       await requireContentStaff();
       const { data: row, error: readError } = await db.from("vh_content").select("storage_path,storage_provider,content_type").eq("id", Number(id)).maybeSingle();
       if (readError) throw readError;
-      if(row?.storage_provider==="terabox"){
+      if(row?.storage_provider==="terabox"||row?.storage_provider==="google_drive"){
         const {data:{session}}=await db.auth.getSession();
-        const response=await fetch("/api/storage/terabox/file?id="+encodeURIComponent(id),{method:"DELETE",headers:{authorization:"Bearer "+session.access_token}});
+        const endpoint=row.storage_provider==="terabox"?"/api/storage/terabox/file?id=":"/api/storage/google-drive/file?id=";
+        const response=await fetch(endpoint+encodeURIComponent(id),{method:"DELETE",headers:{authorization:"Bearer "+session.access_token}});
         const payload=await response.json();if(!response.ok)throw new Error(payload.error||"Could not remove TeraBox-backed item.");
         cleanupPending=Boolean(payload.cleanup_pending);
       }else{
@@ -115,6 +120,7 @@
     if (file) {
       const uploaded = await uploadVideo(file, user, provider);
       storagePath = uploaded.storagePath;
+      if(uploaded.videoUrl) videoUrl = uploaded.videoUrl;
     } else {
       if (!videoUrl) throw new Error("Video URL is missing.");
       let parsedVideoUrl;
