@@ -560,7 +560,7 @@
                   <option value="terabox">TeraBox (connect account first)</option>
                   <option value="mega">MEGA (about 20 GB — setup required)</option>
                   <option value="degoo">Degoo (link only; API pending)</option>
-                  <option value="google_drive">Google Drive (link only; OAuth upload pending)</option>
+                  <option value="google_drive">Google Drive (connect account first)</option>
                   <option value="mediafire">MediaFire (link only; API pending)</option>
                   <option value="pcloud">pCloud (link only; OAuth pending)</option>
                   <option value="box">Box (link only; OAuth pending)</option>
@@ -730,7 +730,7 @@
                   <option value="terabox">TeraBox (requires connected account)</option>
                   <option value="mega" disabled>MEGA (not connected)</option>
                   <option value="degoo" disabled>Degoo (not connected)</option>
-                  <option value="google_drive" disabled>Google Drive (OAuth pending)</option>
+                  <option value="google_drive">Google Drive (requires connected account)</option>
                   <option value="mediafire" disabled>MediaFire (not connected)</option>
                   <option value="pcloud" disabled>pCloud (OAuth pending)</option>
                   <option value="box" disabled>Box (OAuth pending)</option>
@@ -764,6 +764,13 @@
               </div>
               <p id="teraboxConnectionStatus" role="status" aria-live="polite">TeraBox account not connected.</p>
               <p id="teraboxQuota" style="color:var(--text-muted)"></p>
+            </div>
+            <div class="admin-form" style="margin-top:22px;">
+              <h3>Google Drive Account Connection</h3>
+              <p>Connect the primary Admin's Google Drive account through Google OAuth. Uploaded videos are shared as viewer links so the public player can embed them.</p>
+              <button id="connectGoogleDriveButton" class="btn-primary" type="button" onclick="connectGoogleDrive()">Connect Google Drive</button>
+              <p id="googleDriveConnectionStatus" role="status" aria-live="polite">Google Drive account not connected.</p>
+              <p id="googleDriveQuota" style="color:var(--text-muted)"></p>
             </div>
           </div>
 
