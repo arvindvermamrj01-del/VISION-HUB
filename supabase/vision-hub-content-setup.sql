@@ -7,6 +7,11 @@ create table if not exists public.profiles (
   role text not null default 'user' check (role in ('user', 'admin')),
   created_at timestamptz not null default now()
 );
+
+-- Bring an existing profiles table up to the columns this site expects.
+alter table public.profiles add column if not exists fullname text;
+alter table public.profiles add column if not exists role text not null default 'user';
+alter table public.profiles add column if not exists created_at timestamptz not null default now();
 alter table public.profiles enable row level security;
 
 -- Backfill profiles for accounts that already exist.
