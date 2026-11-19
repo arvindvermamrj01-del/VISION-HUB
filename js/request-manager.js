@@ -78,9 +78,10 @@
     try {
       const {data:{user},error:authError}=await db.auth.getUser();
       if(authError)throw authError;
-      if(!user){host.textContent="Sign in to view requests linked to your account.";return;}
+      if(!user){host.textContent="Sign in to view requests linked to your account.";if($("statRequests"))$("statRequests").textContent="0";return;}
       const {data,error}=await db.from("vh_requests").select("id,request_title,content_type,status,priority,admin_note,created_at").eq("requester_id",user.id).order("created_at",{ascending:false}).limit(50);
       if(error)throw error;
+      if($("statRequests"))$("statRequests").textContent=String(data?.length||0);
       host.innerHTML=data?.length?data.map(item=>'<article class="request-history-item"><strong>'+escapeHTML(item.request_title)+'</strong><small>'+escapeHTML(item.content_type)+' · '+escapeHTML(item.status||"pending")+' · '+escapeHTML(item.priority||"normal")+' · '+escapeHTML(new Date(item.created_at).toLocaleDateString())+'</small>'+(item.admin_note?'<p>'+escapeHTML(item.admin_note)+'</p>':'')+'</article>').join(""):"No account-linked requests yet.";
     } catch(error) {
       console.warn("Personal request history unavailable:",error.message);
