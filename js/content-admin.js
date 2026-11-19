@@ -96,7 +96,7 @@
       industry:row.industry || "All", genre:row.genre || "Uncategorised",
       year:row.release_year || "", rating:row.rating ?? "", language:row.language || "",
       duration:row.duration || "", poster:row.poster_url || "", backdrop:row.poster_url || "",
-      description:row.description || "", cast:row.cast || "", director:row.director || "", screenshots:Array.isArray(row.screenshots)?row.screenshots:(typeof row.screenshots==="string"?row.screenshots.split(",").map(x=>x.trim()).filter(Boolean):[]), trailer:row.trailer_url || "",
+      description:row.description || "", cast:row.cast || "", director:row.director || "", screenshots:Array.isArray(row.screenshots)?row.screenshots:(typeof row.screenshots==="string"?row.screenshots.split(",").map(x=>x.trim()).filter(Boolean):[]), trailer:row.trailer_url || "", telegram_url:row.telegram_url || "",
       video_url:primary?.url || (String(row.video_url||"").startsWith("private://") ? "" : row.video_url),
       media_assets:mappedAssets, subtitle_tracks:Array.isArray(row.subtitle_tracks)?row.subtitle_tracks:[], storage_provider:row.storage_provider||primary?.storage_provider||"supabase", is_short:row.content_type === "Short"
     };
@@ -147,7 +147,7 @@
     const modal=document.createElement("div");
     modal.id="vhEditContentModal";
     modal.className="vh-edit-modal";
-    modal.innerHTML='<section class="vh-edit-panel" role="dialog" aria-modal="true" aria-labelledby="vhEditHeading"><button type="button" class="vh-edit-close" data-vh-edit-close aria-label="Close">×</button><h2 id="vhEditHeading">Edit published content</h2><p>Update movie details. Existing video uploads and quality links will remain untouched.</p><form id="vhEditContentForm"><div class="vh-edit-grid"><label>Title *<input name="title" required maxlength="250"></label><label>Release year<input name="release_year" type="number" min="1888" max="2100"></label><label>Genre<input name="genre"></label><label>Language<input name="language"></label><label>Industry<select name="industry"><option value="All">Other / Not specified</option><option value="Bollywood">Bollywood</option><option value="Hollywood">Hollywood</option><option value="South">South Indian</option></select></label><label>Rating<input name="rating" type="number" min="0" max="10" step="0.1"></label><label>Duration<input name="duration" placeholder="e.g. 2h 15m"></label><label>Poster URL<input name="poster_url" type="url"></label><label>Trailer URL<input name="trailer_url" type="url"></label><label>Director<input name="director"></label><label>Cast<input name="cast"></label><label class="vh-edit-wide">Description<textarea name="description" rows="4"></textarea></label><label class="vh-edit-wide">Screenshots URLs (comma or new line separated)<textarea name="screenshots" rows="4" placeholder="https://..."></textarea></label><label class="vh-edit-wide">Subtitle tracks — Label|language|HTTPS .vtt URL<textarea name="subtitle_tracks" rows="3" placeholder="Hindi|hi|https://cdn.example.com/movie-hi.vtt"></textarea></label></div><div class="vh-edit-actions"><button type="button" class="btn-delete" data-vh-edit-close>Cancel</button><button type="submit" class="btn-primary">Save changes</button></div></form></section>';
+    modal.innerHTML='<section class="vh-edit-panel" role="dialog" aria-modal="true" aria-labelledby="vhEditHeading"><button type="button" class="vh-edit-close" data-vh-edit-close aria-label="Close">×</button><h2 id="vhEditHeading">Edit published content</h2><p>Update movie details. Existing video uploads and quality links will remain untouched.</p><form id="vhEditContentForm"><div class="vh-edit-grid"><label>Title *<input name="title" required maxlength="250"></label><label>Release year<input name="release_year" type="number" min="1888" max="2100"></label><label>Genre<input name="genre"></label><label>Language<input name="language"></label><label>Industry<select name="industry"><option value="All">Other / Not specified</option><option value="Bollywood">Bollywood</option><option value="Hollywood">Hollywood</option><option value="South">South Indian</option></select></label><label>Rating<input name="rating" type="number" min="0" max="10" step="0.1"></label><label>Duration<input name="duration" placeholder="e.g. 2h 15m"></label><label>Poster URL<input name="poster_url" type="url"></label><label>Trailer URL<input name="trailer_url" type="url"></label><label>Telegram Post URL<input name="telegram_url" type="url"></label><label>Director<input name="director"></label><label>Cast<input name="cast"></label><label class="vh-edit-wide">Description<textarea name="description" rows="4"></textarea></label><label class="vh-edit-wide">Screenshots URLs (comma or new line separated)<textarea name="screenshots" rows="4" placeholder="https://..."></textarea></label><label class="vh-edit-wide">Subtitle tracks — Label|language|HTTPS .vtt URL<textarea name="subtitle_tracks" rows="3" placeholder="Hindi|hi|https://cdn.example.com/movie-hi.vtt"></textarea></label></div><div class="vh-edit-actions"><button type="button" class="btn-delete" data-vh-edit-close>Cancel</button><button type="submit" class="btn-primary">Save changes</button></div></form></section>';
     document.body.appendChild(modal);
     modal.querySelectorAll("[data-vh-edit-close]").forEach(button=>button.addEventListener("click",()=>modal.classList.remove("open")));
     modal.addEventListener("click",event=>{if(event.target===modal)modal.classList.remove("open");});
@@ -186,6 +186,7 @@
     editField(form,"duration",item.duration);
     editField(form,"poster_url",item.poster);
     editField(form,"trailer_url",item.trailer);
+    editField(form,"telegram_url",item.telegram_url);
     editField(form,"director",item.director);
     editField(form,"cast",item.cast);
     editField(form,"description",item.description);
@@ -225,6 +226,7 @@
         duration:value("duration")||null,
         poster_url:optionalUrl(value("poster_url"),"Poster"),
         trailer_url:optionalUrl(value("trailer_url"),"Trailer"),
+        telegram_url:optionalUrl(value("telegram_url"),"Telegram"),
         director:value("director")||null,
         cast:value("cast")||null,
         description:value("description")||null,
@@ -323,6 +325,7 @@
         screenshots:isShort?[]:($("addScreenshots")?.value.split(/[\n,]+/).map(value=>value.trim()).filter(Boolean).map(value=>validHttpUrl(value))||[]),
         duration:isShort?"":($("addDuration")?.value.trim()||""),
         trailer_url:isShort?null:(validHttpUrl($("addTrailer")?.value.trim()||"")||null),
+        telegram_url:isShort?null:(validHttpUrl($("addTgPost")?.value.trim()||"")||null),
         subtitle_tracks:isShort?[]:parseSubtitleLines($("vhSubtitleTracks")?.value||""),
         industry:isShort?"All":($("addIndustry")?.value||"All")
       };
