@@ -20,11 +20,20 @@ revoke all on function public.vh_can_manage_requests() from public;
 revoke all on function public.vh_can_manage_catalog() from public;
 grant execute on function public.vh_is_admin() to authenticated;
 grant execute on function public.vh_can_manage_content() to authenticated;
+create or replace function public.vh_can_manage_content_item(p_content_type text)
+returns boolean language sql stable security definer set search_path=public
+as $vh$ select exists(
+  select 1 from public.profiles p where p.id=auth.uid()
+  and (p.role in ('admin','sub_admin') or (p.role='content_editor' and p_content_type='Movie'))
+); $vh$;
+revoke all on function public.vh_can_manage_content_item(text) from public;
+grant execute on function public.vh_can_manage_content_item(text) to authenticated;
+
 grant execute on function public.vh_can_manage_requests() to authenticated;
 grant execute on function public.vh_can_manage_catalog() to authenticated;
 drop policy if exists "admins manage content" on public.vh_content;
 drop policy if exists "staff manage content" on public.vh_content;
-create policy "staff manage content" on public.vh_content for all to authenticated using(public.vh_can_manage_content()) with check(public.vh_can_manage_content());
+create policy "staff manage content" on public.vh_content for all to authenticated using(public.vh_can_manage_content_item(content_type)) with check(public.vh_can_manage_content_item(content_type));
 drop policy if exists "admins manage requests" on public.vh_requests;
 drop policy if exists "staff manage requests" on public.vh_requests;
 create policy "staff manage requests" on public.vh_requests for all to authenticated using(public.vh_can_manage_requests()) with check(public.vh_can_manage_requests());
