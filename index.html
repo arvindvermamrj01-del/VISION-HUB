@@ -336,6 +336,31 @@
       </section>
     </div>
 
+    <!-- Public Supabase authentication pages -->
+    <section id="page-login" class="page">
+      <div class="auth-container"><div class="auth-box">
+        <div class="auth-brand">🎬 Vision Hub</div><h2>Welcome Back</h2>
+        <form onsubmit="loginUser(event)">
+          <div class="form-group"><label for="userEmail">Email</label><input id="userEmail" type="email" autocomplete="email" required></div>
+          <div class="form-group"><label for="userPassword">Password</label><input id="userPassword" type="password" autocomplete="current-password" required></div>
+          <button class="btn-primary full-width" type="submit">Login</button>
+        </form>
+        <p style="margin-top:16px">New here? <a href="#register" onclick="showPage('register')">Create an account</a></p>
+      </div></div>
+    </section>
+    <section id="page-register" class="page">
+      <div class="auth-container"><div class="auth-box">
+        <div class="auth-brand">🎬 Vision Hub</div><h2>Create Account</h2>
+        <form onsubmit="registerUser(event)">
+          <div class="form-group"><label for="registerName">Full name</label><input id="registerName" type="text" autocomplete="name" required></div>
+          <div class="form-group"><label for="registerEmail">Email</label><input id="registerEmail" type="email" autocomplete="email" required></div>
+          <div class="form-group"><label for="registerPassword">Password (minimum 8 characters)</label><input id="registerPassword" type="password" autocomplete="new-password" minlength="8" required></div>
+          <button class="btn-primary full-width" type="submit">Create Account</button>
+        </form>
+        <p style="margin-top:16px">Already registered? <a href="#login" onclick="showPage('login')">Login</a></p>
+      </div></div>
+    </section>
+
     <!-- 9. RESTRICTED ADMIN LOGIN PAGE -->
     <!-- Accessible strictly via #control-center or Ctrl+Shift+A; never linked in public navbar -->
     <div id="page-admin-login" class="page">
