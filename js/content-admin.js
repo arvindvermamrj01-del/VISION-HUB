@@ -111,7 +111,8 @@
       if(!user)return;
       const {data,error}=await db.from("vh_watch_progress").select("content_id,position_seconds").eq("user_id",user.id);
       if(error)throw error;
-      (data||[]).forEach(row=>{try{localStorage.setItem("vh_progress_"+String(row.content_id),String(row.position_seconds||0));}catch(_){}});
+      window.VH_ACCOUNT_DATA?.migrateLegacy(user.id);
+      (data||[]).forEach(row=>window.VH_ACCOUNT_DATA?.setProgress(row.content_id,row.position_seconds,user.id));
     } catch(error) {
       console.debug("Continue-watching cloud sync unavailable:",error.message);
     }
@@ -459,16 +460,18 @@
     $("playerIframe")?.classList.add("hidden");
     $("playerFallback")?.classList.add("active");
     activeVideo.onerror=()=>toast("Video stream nahi chal paayi. Direct file URL aur storage access check karein.");
-    if(activeVideo.src!==asset.url){activeVideo.pause();activeVideo.src=asset.url;activeVideo.load();}
     const video=activeVideo;
-    const progressKey="vh_progress_"+String(item.id);
+    let playbackUserId=window.VH_USER_ID||null;
+    const progressKey=()=>window.VH_ACCOUNT_DATA?.progressKey(item.id,playbackUserId)||("vh_progress_"+String(item.id));
     if(activeProgressContentId!==String(item.id)){activeProgressContentId=String(item.id);lastProgressSave=0;}
     let resumeApplied=false;
     const persistPosition=(position,duration=video.duration)=>{
       if(!Number.isFinite(position)||position<1)return;
-      try{localStorage.setItem(progressKey,String(position))}catch(_){}
+      try{window.VH_ACCOUNT_DATA?.setProgress(item.id,position,playbackUserId);if(!window.VH_ACCOUNT_DATA)localStorage.setItem(progressKey(),String(position));}catch(_){}
       db.auth.getUser().then(async({data:{user}})=>{
         if(!user)return;
+        playbackUserId=user.id;
+        window.VH_ACCOUNT_DATA?.setProgress(item.id,position,user.id);
         const {error}=await db.from("vh_watch_progress").upsert({
           user_id:user.id,content_id:String(item.id),position_seconds:position,
           duration_seconds:Number(duration)||0,updated_at:new Date().toISOString()
@@ -480,12 +483,17 @@
       if(resumeApplied)return;
       resumeApplied=true;
       let position=0;
-      try{position=Number(localStorage.getItem(progressKey)||0)}catch(_){}
       try{
         const {data:{user}}=await db.auth.getUser();
         if(user){
+          playbackUserId=user.id;
+          window.VH_ACCOUNT_DATA?.migrateLegacy(user.id);
+          position=window.VH_ACCOUNT_DATA?.getProgress(item.id,user.id)||0;
           const {data,error}=await db.from("vh_watch_progress").select("position_seconds").eq("user_id",user.id).eq("content_id",String(item.id)).maybeSingle();
           if(!error&&data?.position_seconds)position=Number(data.position_seconds);
+        }else{
+          playbackUserId=null;
+          position=window.VH_ACCOUNT_DATA?.getProgress(item.id,null)||Number(localStorage.getItem(progressKey())||0);
         }
       }catch(error){console.debug("Cloud resume point unavailable:",error.message);}
       if(video!==$("playerFallback")?.querySelector("video"))return;
@@ -505,9 +513,11 @@
       }
     };
     video.onended=()=>{
-      try{localStorage.setItem(progressKey,"0")}catch(_){}
+      try{window.VH_ACCOUNT_DATA?.setProgress(item.id,0,playbackUserId);if(!window.VH_ACCOUNT_DATA)localStorage.setItem(progressKey(),"0");}catch(_){}
       db.auth.getUser().then(async({data:{user}})=>{
         if(!user)return;
+        playbackUserId=user.id;
+        window.VH_ACCOUNT_DATA?.setProgress(item.id,0,user.id);
         const {error}=await db.from("vh_watch_progress").upsert({
           user_id:user.id,content_id:String(item.id),position_seconds:0,
           duration_seconds:Number(video.duration)||0,updated_at:new Date().toISOString()
