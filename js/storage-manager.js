@@ -45,7 +45,7 @@
       const user = await isAdmin();
       const provider = $("defaultStorageProvider")?.value || "supabase";
       if (!providers.includes(provider)) throw new Error("Invalid storage provider.");
-      if (!directUploadProviders.includes(provider)) throw new Error("Only Supabase and a connected TeraBox account support direct file uploads right now. Other provider connectors are still being integrated.");
+      if (!directUploadProviders.includes(provider)) throw new Error("Only Supabase, connected TeraBox and connected Google Drive accounts support direct file uploads right now. Other provider connectors are still being integrated.");
       const { error } = await db.from("vh_storage_settings").upsert({
         id: 1, default_provider: provider, updated_by: user.id, updated_at: new Date().toISOString()
       }, { onConflict: "id" });
