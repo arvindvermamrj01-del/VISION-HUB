@@ -104,17 +104,17 @@
     const host=$("manageList");if(!host)return;
     const term=String(query).trim().toLowerCase();
     const items=(window.VISION_HUB_DATA||[]).filter(item=>item.isSupabaseContent&&[item.title,item.type,item.genre,item.language,item.industry].join(" ").toLowerCase().includes(term));
-    host.innerHTML=items.length?items.map(item=>'<article class="manage-item"><div><strong>'+esc(item.title)+'</strong><small>'+esc(item.type)+' · '+esc(item.year)+' · '+esc(item.genre)+'</small></div><button type="button" class="btn-delete" onclick="deletePublishedContent('+Number(item.id)+')">Delete</button></article>').join(""):"<p>No published content found.</p>";
+    host.innerHTML=items.length?items.map(item=>'<article class="manage-item"><div><strong>'+esc(item.title)+'</strong><small>'+esc(item.type)+' · '+esc(item.year)+' · '+esc(item.genre)+'</small></div><button type="button" class="btn-delete" onclick="deletePublishedContent(\\'"+esc(item.id)+"\\')">Delete</button></article>').join(""):"<p>No published content found.</p>";
   }
   window.filterManageList=value=>renderManageList(value);
 
   window.deletePublishedContent=async id=>{
-    if(!Number.isFinite(Number(id))||!window.confirm("Delete this published item permanently?"))return;
+    if(id==null||!window.confirm("Delete this published item permanently?"))return;
     try{
       await requireAdmin();
-      const {error}=await db.from("vh_content").delete().eq("id",Number(id));
+      const {error}=await db.from("vh_content").delete().eq("id",id);
       if(error)throw error;
-      window.VISION_HUB_DATA=(window.VISION_HUB_DATA||[]).filter(item=>!(item.isSupabaseContent&&Number(item.id)===Number(id)));
+      const catalog=window.VISION_HUB_DATA||[];for(let i=catalog.length-1;i>=0;i--){if(catalog[i].isSupabaseContent&&String(catalog[i].id)===String(id))catalog.splice(i,1);}
       window.renderVisionHub?.();renderManageList($("manageSearch")?.value||"");toast("Content deleted.");
     }catch(error){console.error("Content delete failed:",error);toast(error.message||"Could not delete content.");}
   };
