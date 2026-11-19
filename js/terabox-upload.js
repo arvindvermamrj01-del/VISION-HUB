@@ -32,11 +32,11 @@
     for(let i=0;i<parts.length;i++){
       const partseq=Number(parts[i]);
       const chunk=file.slice(partseq*chunkSize,Math.min(file.size,(partseq+1)*chunkSize));
-      const form=new FormData();form.set("path",init.path);form.set("uploadid",init.uploadid);form.set("partseq",String(partseq));form.set("expected_md5",hashes[partseq]);form.set("file",chunk,"chunk.bin");
+      const form=new FormData();form.set("upload_token",init.upload_token);form.set("partseq",String(partseq));form.set("expected_md5",hashes[partseq]);form.set("file",chunk,"chunk.bin");
       await api("/api/storage/terabox/upload/part",{method:"POST",body:form});
       window.dispatchEvent(new CustomEvent("vh:terabox-upload-progress",{detail:{completed:i+1,total:parts.length}}));
     }
-    const complete=await api("/api/storage/terabox/upload/complete",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({path:init.path,uploadid:init.uploadid,size:file.size,block_md5s:hashes})});
+    const complete=await api("/api/storage/terabox/upload/complete",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({upload_token:init.upload_token,size:file.size,block_md5s:hashes})});
     return {storagePath:complete.path||init.path,fileId:complete.file?.fs_id||null};
   };
 })();
