@@ -177,7 +177,7 @@ window.resetUserPassword = async function () {
   const email = el("userLoginEmail")?.value?.trim().toLowerCase();
   if (!email) return msg("Enter your email address first.");
   try {
-    const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+    const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname + "#reset-password" });
     if (error) throw error;
     msg("Password reset email sent. Check your inbox.");
   } catch (error) { msg(error.message || "Password reset could not be sent."); }
@@ -265,15 +265,36 @@ window.adminLogout = function () {
   return signOutAndReset("local", "Admin session ended.");
 };
 
+window.completePasswordReset = async function (event) {
+  event?.preventDefault();
+  const password = el("resetNewPassword")?.value || "";
+  const confirm = el("resetConfirmPassword")?.value || "";
+  const button = event?.currentTarget?.querySelector('[type="submit"]');
+  if (password.length < 12) return msg("Use a password with at least 12 characters.");
+  if (password !== confirm) return msg("The two passwords do not match.");
+  if (button) button.disabled = true;
+  try {
+    const { error } = await db.auth.updateUser({ password });
+    if (error) throw error;
+    event.currentTarget.reset();
+    showPage("home");
+    msg("Your password has been reset successfully.");
+  } catch (error) {
+    msg(error.message || "Password reset could not be completed. Open the latest reset email.");
+  } finally { if (button) button.disabled = false; }
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   el("userLoginForm")?.addEventListener("submit", window.loginUser);
   el("userRegisterForm")?.addEventListener("submit", window.registerUser);
+  el("userResetPasswordForm")?.addEventListener("submit", window.completePasswordReset);
   el("forgotPasswordLink")?.addEventListener("click", event => { event.preventDefault(); window.resetUserPassword(); });
 });
 
 db.auth.onAuthStateChange(async (event, session) => {
 if (session?.user) {
 setTimeout(() => showSignedIn(session.user), 0);
+if (event === "PASSWORD_RECOVERY") setTimeout(() => showPage("reset-password"), 0);
 } else {
 showSignedOut();
 }
