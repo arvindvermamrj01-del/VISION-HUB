@@ -66,21 +66,21 @@
     }
   };
 
-  async function isAdmin() {
+  async function requireRequestStaff() {
     if (!db) throw new Error("Supabase is not connected.");
     const { data: { user }, error } = await db.auth.getUser();
     if (error || !user) throw new Error("Admin login required.");
     const { data: profile, error: profileError } = await db.from("profiles")
       .select("role").eq("id", user.id).maybeSingle();
     if (profileError) throw profileError;
-    if (profile?.role !== "admin") throw new Error("Admin permission required.");
+    if (!["admin","sub_admin","moderator"].includes(profile?.role)) throw new Error("Request moderation permission required.");
     return user;
   }
   async function loadRequests() {
     const host = $("adminRequestsList");
     if (!host || !db) return;
     try {
-      await isAdmin();
+      await requireRequestStaff();
       const { data, error } = await db.from("vh_requests").select("*")
         .order("created_at", { ascending: false }).limit(200);
       if (error) throw error;
@@ -109,7 +109,7 @@
   }
   window.moderateRequest = async (id, status) => {
     try {
-      const user = await isAdmin();
+      const user = await requireRequestStaff();
       const { error } = await db.from("vh_requests").update({
         status, reviewed_at: new Date().toISOString(), reviewed_by: user.id
       }).eq("id", id);
@@ -121,7 +121,7 @@
   window.deleteRequest = async id => {
     if (!window.confirm("Permanently delete this request?")) return;
     try {
-      await isAdmin();
+      await requireRequestStaff();
       const { error } = await db.from("vh_requests").delete().eq("id", id);
       if (error) throw error;
       notify("Request deleted.");
