@@ -20,7 +20,10 @@ export async function onRequestPost({request,env}){
     const permission=await fetch("https://www.googleapis.com/drive/v3/files/"+encodeURIComponent(payload.id)+"/permissions?supportsAllDrives=true&fields=id",{
       method:"POST",headers:{authorization:"Bearer "+connection.access_token,"content-type":"application/json"},body:JSON.stringify({type:"anyone",role:"reader"})
     });
-    if(!permission.ok)throw new Error("Upload completed, but Google Drive could not make the file public for playback.");
+    if(!permission.ok){
+      await fetch("https://www.googleapis.com/drive/v3/files/"+encodeURIComponent(payload.id)+"?supportsAllDrives=true",{method:"DELETE",headers:{authorization:"Bearer "+connection.access_token}}).catch(()=>{});
+      throw new Error("Upload completed, but Google Drive could not make the file public for playback. The incomplete file was removed where possible.");
+    }
     return json({complete:true,file:{id:payload.id,name:payload.name||"",size:Number(payload.size||total),webViewLink:payload.webViewLink||""},preview_url:"https://drive.google.com/file/d/"+encodeURIComponent(payload.id)+"/preview"});
   }catch(error){return json({error:error.message||"Google Drive chunk upload failed"},502);}
 }
