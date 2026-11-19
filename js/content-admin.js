@@ -30,7 +30,7 @@
       return await window.VH_GOOGLE_DRIVE_UPLOAD(file);
     }
     if (provider !== "supabase") {
-      throw new Error("Is provider ke liye direct upload abhi connect nahi hai. Authorised share/direct URL use karein ya Supabase/TeraBox select karein.");
+      throw new Error("Is provider ke liye direct upload abhi connect nahi hai. Authorised share/direct URL use karein ya Supabase/TeraBox/Google Drive select karein.");
     }
     if (!file.type.startsWith("video/")) throw new Error("Sirf video file upload karein.");
     const path = user.id + "/" + Date.now() + "-" + slug(file.name || "video");
@@ -77,7 +77,7 @@
         const {data:{session}}=await db.auth.getSession();
         const endpoint=row.storage_provider==="terabox"?"/api/storage/terabox/file?id=":"/api/storage/google-drive/file?id=";
         const response=await fetch(endpoint+encodeURIComponent(id),{method:"DELETE",headers:{authorization:"Bearer "+session.access_token}});
-        const payload=await response.json();if(!response.ok)throw new Error(payload.error||"Could not remove TeraBox-backed item.");
+        const payload=await response.json();if(!response.ok)throw new Error(payload.error||"Could not remove external-storage item.");
         cleanupPending=Boolean(payload.cleanup_pending);
       }else{
         const { error } = await db.from("vh_content").delete().eq("id", Number(id));
