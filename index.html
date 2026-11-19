@@ -415,7 +415,7 @@
             <button data-vh-roles="admin,sub_admin,content_editor" class="admin-nav-btn" onclick="adminTab('add-movie',this)">
               <i class="fas fa-plus-circle"></i> Add Content
             </button>
-            <button data-vh-roles="admin,sub_admin,content_editor" class="admin-nav-btn" onclick="adminTab('add-shorts',this)"><i class="fas fa-video"></i> Upload Shorts</button>
+            <button data-vh-roles="admin,sub_admin" class="admin-nav-btn" onclick="adminTab('add-shorts',this)"><i class="fas fa-video"></i> Upload Shorts</button>
             <button data-vh-roles="admin,sub_admin,content_editor" class="admin-nav-btn" onclick="adminTab('manage',this)">
               <i class="fas fa-film"></i> Manage Catalog
             </button>
@@ -640,7 +640,7 @@
           </div>
 
           <!-- TAB: Upload Shorts -->
-          <div data-vh-roles="admin,sub_admin,content_editor" id="tab-add-shorts" class="admin-tab">
+          <div data-vh-roles="admin,sub_admin" id="tab-add-shorts" class="admin-tab">
             <h2>📱 Upload & Publish Shorts</h2>
             <p style="color:var(--text-muted);margin-bottom:18px;">Only upload original or properly licensed short videos.</p>
             <form class="admin-form" onsubmit="publishShort(event)">
