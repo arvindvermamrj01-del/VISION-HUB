@@ -14,6 +14,7 @@
     return user;
   };
   async function loadSettings() {
+    if (!document.getElementById("page-admin")?.classList.contains("active")) return;
     try {
       await isAdmin();
       const { data, error } = await db.from("vh_storage_settings").select("default_provider").eq("id", 1).maybeSingle();
@@ -62,6 +63,11 @@
       if (button) button.disabled = false;
     }
   };
-  document.addEventListener("DOMContentLoaded", loadSettings);
+  document.addEventListener("DOMContentLoaded", () => {
+    const adminPage = document.getElementById("page-admin");
+    if (adminPage) new MutationObserver(() => { if (adminPage.classList.contains("active")) loadSettings(); })
+      .observe(adminPage, {attributes:true, attributeFilter:["class"]});
+    loadSettings();
+  });
   db.auth.onAuthStateChange((_event, session) => { if (session?.user) loadSettings(); });
 })();
