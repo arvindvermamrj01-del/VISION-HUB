@@ -165,11 +165,11 @@
             if(audios.length){
               const a=document.createElement("select");a.setAttribute("aria-label","Audio language");a.innerHTML='<option value="">Original audio</option>'+audios.map(v=>`<option value="${esc(v.asset_url)}">${esc(v.language)}</option>`).join("");
               audio=document.createElement("audio");audio.preload="none";audio.style.display="none";video.parentElement.appendChild(audio);
-              a.addEventListener("change",()=>{audio.pause();video.muted=Boolean(a.value);if(!a.value)return;audio.src=a.value;audio.currentTime=video.currentTime;audio.play().catch(()=>{});});
-              video.addEventListener("play",()=>{if(audio?.src)audio.play().catch(()=>{});});
+              a.addEventListener("change",()=>{audio.pause();video.muted=Boolean(a.value);audio.dataset.trackSelected=a.value?"1":"0";if(!a.value){audio.removeAttribute("src");audio.load();return;}audio.src=a.value;audio.currentTime=video.currentTime;audio.play().catch(()=>{});});
+              video.addEventListener("play",()=>{if(audio?.dataset.trackSelected==="1")audio.play().catch(()=>{});});
               video.addEventListener("pause",()=>audio?.pause());
-              video.addEventListener("seeking",()=>{if(audio?.src)audio.currentTime=video.currentTime;});
-              video.addEventListener("timeupdate",()=>{if(audio?.src&&Math.abs(audio.currentTime-video.currentTime)>0.35)audio.currentTime=video.currentTime;});
+              video.addEventListener("seeking",()=>{if(audio?.dataset.trackSelected==="1")audio.currentTime=video.currentTime;});
+              video.addEventListener("timeupdate",()=>{if(audio?.dataset.trackSelected==="1"&&Math.abs(audio.currentTime-video.currentTime)>0.35)audio.currentTime=video.currentTime;});
               controls.append("Audio ",a);
             }
             video.src=item.video_url;video.load();
