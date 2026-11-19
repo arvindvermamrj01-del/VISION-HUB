@@ -74,7 +74,9 @@ function teraboxError(payload){return payload?.show_msg||payload?.message||("Ter
 async function postForm(url,values){
   const response=await fetch(url,{method:"POST",body:form(values)});
   const payload=await response.json().catch(()=>({}));
-  if(!response.ok||Number(payload.errno||0)!==0)throw new Error(teraboxError(payload));
+  if(!response.ok||Number(payload.errno||0)!==0){
+    const error=new Error(teraboxError(payload));error.code=Number(payload.errno||0);throw error;
+  }
   return payload.data||payload;
 }
 function safeDomain(value){
@@ -99,7 +101,7 @@ export async function loadTeraBoxConnection(env){
   const refresh_token=await decryptSecret(row.refresh_token_ciphertext,env);
   return {...row,access_token,refresh_token};
 }
-export async function saveTeraBoxTokens(env,user,tokens,info){
+export async function saveTeraBoxTokens(env,user,tokens,info,refreshExpiresAt=null){
   const now=Date.now(),accessExpires=new Date(now+Number(tokens.expires_in||172800)*1000).toISOString();
   const record={
     provider:"terabox",account_id:info.user_id,
@@ -107,7 +109,7 @@ export async function saveTeraBoxTokens(env,user,tokens,info){
     refresh_token_ciphertext:await encryptSecret(tokens.refresh_token,env),
     api_domain:info.api_domain,upload_domain:info.upload_domain,
     access_expires_at:accessExpires,
-    refresh_expires_at:new Date(now+30*86400000).toISOString(),
+    refresh_expires_at:refreshExpiresAt||new Date(now+30*86400000).toISOString(),
     connected_by:user.id,updated_at:new Date().toISOString()
   };
   await saveConnection(env,record);
@@ -123,7 +125,7 @@ export async function getFreshTeraBoxConnection(env){
     refresh_token:row.refresh_token,timestamp,sign
   });
   const info=await tokenInfo(tokens.access_token);
-  await saveTeraBoxTokens(env,{id:row.connected_by},tokens,info);
+  await saveTeraBoxTokens(env,{id:row.connected_by},tokens,info,row.refresh_expires_at);
   return await loadTeraBoxConnection(env);
 }
 export function teraboxSign(env,timestamp){
