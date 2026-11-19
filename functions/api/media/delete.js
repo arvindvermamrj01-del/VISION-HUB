@@ -7,20 +7,43 @@ export async function onRequestPost({ request, env }) {
   try {
     const { user } = await requireRole(request, env, ["admin", "sub_admin", "content_editor"]);
     const body = await request.json();
-    const provider = String(body.provider || "");
-    const key = String(body.storagePath || "");
-    if (!key || key.includes("..") || key.startsWith("/")) return json({ error: "Invalid storage path." }, 400);
+    const userId = user.id;
+    const storagePath = String(body.storagePath || "").trim();
+    const provider = String(body.provider || "").trim().toLowerCase();
+    const contentId = String(body.contentId || "").trim();
+    if (!storagePath || storagePath.includes("..") || storagePath.startsWith("/")) {
+      return json({ error: "Invalid storage path." }, 400);
+    }
+    const base = supabaseBase(env);
+    const headers = supabaseAdminHeaders(env);
+
+    // A content deletion must prove that this exact object is attached to the selected title.
+    if (contentId) {
+      const assetUrl = new URL(base + "/rest/v1/vh_media_assets");
+      assetUrl.search = new URLSearchParams({
+        content_id: "eq." + contentId,
+        storage_provider: "eq." + provider,
+        storage_path: "eq." + storagePath,
+        select: "id"
+      }).toString();
+      const assetResponse = await fetch(assetUrl, { headers });
+      if (!assetResponse.ok) return json({ error: "Media record could not be verified." }, 502);
+      const records = await assetResponse.json();
+      if (!records.length) return json({ error: "Media is not attached to this content item." }, 404);
+    } else if (!storagePath.startsWith(userId + "/")) {
+      return json({ error: "You can only clean up files uploaded by your account." }, 403);
+    }
+
     if (provider === "cloudflare_r2") {
-      if (!key.startsWith(user.id + "/")) return json({ error: "You can only clean up files uploaded by your account." }, 403);
-      const signed = await presignR2(env, "DELETE", key, "", 300);
+      const signed = await presignR2(env, "DELETE", storagePath, "", 300);
       const result = await fetch(signed.url, { method: "DELETE" });
       if (!result.ok && result.status !== 404) return json({ error: "R2 object cleanup failed." }, 502);
       return json({ success: true });
     }
     if (provider === "supabase") {
-      const response = await fetch(supabaseBase(env) + "/storage/v1/object/vh-private-media/" + encodePath(key), {
+      const response = await fetch(base + "/storage/v1/object/vh-private-media/" + encodePath(storagePath), {
         method: "DELETE",
-        headers: supabaseAdminHeaders(env)
+        headers
       });
       if (!response.ok && response.status !== 404) return json({ error: "Private storage cleanup failed." }, 502);
       return json({ success: true });
