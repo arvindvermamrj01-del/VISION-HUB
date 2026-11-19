@@ -15,7 +15,7 @@ window.renderVisionHub=render;
 window.showPage=name=>{if(name==="login"||name==="register")name="home";if(name==="admin"&&!window.VH_IS_ADMIN){name="admin-login"}document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));$("page-"+name)?.classList.add("active");document.querySelectorAll(".nav-link").forEach(a=>a.classList.toggle("active",a.getAttribute("href")==="#"+name));$("navLinks")?.classList.remove("open");window.scrollTo({top:0,behavior:"smooth"});if(name==="watchlist")renderWatchlist()};
 window.openHiddenAdminLogin=()=>window.showPage("admin-login");
 window.addEventListener("hashchange",()=>{if(location.hash==="#control-center")window.openHiddenAdminLogin()});
-if(location.hash==="#control-center"||location.pathname.replace(/\\/+$/,"")==="/control-center")window.openHiddenAdminLogin();
+if(location.hash==="#control-center"||location.pathname.replace(/\/+$/,"")==="/control-center")window.openHiddenAdminLogin();
 window.filterByIndustry=(v,el)=>{industry=v;el?.parentElement?.querySelectorAll(".filter-btn").forEach(b=>b.classList.toggle("active",b===el));render()};
 window.filterByGenre=(v,el)=>{genre=v;el?.parentElement?.querySelectorAll(".filter-btn").forEach(b=>b.classList.toggle("active",b===el));render()};
 window.filterMoviesPage=(v,el)=>{movieGenre=v;el?.parentElement?.querySelectorAll(".filter-btn").forEach(b=>b.classList.toggle("active",b===el));render()};
