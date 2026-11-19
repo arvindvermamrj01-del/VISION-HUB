@@ -68,7 +68,11 @@
     if(upiNode)upiNode.textContent=donationUpi||"Not configured";
     if(message)message.textContent=settings.donation_message||fallback.donation_message;
     const qrUrl=validHttpsUrl(settings.donation_qr_url||"");
-    if(qr&&qrUrl){qr.src=qrUrl;qr.style.display="block";qr.onerror=()=>{qr.style.display="none";};}
+    if(qr){
+      qr.onerror=()=>{qr.style.display="none";};
+      if(qrUrl){qr.src=qrUrl;qr.style.display="block";}
+      else {qr.removeAttribute("src");qr.style.display="none";}
+    }
     if(pay)pay.disabled=!/^[-.a-zA-Z0-9]{2,256}@[a-zA-Z]{2,64}$/.test(donationUpi);
     if(copy)copy.disabled=!donationUpi;
     if(hint)hint.textContent=donationUpi?"Choose UPI or scan the QR code.":"Donation details will appear here after the administrator configures the UPI ID and QR code.";
@@ -82,22 +86,32 @@
   async function submitFeedback(event) {
     event.preventDefault();
     if (!db) return toast("Feedback service is not connected. Please try again later.");
+    const form=event.currentTarget,button=form.querySelector('[type="submit"]');
     const row = {feedback_type:$("vhFeedbackType").value,subject:$("vhFeedbackSubject").value.trim(),message:$("vhFeedbackMessage").value.trim()};
     if (!row.subject || !row.message) return toast("Please complete all required fields.");
-    const {error} = await db.from("vh_feedback").insert(row);
-    if (error) return toast(error.message || "Feedback could not be sent.");
-    event.currentTarget.reset(); toast("Thank you! Your feedback has been submitted.");
+    if(button)button.disabled=true;
+    try{
+      const {error} = await db.from("vh_feedback").insert(row);
+      if(error)throw error;
+      form.reset(); toast("Thank you! Your feedback has been submitted.");
+    }catch(error){toast(error.message||"Feedback could not be sent.");}
+    finally{if(button)button.disabled=false;}
   }
   async function submitIdea(event) {
     event.preventDefault();
     if (!db) return toast("Suggestions service is not connected yet.");
+    const form=event.currentTarget,button=form.querySelector('[type="submit"]');
     const title=$("vhIdeaTitle").value.trim(), description=$("vhIdeaDescription").value.trim();
     if (!title) return toast("Please enter an idea title.");
-    const user=await currentUser();
-    if (!user) return toast("Please log in to submit and vote on improvement ideas.");
-    const {error}=await db.from("vh_ideas").insert({title,description,user_id:user.id});
-    if (error) return toast(error.message || "Idea could not be submitted.");
-    event.currentTarget.reset(); toast("Your idea has been submitted."); loadIdeas();
+    if(button)button.disabled=true;
+    try{
+      const user=await currentUser();
+      if (!user) throw new Error("Please log in to submit and vote on improvement ideas.");
+      const {error}=await db.from("vh_ideas").insert({title,description,user_id:user.id});
+      if(error)throw error;
+      form.reset(); toast("Your idea has been submitted."); loadIdeas();
+    }catch(error){toast(error.message||"Idea could not be submitted.");}
+    finally{if(button)button.disabled=false;}
   }
   async function loadIdeas() {
     const host=$("vhIdeasList"); if (!host) return;
@@ -150,9 +164,16 @@
   }
   async function publishChangelog(event){
     event.preventDefault();if(!await isAdmin())return toast("Admin access required.");
-    const {data:{user}}=await db.auth.getUser();
-    const {error}=await db.from("vh_changelog").insert({title:$("vhUpdateTitle").value.trim(),update_type:$("vhUpdateType").value,description:$("vhUpdateDescription").value.trim(),created_by:user.id});
-    if(error)return toast(error.message);toast("Website update published.");loadChangelog();
+    const form=event.currentTarget,button=form.querySelector('[type="submit"]');
+    if(button)button.disabled=true;
+    try{
+      const {data:{user},error:userError}=await db.auth.getUser();
+      if(userError||!user)throw new Error("Admin session expired. Please sign in again.");
+      const {error}=await db.from("vh_changelog").insert({title:$("vhUpdateTitle").value.trim(),update_type:$("vhUpdateType").value,description:$("vhUpdateDescription").value.trim(),created_by:user.id});
+      if(error)throw error;
+      form.reset();toast("Website update published.");loadChangelog();
+    }catch(error){toast(error.message||"Update could not be published.");}
+    finally{if(button)button.disabled=false;}
   }
   document.addEventListener("DOMContentLoaded",()=>{ensurePages();loadIdeas();loadChangelog();loadAdminFeedback();});
   db?.auth.onAuthStateChange(()=>{loadIdeas();loadAdminFeedback();loadChangelog();});
