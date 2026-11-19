@@ -288,9 +288,9 @@
     const uploads=[];
     const links=[];
     if(primaryFile){
-      if(provider!=="supabase")throw new Error("Direct file upload abhi private Supabase Storage par supported hai. External provider ke liye authorised direct URL dein.");
+      if(!["supabase","cloudflare_r2"].includes(provider))throw new Error("Direct file upload ke liye Supabase ya Cloudflare R2 choose karein. Baaki providers ke liye authorised direct URL dein.");
       uploads.push({resolution:"Original",file:primaryFile,is_primary:true});
-    } else if(primaryUrl) links.push({resolution:"Original",url:primaryUrl,is_primary:true,storage_provider:provider});
+    } else if(primaryUrl) links.push({resolution:"Original",url:validHttpUrl(primaryUrl),is_primary:true,storage_provider:provider});
     if(!isShort){
       document.querySelectorAll("[data-vh-quality-file]").forEach(input=>{
         const file=input.files?.[0];if(file)uploads.push({resolution:input.dataset.vhQualityFile,file,is_primary:false});
