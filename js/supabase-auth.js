@@ -218,15 +218,15 @@ try {
 
   if (profileError) throw profileError;
 
-  if (!profile || profile.role !== "admin") {
+  if (!profile || !["admin","sub_admin","content_editor","moderator"].includes(profile.role)) {
     await db.auth.signOut();
-    msg("Admin permission nahi hai.");
+    msg("Admin ya authorised staff permission nahi hai.");
     return;
   }
 
   await showSignedIn(data.user);
   showPage("page-admin");
-  msg("Admin login successful.");
+  msg("Control Center login successful.");
 } catch (err) {
   console.error(err);
   msg(err.message || "Admin login failed.");
