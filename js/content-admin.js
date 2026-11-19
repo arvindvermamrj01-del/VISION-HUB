@@ -320,7 +320,7 @@
         description:isShort?($("shortDesc")?.value.trim()||""):($("addDesc")?.value.trim()||""),
         cast:isShort?"":($("addCast")?.value.trim()||""),
         director:isShort?"":($("addDirector")?.value.trim()||null),
-        screenshots:isShort?[]:($("addScreenshots")?.value.split(/[\\n,]+/).map(value=>value.trim()).filter(Boolean).map(value=>validHttpUrl(value))||[]),
+        screenshots:isShort?[]:($("addScreenshots")?.value.split(/[\n,]+/).map(value=>value.trim()).filter(Boolean).map(value=>validHttpUrl(value))||[]),
         duration:isShort?"":($("addDuration")?.value.trim()||""),
         trailer_url:isShort?null:(validHttpUrl($("addTrailer")?.value.trim()||"")||null),
         subtitle_tracks:isShort?[]:parseSubtitleLines($("vhSubtitleTracks")?.value||""),
