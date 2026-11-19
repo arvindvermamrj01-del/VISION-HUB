@@ -64,6 +64,17 @@
     return profile || null;
   }
 
+  async function recordLogin(user) {
+    try {
+      if (!user?.id) return;
+      const { error } = await db.from("vh_login_activity").insert({
+        user_id: user.id,
+        user_agent: String(navigator.userAgent || "").slice(0, 500)
+      });
+      if (error) console.warn("Login activity could not be recorded:", error.message);
+    } catch (error) { console.warn("Login activity unavailable:", error); }
+  }
+
   window.loginUser = async event => {
     event?.preventDefault();
     const email = el("userEmail")?.value.trim();
@@ -75,6 +86,7 @@
       const { data, error } = await db.auth.signInWithPassword({ email, password });
       if (error) throw error;
       await hydrateUser(data.user);
+      await recordLogin(data.user);
       navigate("home");
       notify("Login successful.");
     } catch (error) { notify(error.message || "Login failed."); }
@@ -96,6 +108,7 @@
       if (error) throw error;
       if (data.session) {
         await hydrateUser(data.user);
+        await recordLogin(data.user);
         navigate("home");
         notify("Account created successfully.");
       } else {
@@ -127,6 +140,7 @@
         throw new Error("Is account ko database mein admin role nahi diya gaya hai.");
       }
       await hydrateUser(data.user);
+      await recordLogin(data.user);
       navigate("admin");
       notify("Admin login successful.");
     } catch (error) {
