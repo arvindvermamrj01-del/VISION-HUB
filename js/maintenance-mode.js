@@ -9,7 +9,7 @@
       const { data: { user } } = await db.auth.getUser();
       if (!user) return false;
       const { data: profile } = await db.from("profiles").select("role").eq("id", user.id).maybeSingle();
-      return profile?.role === "admin";
+      return ["admin","sub_admin","content_editor","moderator"].includes(profile?.role);
     } catch (_) { return false; }
   }
   async function refreshMaintenance() {
