@@ -135,7 +135,7 @@
     };
     const { data, error } = await db.from("vh_content").insert(row).select("*").single();
     if (error) {
-      if (storagePath) await db.storage.from(BUCKET).remove([storagePath]).catch(() => {});
+      if (storagePath && provider === "supabase") await db.storage.from(BUCKET).remove([storagePath]).catch(() => {});
       throw error;
     }
     addToCatalog(data);
