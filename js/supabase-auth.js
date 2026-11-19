@@ -38,7 +38,7 @@ function showPage(id) {
 
 function showSignedOut() {
 window.VH_IS_ADMIN = false;
-el("authNav")?.classList.remove("hidden");
+el("authNav")?.classList.add("hidden");
 el("userNav")?.classList.add("hidden");
 el("adminNav")?.classList.add("hidden");
 el("adminNavLink")?.classList.add("hidden");
@@ -46,7 +46,7 @@ el("adminNavLink")?.classList.add("hidden");
 
 async function showSignedIn(user) {
 el("authNav")?.classList.add("hidden");
-el("userNav")?.classList.remove("hidden");
+el("userNav")?.classList.add("hidden");
 
 const name =
   user.user_metadata?.full_name ||
