@@ -33,8 +33,8 @@
     const q=String(query).trim().toLowerCase();
     const filtered=users.filter(u=>[u.fullname,u.id,u.role].join(" ").toLowerCase().includes(q));
     body.innerHTML=filtered.length?filtered.map((u,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(u.fullname||"—")+
-      '</td><td>Not stored in profiles</td><td>Not collected here</td><td>'+esc(u.created_at?new Date(u.created_at).toLocaleDateString():"—")+
-      '</td><td>'+esc(u.role)+'</td></tr>').join(""):'<tr><td colspan="6">No matching user profiles found.</td></tr>';
+      '</td><td><code>'+esc(u.id)+'</code></td><td>Not stored in profiles</td><td>Not collected here</td><td>'+esc(u.created_at?new Date(u.created_at).toLocaleDateString():"—")+
+      '</td><td>'+esc(u.role)+'</td></tr>').join(""):'<tr><td colspan="7">No matching user profiles found.</td></tr>';
   }
   window.filterUsersList=value=>renderUsers(value);
 
