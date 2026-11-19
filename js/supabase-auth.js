@@ -70,7 +70,7 @@ window.VH_IS_ADMIN = false;
 
 const { data: profile, error } = await db
   .from("profiles")
-  .select("id, fullname, role")
+  .select("id, role")
   .eq("id", user.id)
   .maybeSingle();
 
