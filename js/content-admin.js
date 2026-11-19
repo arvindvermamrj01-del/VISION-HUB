@@ -68,7 +68,7 @@
       industry:row.industry || "All", genre:row.genre || "Uncategorised",
       year:row.release_year || "", rating:row.rating ?? "", language:row.language || "",
       duration:row.duration || "", poster:row.poster_url || "", backdrop:row.poster_url || "",
-      description:row.description || "", cast:row.cast || "", trailer:row.trailer_url || "",
+      description:row.description || "", cast:row.cast || "", director:row.director || "", screenshots:Array.isArray(row.screenshots)?row.screenshots:(typeof row.screenshots==="string"?row.screenshots.split(",").map(x=>x.trim()).filter(Boolean):[]), trailer:row.trailer_url || "",
       video_url:primary?.url || (String(row.video_url||"").startsWith("private://") ? "" : row.video_url),
       media_assets:mappedAssets, is_short:row.content_type === "Short"
     };
@@ -159,6 +159,8 @@
         rating:isShort?null:(Number($("addRating")?.value)||null),
         description:isShort?($("shortDesc")?.value.trim()||""):($("addDesc")?.value.trim()||""),
         cast:isShort?"":($("addCast")?.value.trim()||""),
+        director:isShort?"":($("addDirector")?.value.trim()||null),
+        screenshots:isShort?[]:($("addScreenshots")?.value.split(",").map(value=>value.trim()).filter(Boolean)||[]),
         duration:isShort?"":($("addDuration")?.value.trim()||""),
         trailer_url:isShort?null:($("addTrailer")?.value.trim()||null),
         industry:isShort?"All":((($("addLang")?.value||"").toLowerCase().includes("hindi"))?"Bollywood":"All")
