@@ -95,6 +95,13 @@
 
     <!-- ===== TOAST NOTIFICATION ===== -->
     <div class="toast" id="toast"></div>
+    <div id="maintenanceOverlay" class="hidden" role="status" aria-live="polite" style="position:fixed;inset:0;z-index:99999;background:#090b12;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;">
+      <div style="max-width:560px;">
+        <div style="font-size:3rem;margin-bottom:14px;">🛠️</div>
+        <h1 style="margin:0 0 12px;">Vision Hub is under maintenance</h1>
+        <p style="color:#c7cad4;line-height:1.7;">We are making a few improvements. Please check back soon.</p>
+      </div>
+    </div>
 
     <!-- ======================================================= -->
     <!--                     PAGES                               -->
@@ -1163,5 +1170,6 @@
 <script src="js/storage-manager.js"></script>
 <script src="js/request-manager.js"></script>
 <script src="js/admin-tools.js"></script>
+<script src="js/maintenance-mode.js"></script>
 </body>
 </html>
