@@ -15,21 +15,21 @@ alter table public.profiles enable row level security;
 create or replace function public.vh_is_admin()
 returns boolean language sql stable security definer
 set search_path = public
-as $
+as $vh$
   select exists(select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin');
-$;
+$vh$;
 revoke all on function public.vh_is_admin() from public;
 grant execute on function public.vh_is_admin() to authenticated;
 
 create or replace function public.vh_can_manage_content()
 returns boolean language sql stable security definer set search_path=public
-as $ select exists(select 1 from public.profiles p where p.id=auth.uid() and p.role in ('admin','sub_admin','content_editor')); $;
+as $vh$ select exists(select 1 from public.profiles p where p.id=auth.uid() and p.role in ('admin','sub_admin','content_editor')); $vh$;
 create or replace function public.vh_can_manage_requests()
 returns boolean language sql stable security definer set search_path=public
-as $ select exists(select 1 from public.profiles p where p.id=auth.uid() and p.role in ('admin','sub_admin','moderator')); $;
+as $vh$ select exists(select 1 from public.profiles p where p.id=auth.uid() and p.role in ('admin','sub_admin','moderator')); $vh$;
 create or replace function public.vh_can_manage_catalog()
 returns boolean language sql stable security definer set search_path=public
-as $ select exists(select 1 from public.profiles p where p.id=auth.uid() and p.role in ('admin','sub_admin')); $;
+as $vh$ select exists(select 1 from public.profiles p where p.id=auth.uid() and p.role in ('admin','sub_admin')); $vh$;
 revoke all on function public.vh_can_manage_content() from public;
 revoke all on function public.vh_can_manage_requests() from public;
 revoke all on function public.vh_can_manage_catalog() from public;
