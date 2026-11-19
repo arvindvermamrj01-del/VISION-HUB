@@ -277,3 +277,10 @@ drop policy if exists "admins publish changelog" on public.vh_changelog;
 create policy "admins publish changelog" on public.vh_changelog for all to authenticated using (public.vh_is_admin()) with check (public.vh_is_admin());
 grant select on public.vh_changelog to anon, authenticated;
 grant insert, update, delete on public.vh_changelog to authenticated;
+
+-- Donation page configuration (no payment credentials or personal banking secrets).
+insert into public.vh_site_settings(setting_key,setting_value) values
+ ('donation_upi_id',''),
+ ('donation_qr_url',''),
+ ('donation_message','If you find Vision Hub useful, you can support its development with a voluntary contribution.')
+on conflict (setting_key) do nothing;
