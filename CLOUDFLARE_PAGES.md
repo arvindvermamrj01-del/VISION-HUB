@@ -31,3 +31,9 @@ The webhook stores only Telegram chat identifiers and optional public usernames/
 
 ## Current status
 This repository has no Cloudflare account credentials, Supabase SQL execution access, or BotFather token. The code can be prepared here, but production deployment and end-to-end verification require those account-side steps.
+
+
+## Private media storage migration
+New direct uploads use the private Supabase Storage bucket `vh-private-media`. The player creates six-hour signed URLs for published content and tracks. The existing public `vh-media` bucket is intentionally retained for backwards compatibility with old URLs; files already in that bucket remain publicly accessible until they are migrated and re-uploaded.
+
+Before deploying the new upload/player code to an existing Supabase project, run `supabase/private-media-migration.sql` in the Supabase SQL Editor as project owner. The full `supabase/setup.sql` also includes these objects for a fresh setup. Do not make the legacy bucket private until its existing media has been migrated and verified.
