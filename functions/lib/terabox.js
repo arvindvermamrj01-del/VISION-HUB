@@ -68,14 +68,40 @@ export function md5(text){
 }
 function bytesToBase64(bytes){let binary="";for(const b of bytes)binary+=String.fromCharCode(b);return btoa(binary);}
 function base64ToBytes(value){const binary=atob(value);return Uint8Array.from(binary,c=>c.charCodeAt(0));}
-async function encryptionKey(env){
+function encryptionKeyBytes(env){
   const value=String(env.PROVIDER_TOKEN_ENCRYPTION_KEY||"");
   if(!value)throw new Error("PROVIDER_TOKEN_ENCRYPTION_KEY is not configured");
   let bytes;
   if(/^[0-9a-f]{64}$/i.test(value))bytes=Uint8Array.from(value.match(/.{2}/g),x=>parseInt(x,16));
   else {let encoded=value.replace(/-/g,"+").replace(/_/g,"/");while(encoded.length%4)encoded+="=";bytes=base64ToBytes(encoded);}
   if(bytes.length!==32)throw new Error("PROVIDER_TOKEN_ENCRYPTION_KEY must decode to exactly 32 bytes");
-  return crypto.subtle.importKey("raw",bytes,{name:"AES-GCM"},false,["encrypt","decrypt"]);
+  return bytes;
+}
+async function encryptionKey(env){
+  return crypto.subtle.importKey("raw",encryptionKeyBytes(env),{name:"AES-GCM"},false,["encrypt","decrypt"]);
+}
+async function uploadHmacKey(env){
+  return crypto.subtle.importKey("raw",encryptionKeyBytes(env),{name:"HMAC",hash:"SHA-256"},false,["sign","verify"]);
+}
+function b64url(bytes){let binary="";for(const b of bytes)binary+=String.fromCharCode(b);return btoa(binary).replace(/\\+/g,"-").replace(/\\//g,"_").replace(/=+$/g,"");}
+function fromB64url(value){let encoded=String(value).replace(/-/g,"+").replace(/_/g,"/");while(encoded.length%4)encoded+="=";return base64ToBytes(encoded);}
+export async function signTeraBoxUploadToken(payload,env){
+  const body=b64url(new TextEncoder().encode(JSON.stringify(payload)));
+  const key=await uploadHmacKey(env),signature=await crypto.subtle.sign("HMAC",key,new TextEncoder().encode(body));
+  return body+"."+b64url(new Uint8Array(signature));
+}
+export async function verifyTeraBoxUploadToken(token,env){
+  const [body,signature,...rest]=String(token||"").split(".");
+  if(!body||!signature||rest.length)throw new Error("Invalid TeraBox upload token.");
+  const key=await uploadHmacKey(env),valid=await crypto.subtle.verify("HMAC",key,fromB64url(signature),new TextEncoder().encode(body));
+  if(!valid)throw new Error("TeraBox upload token signature is invalid.");
+  const payload=JSON.parse(new TextDecoder().decode(fromB64url(body)));
+  if(!payload.uid||!Number.isFinite(payload.exp)||payload.exp<Date.now())throw new Error("TeraBox upload token expired.");
+  return payload;
+}
+export async function hashUploadList(hashes){
+  const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(JSON.stringify(hashes)));
+  return Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,"0")).join("");
 }
 export async function encryptSecret(value,env){
   const key=await encryptionKey(env),iv=crypto.getRandomValues(new Uint8Array(12));
