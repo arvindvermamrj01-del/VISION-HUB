@@ -87,7 +87,7 @@
     <!-- ===== SEARCH OVERLAY ===== -->
     <div class="search-overlay" id="searchOverlay">
       <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Search movies, web series, genres, actors..." oninput="liveSearch(this.value)"/>
+        <input type="text" id="searchInput" placeholder="Search movies, web series, genres, actors..." oninput="liveSearch(this.value)" autocomplete="off"/>
         <button onclick="toggleSearch()" aria-label="Close search"><i class="fas fa-times"></i></button>
       </div>
       <div class="search-results" id="searchResults"></div>
@@ -258,7 +258,7 @@
             <form class="request-form" onsubmit="submitRequest(event)">
               <div class="form-group">
                 <label>Movie / Series Title *</label>
-                <input type="text" id="reqTitle" placeholder="e.g. Interstellar 2, Sacred Games S3" required/>
+                <input type="text" id="reqTitle" placeholder="e.g. Interstellar 2, Sacred Games S3" required autocomplete="off"/>
               </div>
               <div class="form-group">
                 <label>Content Type</label>
@@ -270,11 +270,11 @@
               </div>
               <div class="form-group">
                 <label>Release Year (if known)</label>
-                <input type="number" id="reqYear" placeholder="2024" min="1900" max="2035"/>
+                <input type="number" id="reqYear" placeholder="2024" min="1900" max="2035" autocomplete="off"/>
               </div>
               <div class="form-group">
                 <label>Preferred Language</label>
-                <input type="text" id="reqLang" placeholder="Hindi, English, Telugu, Tamil, etc."/>
+                <input type="text" id="reqLang" placeholder="Hindi, English, Telugu, Tamil, etc." autocomplete="off"/>
               </div>
               <div class="form-group">
                 <label>Additional Notes</label>
@@ -474,7 +474,7 @@
               <div class="form-row">
                 <div class="form-group">
                   <label>Title *</label>
-                  <input type="text" id="addTitle" placeholder="e.g. Inception" required/>
+                  <input type="text" id="addTitle" placeholder="e.g. Inception" required autocomplete="off"/>
                 </div>
                 <div class="form-group">
                   <label>Content Type *</label>
@@ -502,29 +502,29 @@
                 </div>
                 <div class="form-group">
                   <label>Language & Industry</label>
-                  <input type="text" id="addLang" placeholder="Hindi, English (Bollywood/Hollywood/South)"/>
+                  <input type="text" id="addLang" placeholder="Hindi, English (Bollywood/Hollywood/South)" autocomplete="off"/>
                 </div>
               </div>
 
               <div class="form-row">
                 <div class="form-group">
                   <label>Release Year</label>
-                  <input type="number" id="addYear" placeholder="2024" min="1900" max="2035"/>
+                  <input type="number" id="addYear" placeholder="2024" min="1900" max="2035" autocomplete="off"/>
                 </div>
                 <div class="form-group">
                   <label>Rating (1.0 to 10.0)</label>
-                  <input type="number" id="addRating" placeholder="8.5" step="0.1" min="1" max="10"/>
+                  <input type="number" id="addRating" placeholder="8.5" step="0.1" min="1" max="10" autocomplete="off"/>
                 </div>
               </div>
 
               <div class="form-group">
                 <label>Poster Image URL</label>
-                <input type="url" id="addPoster" placeholder="https://... (Direct poster image link)"/>
+                <input type="url" id="addPoster" placeholder="https://... (Direct poster image link)" autocomplete="off"/>
               </div>
 
               <div class="form-group">
                 <label>Main Video Stream URL / Drive Link *</label>
-                <input type="url" id="addVideo" placeholder="Optional: authorised direct video URL"/>
+                <input type="url" id="addVideo" placeholder="Optional: authorised direct video URL" autocomplete="off"/>
                 <small style="color:var(--text-muted)">Or upload a video file below. Only content you own or are licensed to publish.</small>
                 <label for="addStorageProvider">Upload / Link Storage</label>
                 <select id="addStorageProvider">
@@ -541,7 +541,7 @@
                   <option value="internxt">Internxt (free quota varies — manual link)</option>
                   <option value="telegram">Telegram (post link)</option>
                 </select>
-                <input type="file" id="addVideoFile" accept="video/*"/>
+                <input type="file" id="addVideoFile" accept="video/*" autocomplete="off"/>
               </div>
 
               <!-- Multi-Resolution Download Link Inputs -->
@@ -550,38 +550,38 @@
                 <div class="form-row">
                   <div class="form-group">
                     <label>480p Download Link (Mobile SD)</label>
-                    <input type="url" id="addDl480" placeholder="https://drive.google.com/... or direct link"/>
+                    <input type="url" id="addDl480" placeholder="https://drive.google.com/... or direct link" autocomplete="off"/>
                   </div>
                   <div class="form-group">
                     <label>720p Download Link (HD)</label>
-                    <input type="url" id="addDl720" placeholder="https://drive.google.com/... or direct link"/>
+                    <input type="url" id="addDl720" placeholder="https://drive.google.com/... or direct link" autocomplete="off"/>
                   </div>
                 </div>
                 <div class="form-row">
                   <div class="form-group">
                     <label>1080p Download Link (Full HD)</label>
-                    <input type="url" id="addDl1080" placeholder="https://drive.google.com/... or direct link"/>
+                    <input type="url" id="addDl1080" placeholder="https://drive.google.com/... or direct link" autocomplete="off"/>
                   </div>
                   <div class="form-group">
                     <label>4K UHD Download Link</label>
-                    <input type="url" id="addDl4k" placeholder="https://drive.google.com/... or direct link"/>
+                    <input type="url" id="addDl4k" placeholder="https://drive.google.com/... or direct link" autocomplete="off"/>
                   </div>
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
                   <label><i class="fab fa-telegram-plane" style="color: #229ED9;"></i> Telegram Direct Post Link (Optional)</label>
-                  <input type="url" id="addTgPost" placeholder="https://t.me/yourchannel/123"/>
+                  <input type="url" id="addTgPost" placeholder="https://t.me/yourchannel/123" autocomplete="off"/>
                 </div>
               </div>
 
               <div class="form-group">
                 <label>Official Trailer URL (YouTube)</label>
-                <input type="url" id="addTrailer" placeholder="https://www.youtube.com/watch?v=..."/>
+                <input type="url" id="addTrailer" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off"/>
               </div>
 
               <!-- Screenshots for download preview carousel (Admin Only) -->
               <div class="form-group">
                 <label>🖼️ Screenshot / Scene Preview URLs <small style="color:var(--text-muted)">(Comma separated — shown in download modal carousel)</small></label>
-                <input type="text" id="addScreenshots" placeholder="https://img1.com/shot.jpg, https://img2.com/shot.jpg, ..."/>
+                <input type="text" id="addScreenshots" placeholder="https://img1.com/shot.jpg, https://img2.com/shot.jpg, ..." autocomplete="off"/>
               </div>
 
               <div class="form-group">
@@ -592,17 +592,17 @@
               <div class="form-row">
                 <div class="form-group">
                   <label>Cast (comma separated)</label>
-                  <input type="text" id="addCast" placeholder="Leonardo DiCaprio, Joseph Gordon-Levitt"/>
+                  <input type="text" id="addCast" placeholder="Leonardo DiCaprio, Joseph Gordon-Levitt" autocomplete="off"/>
                 </div>
                 <div class="form-group">
                   <label>Director</label>
-                  <input type="text" id="addDirector" placeholder="Christopher Nolan"/>
+                  <input type="text" id="addDirector" placeholder="Christopher Nolan" autocomplete="off"/>
                 </div>
               </div>
 
               <div class="form-group">
                 <label>Duration / Episodes Info</label>
-                <input type="text" id="addDuration" placeholder="2h 28m or S1 • 8 Episodes"/>
+                <input type="text" id="addDuration" placeholder="2h 28m or S1 • 8 Episodes" autocomplete="off"/>
               </div>
 
               <button type="submit" class="btn-primary full-width" style="margin-top: 10px;">
@@ -618,7 +618,7 @@
             <form class="admin-form" onsubmit="publishShort(event)">
               <div class="form-group">
                 <label>Short Title *</label>
-                <input type="text" id="shortTitle" placeholder="Enter short video title" required/>
+                <input type="text" id="shortTitle" placeholder="Enter short video title" required autocomplete="off"/>
               </div>
               <div class="form-group">
                 <label>Video File *</label>
@@ -637,9 +637,9 @@
                   <option value="internxt">Internxt (free quota varies — manual link)</option>
                   <option value="telegram">Telegram (post link)</option>
                 </select>
-                <input type="file" id="shortVideoFile" accept="video/*"/>
+                <input type="file" id="shortVideoFile" accept="video/*" autocomplete="off"/>
                 <label for="shortVideoUrl">Or authorised video / post URL</label>
-                <input type="url" id="shortVideoUrl" placeholder="https://..."/>
+                <input type="url" id="shortVideoUrl" placeholder="https://..." autocomplete="off"/>
               </div>
               <div class="form-group">
                 <label>Description (Optional)</label>
@@ -653,7 +653,7 @@
           <div id="tab-manage" class="admin-tab">
             <h2>🎬 Manage Catalog Content</h2>
             <div class="admin-toolbar">
-              <input type="text" id="manageSearch" placeholder="Filter by title, genre, language..." oninput="filterManageList(this.value)"/>
+              <input type="text" id="manageSearch" placeholder="Filter by title, genre, language..." oninput="filterManageList(this.value)" autocomplete="off"/>
             </div>
             <div id="manageList" class="manage-list"></div>
           </div>
@@ -668,11 +668,11 @@
               
               <div class="form-group">
                 <label>Drive File / Folder Link *</label>
-                <input type="url" id="driveLink" placeholder="https://drive.google.com/file/d/... or folder share link"/>
+                <input type="url" id="driveLink" placeholder="https://drive.google.com/file/d/... or folder share link" autocomplete="off"/>
               </div>
               <div class="form-group">
                 <label>Title to Assign *</label>
-                <input type="text" id="driveName" placeholder="Movie or Show Title"/>
+                <input type="text" id="driveName" placeholder="Movie or Show Title" autocomplete="off"/>
               </div>
               <div class="form-group">
                 <label>Content Type</label>
@@ -764,7 +764,7 @@
               <strong>Data Privacy:</strong> This dashboard currently shows profile name, role, and join date only. Email addresses and phone numbers are not stored in the profiles table and are not displayed here.
             </p>
             <div class="admin-toolbar">
-              <input type="text" id="userManageSearch" placeholder="Search user by name, profile ID, or role..." oninput="filterUsersList(this.value)"/>
+              <input type="text" id="userManageSearch" placeholder="Search user by name, profile ID, or role..." oninput="filterUsersList(this.value)" autocomplete="off"/>
             </div>
             <div class="user-table-container">
               <table class="user-table">
@@ -797,21 +797,21 @@
                 <div class="form-row">
                   <div class="form-group">
                     <label>Current Password *</label>
-                    <input type="password" id="changeCurrPass" placeholder="Enter current password" required/>
+                    <input type="password" id="changeCurrPass" placeholder="Enter current password" required autocomplete="current-password"/>
                   </div>
                   <div class="form-group">
                     <label>Admin Login</label>
-                    <input type="text" value="Managed securely by Supabase" disabled/>
+                    <input type="text" value="Managed securely by Supabase" disabled autocomplete="off"/>
                   </div>
                 </div>
                 <div class="form-row">
                   <div class="form-group">
                     <label>New Password * (Min 6 chars)</label>
-                    <input type="password" id="changeNewPass" placeholder="New strong password" required/>
+                    <input type="password" id="changeNewPass" placeholder="New strong password" required autocomplete="new-password"/>
                   </div>
                   <div class="form-group">
                     <label>Confirm New Password *</label>
-                    <input type="password" id="changeConfirmPass" placeholder="Re-enter new password" required/>
+                    <input type="password" id="changeConfirmPass" placeholder="Re-enter new password" required autocomplete="new-password"/>
                   </div>
                 </div>
                 <button type="submit" class="btn-primary full-width" style="margin-top: 8px;">
@@ -831,17 +831,17 @@
                 <div class="form-row">
                   <div class="form-group">
                     <label>Staff Member Name *</label>
-                    <input type="text" id="subName" placeholder="e.g. Vikas Kumar" required/>
+                    <input type="text" id="subName" placeholder="e.g. Vikas Kumar" required autocomplete="off"/>
                   </div>
                   <div class="form-group">
                     <label>Sub-Admin Username *</label>
-                    <input type="text" id="subUsername" placeholder="e.g. vikas_admin" required/>
+                    <input type="text" id="subUsername" placeholder="e.g. vikas_admin" required autocomplete="off"/>
                   </div>
                 </div>
                 <div class="form-row">
                   <div class="form-group">
                     <label>Sub-Admin Password *</label>
-                    <input type="password" id="subPassword" placeholder="Min 6 characters" required/>
+                    <input type="password" id="subPassword" placeholder="Min 6 characters" required autocomplete="new-password"/>
                   </div>
                   <div class="form-group">
                     <label>Assigned Role *</label>
@@ -874,11 +874,11 @@
                 <div class="form-row">
                   <div class="form-group">
                     <label>Category Name *</label>
-                    <input type="text" id="catName" placeholder="e.g. Bollywood, South Indian, Anime" required/>
+                    <input type="text" id="catName" placeholder="e.g. Bollywood, South Indian, Anime" required autocomplete="off"/>
                   </div>
                   <div class="form-group">
                     <label>Description</label>
-                    <input type="text" id="catDesc" placeholder="Short description of the category"/>
+                    <input type="text" id="catDesc" placeholder="Short description of the category" autocomplete="off"/>
                   </div>
                 </div>
                 <button type="submit" class="btn-primary full-width"><i class="fas fa-save"></i> Save Category</button>
@@ -897,20 +897,20 @@
                 <div class="form-row">
                   <div class="form-group">
                     <label>Song Title *</label>
-                    <input type="text" id="songTitle" placeholder="e.g. Tum Hi Ho" required/>
+                    <input type="text" id="songTitle" placeholder="e.g. Tum Hi Ho" required autocomplete="off"/>
                   </div>
                   <div class="form-group">
                     <label>Artist / Singer *</label>
-                    <input type="text" id="songArtist" placeholder="e.g. Arijit Singh" required/>
+                    <input type="text" id="songArtist" placeholder="e.g. Arijit Singh" required autocomplete="off"/>
                   </div>
                 </div>
                 <div class="form-group">
                   <label>Audio File URL * <small style="color:var(--text-muted)">(Direct MP3 / Google Drive / CDN link)</small></label>
-                  <input type="url" id="songFileUrl" placeholder="https://drive.google.com/file/d/... or direct .mp3 link" required/>
+                  <input type="url" id="songFileUrl" placeholder="https://drive.google.com/file/d/... or direct .mp3 link" required autocomplete="off"/>
                 </div>
                 <div class="form-group">
                   <label>Poster / Album Art URL <small style="color:var(--text-muted)">(Optional)</small></label>
-                  <input type="url" id="songPoster" placeholder="https://... (direct image link)"/>
+                  <input type="url" id="songPoster" placeholder="https://... (direct image link)" autocomplete="off"/>
                 </div>
                 <button type="submit" class="btn-primary full-width"><i class="fas fa-save"></i> Add Song to Library</button>
               </form>
@@ -925,11 +925,11 @@
             <form class="admin-form" onsubmit="saveWebsiteSettings(event)">
               <div class="form-group">
                 <label>Platform Name</label>
-                <input type="text" id="settingSiteName" value="Vision Hub"/>
+                <input type="text" id="settingSiteName" value="Vision Hub" autocomplete="off"/>
               </div>
               <div class="form-group">
                 <label><i class="fab fa-telegram-plane" style="color:#229ED9;"></i> Your Telegram Channel Link</label>
-                <input type="url" id="settingTelegram" value="https://t.me/visionhub_official" placeholder="https://t.me/your_channel_name"/>
+                <input type="url" id="settingTelegram" value="https://t.me/visionhub_official" placeholder="https://t.me/your_channel_name" autocomplete="off"/>
                 <small style="color: var(--text-muted);">This link will be used in all Telegram buttons, banners, and download callouts.</small>
               </div>
               <div class="form-group">
