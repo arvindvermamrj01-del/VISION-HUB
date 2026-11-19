@@ -8,7 +8,7 @@
   catch(_){sessionTag="tab-"+Date.now().toString(36);}
   const sent=new Set();
   const track=(event_type,content_id=null,tag=sessionTag)=>{
-    const key=event_type+":"+String(content_id||"");
+    const key=event_type+":"+String(content_id||"")+":"+(event_type==="page_view"?tag:"");
     if(event_type==="page_view"&&sent.has(key))return;
     sent.add(key);
     db.from("vh_analytics_events").insert({event_type,content_id,session_tag:tag})
