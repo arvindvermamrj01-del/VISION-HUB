@@ -129,13 +129,14 @@
     const host=$("vhFeedbackAdmin"); if(!host||!await isAdmin())return;
     const {data,error}=await db.from("vh_feedback").select("*").order("created_at",{ascending:false}).limit(100);
     if(error){host.textContent=error.message;return;}
-    host.innerHTML="<h2>Admin: Feedback Inbox</h2>"+((data||[]).map(x=>'<article style="'+style+'"><strong>'+esc(x.subject)+'</strong> · '+esc(x.feedback_type)+'<p>'+esc(x.message)+'</p><small>Status: '+esc(x.status)+'</small><div><select id="vhfb-'+Number(x.id)+'"><option value="pending">Pending</option><option value="reviewing">Reviewing</option><option value="resolved">Resolved</option></select> <button type="button" onclick="window.VH_updateFeedback('+Number(x.id)+')">Update status</button></div></article>').join("")||"<p>No feedback yet.</p>");
+    host.innerHTML="<h2>Admin: Feedback Inbox</h2>"+((data||[]).map(x=>'<article style="'+style+'"><strong>'+esc(x.subject)+'</strong> · '+esc(x.feedback_type)+'<p>'+esc(x.message)+'</p><small>Status: '+esc(x.status)+'</small><p><strong>Admin reply:</strong> '+esc(x.admin_reply||"No reply yet")+'</p><div><textarea id="vhfbr-'+Number(x.id)+'" maxlength="2000" placeholder="Write a reply..." style="'+inputStyle+'">'+esc(x.admin_reply||"")+'</textarea><select id="vhfb-'+Number(x.id)+'"><option value="pending">Pending</option><option value="reviewing">Reviewing</option><option value="resolved">Resolved</option></select> <button type="button" onclick="window.VH_updateFeedback('+Number(x.id)+')">Save reply & status</button></div></article>').join("")||"<p>No feedback yet.</p>");
     (data||[]).forEach(x=>{const s=$("vhfb-"+x.id);if(s)s.value=x.status;});
   }
   window.VH_updateFeedback=async id=>{
     if(!await isAdmin())return toast("Admin access required.");
     const status=$("vhfb-"+id)?.value;
-    const {error}=await db.from("vh_feedback").update({status}).eq("id",id);
+    const admin_reply=$("vhfbr-"+id)?.value.trim()||"";
+    const {error}=await db.from("vh_feedback").update({status,admin_reply}).eq("id",id);
     if(error)return toast(error.message);toast("Feedback status updated.");loadAdminFeedback();
   };
   async function loadChangelog(){
