@@ -13,7 +13,7 @@ const meta=[m.year,m.genre,m.rating?'★ '+m.rating:''].filter(Boolean).join(' �
 return '<article class="movie-card"><button class="poster-button" onclick="openMovie(&quot;'+safe(m.id)+'&quot;)" aria-label="View '+safe(m.title)+'">'+poster+'<span class="poster-play"><i class="fas fa-play"></i></span></button><div class="movie-info"><h3>'+safe(m.title)+'</h3><p>'+safe(meta)+'</p><div class="card-actions"><button onclick="openMovie(&quot;'+safe(m.id)+'&quot;)">Details</button><button onclick="toggleItem(&quot;'+safe(m.id)+'&quot;)" aria-label="Add to watchlist">♡</button></div></div></article>';
 }
 function grid(id,items){const el=$(id);if(el)el.innerHTML=items.length?items.map(card).join(""):'<div class="empty-state"><h3>No titles found</h3><p>Try another filter or search.</p></div>'}
-function hero(){const m=data[heroIndex%data.length];if(!m)return;current=m;if($("heroBg"))$("heroBg").style.backgroundImage=(m.backdrop||m.poster)?`url("${m.backdrop||m.poster}")`:"none";if($("heroTitle"))$("heroTitle").textContent=m.title;if($("heroDesc"))$("heroDesc").textContent=m.description;if($("heroMeta"))$("heroMeta").textContent=`${m.year} · ${m.duration} · ★ ${m.rating}`;if($("heroPlayBtn"))$("heroPlayBtn").onclick=()=>openMovie(m.id);if($("heroListBtn"))$("heroListBtn").onclick=()=>toggleItem(m.id)}
+function hero(){const featured=data.filter(item=>item.is_featured&&item.type!=="Short"),pool=featured.length?featured:data;const m=pool[heroIndex%pool.length];if(!m)return;current=m;if($("heroBg"))$("heroBg").style.backgroundImage=(m.backdrop||m.poster)?`url("${m.backdrop||m.poster}")`:"none";if($("heroTitle"))$("heroTitle").textContent=m.title;if($("heroDesc"))$("heroDesc").textContent=m.description;if($("heroMeta"))$("heroMeta").textContent=`${m.year} · ${m.duration} · ★ ${m.rating}`;if($("heroPlayBtn"))$("heroPlayBtn").onclick=()=>openMovie(m.id);if($("heroListBtn"))$("heroListBtn").onclick=()=>toggleItem(m.id)}
 function render(){
 const f=data.filter(m=>(industry==="All"||m.industry===industry)&&(genre==="All"||m.genre===genre));
 grid("trendingGrid",f.filter(x=>x.type==="Movie").slice(0,6));
@@ -22,7 +22,7 @@ grid("newGrid",[...data].sort((a,b)=>Number(b.year||0)-Number(a.year||0)).slice(
 grid("topRatedGrid",[...data].filter(x=>x.rating!==""&&x.rating!=null).sort((a,b)=>Number(b.rating)-Number(a.rating)).slice(0,6));
 let progressItems=[];try{progressItems=data.filter(item=>Number(localStorage.getItem("vh_progress_"+String(item.id))||0)>5).sort((a,b)=>Number(localStorage.getItem("vh_progress_"+String(b.id))||0)-Number(localStorage.getItem("vh_progress_"+String(a.id))||0)).slice(0,6);}catch(_){}
 grid("continueWatchingGrid",progressItems);$("continueWatchingSection")?.classList.toggle("hidden",!progressItems.length);
-grid("homeShortsGrid",data.filter(x=>x.type==="Short").slice(0,6));
+grid("homeShortsGrid",data.filter(x=>x.type==="Short"&&x.is_featured===true).slice(0,6));
 grid("allMoviesGrid",data.filter(x=>x.type==="Movie"&&(movieGenre==="All"||x.genre===movieGenre)));
 grid("allSeriesGrid",data.filter(x=>x.type==="Web Series"));
 grid("shortsGrid",data.filter(x=>x.type==="Short"));
