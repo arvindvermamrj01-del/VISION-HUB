@@ -30,3 +30,10 @@ test("provider tokens are encrypted and can be decrypted with the configured key
   assert.notEqual(first, second, "AES-GCM must use a fresh IV for each encryption");
   assert.equal(await decryptSecret(first, env), "refresh-token-value");
 });
+
+globalThis.window = {};
+await import("../js/terabox-md5.js");
+test("browser chunk checksum matches the server-side MD5 implementation", async () => {
+  assert.equal(await window.VH_MD5_BLOB(new Blob(["abc"])), "900150983cd24fb0d6963f7d28e17f72");
+  assert.equal(await window.VH_MD5_BLOB(new Blob(["message digest"])), "f96b697d7cb7938d525a2f31aaf161d0");
+});
