@@ -42,7 +42,7 @@ window.adminTab=(tab,el)=>{
     "add-shorts":["admin","sub_admin"],manage:["admin","sub_admin","content_editor"],
     "requests-admin":["admin","sub_admin","moderator"],categories:["admin","sub_admin"],songs:["admin","sub_admin"],
     "drive-import":["admin"],"storage-manager":["admin"],reports:["admin"],"users-admin":["admin"],
-    "login-activity":["admin"],"team-admin":["admin"],settings:["admin"]
+    "login-activity":["admin"],"team-admin":["admin","sub_admin","content_editor","moderator"],settings:["admin"]
   };
   if(!(access[tab]||[]).includes(role)){toast("Is section ke liye permission nahi hai.");return;}
   document.querySelectorAll(".admin-tab").forEach(x=>x.classList.remove("active"));
