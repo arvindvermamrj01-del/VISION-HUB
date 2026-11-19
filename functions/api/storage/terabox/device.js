@@ -9,6 +9,6 @@ export async function onRequestPost({request,env}){
     const data=payload.data||{};
     if(!data.device_code||!data.qrcode_url)throw new Error("TeraBox did not return a usable device QR code.");
     const qr=String(data.qrcode_url);
-    return json({device_code:data.device_code,qrcode_url:qr.startsWith("http")?qr:"data:image/png;base64,"+qr,interval:Number(data.interval)||5,expires_in:Number(data.expires_in)||300});
+    return json({device_code:data.device_code,qrcode_url:qr.startsWith("http")||qr.startsWith("data:")?qr:"data:image/png;base64,"+qr,interval:Number(data.interval)||5,expires_in:Number(data.expires_in)||300});
   }catch(error){return json({error:error.message||"TeraBox authorization failed"},502);}
 }
