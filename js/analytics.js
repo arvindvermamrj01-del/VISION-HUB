@@ -7,17 +7,17 @@
   try{sessionTag=sessionStorage.getItem("vh_analytics_session")||crypto.randomUUID();sessionStorage.setItem("vh_analytics_session",sessionTag);}
   catch(_){sessionTag="tab-"+Date.now().toString(36);}
   const sent=new Set();
-  const track=(event_type,content_id=null)=>{
+  const track=(event_type,content_id=null,tag=sessionTag)=>{
     const key=event_type+":"+String(content_id||"");
     if(event_type==="page_view"&&sent.has(key))return;
     sent.add(key);
-    db.from("vh_analytics_events").insert({event_type,content_id,session_tag:sessionTag})
+    db.from("vh_analytics_events").insert({event_type,content_id,session_tag:tag})
       .then(({error})=>{if(error)console.debug("Analytics event not stored:",error.message);});
   };
   const currentPage=()=>document.querySelector(".page.active")?.id?.replace("page-","")||"home";
   const observePage=()=>{
     const page=currentPage();
-    if(page)track("page_view");
+    if(page)track("page_view",null,sessionTag+":"+page);
   };
   document.addEventListener("DOMContentLoaded",()=>{
     observePage();
