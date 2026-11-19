@@ -7,7 +7,7 @@ create extension if not exists pgcrypto;
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   fullname text,
-  role text not null default 'user' check (role in ('user','admin')),
+  role text not null default 'user' check (role in ('user','admin','sub_admin','content_editor','moderator')),
   created_at timestamptz not null default now()
 );
 alter table public.profiles enable row level security;
@@ -15,11 +15,27 @@ alter table public.profiles enable row level security;
 create or replace function public.vh_is_admin()
 returns boolean language sql stable security definer
 set search_path = public
-as $$
+as $
   select exists(select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin');
-$$;
+$;
 revoke all on function public.vh_is_admin() from public;
 grant execute on function public.vh_is_admin() to authenticated;
+
+create or replace function public.vh_can_manage_content()
+returns boolean language sql stable security definer set search_path=public
+as $ select exists(select 1 from public.profiles p where p.id=auth.uid() and p.role in ('admin','sub_admin','content_editor')); $;
+create or replace function public.vh_can_manage_requests()
+returns boolean language sql stable security definer set search_path=public
+as $ select exists(select 1 from public.profiles p where p.id=auth.uid() and p.role in ('admin','sub_admin','moderator')); $;
+create or replace function public.vh_can_manage_catalog()
+returns boolean language sql stable security definer set search_path=public
+as $ select exists(select 1 from public.profiles p where p.id=auth.uid() and p.role in ('admin','sub_admin')); $;
+revoke all on function public.vh_can_manage_content() from public;
+revoke all on function public.vh_can_manage_requests() from public;
+revoke all on function public.vh_can_manage_catalog() from public;
+grant execute on function public.vh_can_manage_content() to authenticated;
+grant execute on function public.vh_can_manage_requests() to authenticated;
+grant execute on function public.vh_can_manage_catalog() to authenticated;
 
 create or replace function public.vh_create_profile()
 returns trigger language plpgsql security definer
@@ -73,7 +89,8 @@ alter table public.vh_content enable row level security;
 drop policy if exists "published content is public" on public.vh_content;
 create policy "published content is public" on public.vh_content for select to anon, authenticated using (published = true or public.vh_is_admin());
 drop policy if exists "admins manage content" on public.vh_content;
-create policy "admins manage content" on public.vh_content for all to authenticated using (public.vh_is_admin()) with check (public.vh_is_admin());
+drop policy if exists "staff manage content" on public.vh_content;
+create policy "staff manage content" on public.vh_content for all to authenticated using (public.vh_can_manage_content()) with check (public.vh_can_manage_content());
 grant select on public.vh_content to anon, authenticated;
 grant insert, update, delete on public.vh_content to authenticated;
 grant usage, select on sequence public.vh_content_id_seq to authenticated;
@@ -96,7 +113,8 @@ drop policy if exists "submit request" on public.vh_requests;
 create policy "submit request" on public.vh_requests for insert to anon, authenticated
 with check (status='pending' and reviewed_by is null and (user_id is null or user_id = auth.uid()));
 drop policy if exists "admins manage requests" on public.vh_requests;
-create policy "admins manage requests" on public.vh_requests for all to authenticated using (public.vh_is_admin()) with check (public.vh_is_admin());
+drop policy if exists "staff manage requests" on public.vh_requests;
+create policy "staff manage requests" on public.vh_requests for all to authenticated using (public.vh_can_manage_requests()) with check (public.vh_can_manage_requests());
 grant insert on public.vh_requests to anon, authenticated;
 grant select, update, delete on public.vh_requests to authenticated;
 
@@ -125,7 +143,8 @@ alter table public.vh_categories enable row level security;
 drop policy if exists "categories public read" on public.vh_categories;
 create policy "categories public read" on public.vh_categories for select to anon, authenticated using (true);
 drop policy if exists "admins manage categories" on public.vh_categories;
-create policy "admins manage categories" on public.vh_categories for all to authenticated using (public.vh_is_admin()) with check (public.vh_is_admin());
+drop policy if exists "catalog staff manage categories" on public.vh_categories;
+create policy "catalog staff manage categories" on public.vh_categories for all to authenticated using (public.vh_can_manage_catalog()) with check (public.vh_can_manage_catalog());
 grant select on public.vh_categories to anon, authenticated;
 grant insert, update, delete on public.vh_categories to authenticated;
 
@@ -143,7 +162,8 @@ alter table public.vh_songs enable row level security;
 drop policy if exists "published songs public read" on public.vh_songs;
 create policy "published songs public read" on public.vh_songs for select to anon, authenticated using (is_published or public.vh_is_admin());
 drop policy if exists "admins manage songs" on public.vh_songs;
-create policy "admins manage songs" on public.vh_songs for all to authenticated using (public.vh_is_admin()) with check (public.vh_is_admin());
+drop policy if exists "catalog staff manage songs" on public.vh_songs;
+create policy "catalog staff manage songs" on public.vh_songs for all to authenticated using (public.vh_can_manage_catalog()) with check (public.vh_can_manage_catalog());
 grant select on public.vh_songs to anon, authenticated;
 grant insert, update, delete on public.vh_songs to authenticated;
 
@@ -194,7 +214,7 @@ alter table public.vh_content add column if not exists storage_path text;
 
 drop policy if exists "admins upload private media" on storage.objects;
 create policy "admins upload private media" on storage.objects for insert to authenticated
-with check (bucket_id='vh-private-media' and (storage.foldername(name))[1]=auth.uid()::text and public.vh_is_admin());
+with check (bucket_id='vh-private-media' and (storage.foldername(name))[1]=auth.uid()::text and public.vh_can_manage_content());
 drop policy if exists "admins delete private media" on storage.objects;
 create policy "admins delete private media" on storage.objects for delete to authenticated
 using (bucket_id='vh-private-media' and public.vh_is_admin());
