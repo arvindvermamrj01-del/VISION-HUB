@@ -147,7 +147,7 @@
     const modal=document.createElement("div");
     modal.id="vhEditContentModal";
     modal.className="vh-edit-modal";
-    modal.innerHTML='<section class="vh-edit-panel" role="dialog" aria-modal="true" aria-labelledby="vhEditHeading"><button type="button" class="vh-edit-close" data-vh-edit-close aria-label="Close">×</button><h2 id="vhEditHeading">Edit published content</h2><p>Update movie details. Existing video uploads and quality links will remain untouched.</p><form id="vhEditContentForm"><div class="vh-edit-grid"><label>Title *<input name="title" required maxlength="250"></label><label>Release year<input name="release_year" type="number" min="1888" max="2100"></label><label>Genre<input name="genre"></label><label>Language<input name="language"></label><label>Rating<input name="rating" type="number" min="0" max="10" step="0.1"></label><label>Duration<input name="duration" placeholder="e.g. 2h 15m"></label><label>Poster URL<input name="poster_url" type="url"></label><label>Trailer URL<input name="trailer_url" type="url"></label><label>Director<input name="director"></label><label>Cast<input name="cast"></label><label class="vh-edit-wide">Description<textarea name="description" rows="4"></textarea></label><label class="vh-edit-wide">Screenshots URLs (comma or new line separated)<textarea name="screenshots" rows="4" placeholder="https://..."></textarea></label><label class="vh-edit-wide">Subtitle tracks — Label|language|HTTPS .vtt URL<textarea name="subtitle_tracks" rows="3" placeholder="Hindi|hi|https://cdn.example.com/movie-hi.vtt"></textarea></label></div><div class="vh-edit-actions"><button type="button" class="btn-delete" data-vh-edit-close>Cancel</button><button type="submit" class="btn-primary">Save changes</button></div></form></section>';
+    modal.innerHTML='<section class="vh-edit-panel" role="dialog" aria-modal="true" aria-labelledby="vhEditHeading"><button type="button" class="vh-edit-close" data-vh-edit-close aria-label="Close">×</button><h2 id="vhEditHeading">Edit published content</h2><p>Update movie details. Existing video uploads and quality links will remain untouched.</p><form id="vhEditContentForm"><div class="vh-edit-grid"><label>Title *<input name="title" required maxlength="250"></label><label>Release year<input name="release_year" type="number" min="1888" max="2100"></label><label>Genre<input name="genre"></label><label>Language<input name="language"></label><label>Industry<select name="industry"><option value="All">Other / Not specified</option><option value="Bollywood">Bollywood</option><option value="Hollywood">Hollywood</option><option value="South">South Indian</option></select></label><label>Rating<input name="rating" type="number" min="0" max="10" step="0.1"></label><label>Duration<input name="duration" placeholder="e.g. 2h 15m"></label><label>Poster URL<input name="poster_url" type="url"></label><label>Trailer URL<input name="trailer_url" type="url"></label><label>Director<input name="director"></label><label>Cast<input name="cast"></label><label class="vh-edit-wide">Description<textarea name="description" rows="4"></textarea></label><label class="vh-edit-wide">Screenshots URLs (comma or new line separated)<textarea name="screenshots" rows="4" placeholder="https://..."></textarea></label><label class="vh-edit-wide">Subtitle tracks — Label|language|HTTPS .vtt URL<textarea name="subtitle_tracks" rows="3" placeholder="Hindi|hi|https://cdn.example.com/movie-hi.vtt"></textarea></label></div><div class="vh-edit-actions"><button type="button" class="btn-delete" data-vh-edit-close>Cancel</button><button type="submit" class="btn-primary">Save changes</button></div></form></section>';
     document.body.appendChild(modal);
     modal.querySelectorAll("[data-vh-edit-close]").forEach(button=>button.addEventListener("click",()=>modal.classList.remove("open")));
     modal.addEventListener("click",event=>{if(event.target===modal)modal.classList.remove("open");});
@@ -181,6 +181,7 @@
     editField(form,"release_year",item.year);
     editField(form,"genre",item.genre);
     editField(form,"language",item.language);
+    editField(form,"industry",item.industry);
     editField(form,"rating",item.rating);
     editField(form,"duration",item.duration);
     editField(form,"poster_url",item.poster);
@@ -219,6 +220,7 @@
         release_year:value("release_year")?year:null,
         genre:value("genre")||null,
         language:value("language")||null,
+        industry:value("industry")||"All",
         rating,
         duration:value("duration")||null,
         poster_url:optionalUrl(value("poster_url"),"Poster"),
@@ -297,7 +299,7 @@
         const file=input.files?.[0];if(file)uploads.push({resolution:input.dataset.vhQualityFile,file,is_primary:false});
       });
       [["180p","addDl180"],["240p","addDl240"],["420p","addDl420"],["480p","addDl480"],["720p","addDl720"],["1080p","addDl1080"],["2K","addDl2k"],["4K","addDl4k"],["8K","addDl8k"]].forEach(([resolution,id])=>{
-        const url=$(id)?.value.trim();if(url)links.push({resolution,url,is_primary:false,storage_provider:provider});
+        const rawUrl=$(id)?.value.trim();if(rawUrl)links.push({resolution,url:validHttpUrl(rawUrl),is_primary:false,storage_provider:provider});
       });
     }
     if(!uploads.length&&!links.length)throw new Error("Video file upload karein ya authorised video URL dein.");
@@ -310,7 +312,7 @@
       const row={
         title,content_type:type,video_url:primaryUpload?"private://"+primaryUpload.path:primary.url,
         storage_provider:primaryUpload?(primaryUpload.storage_provider||provider):(primary.storage_provider||provider),published:true,created_by:user.id,
-        poster_url:isShort?null:($("addPoster")?.value.trim()||null),
+        poster_url:isShort?null:validHttpUrl($("addPoster")?.value.trim()||"")||null,
         genre:isShort?"Shorts":($("addGenre")?.value||"Drama"),
         language:isShort?"":($("addLang")?.value.trim()||""),
         release_year:isShort?new Date().getFullYear():(Number($("addYear")?.value)||null),
@@ -318,11 +320,11 @@
         description:isShort?($("shortDesc")?.value.trim()||""):($("addDesc")?.value.trim()||""),
         cast:isShort?"":($("addCast")?.value.trim()||""),
         director:isShort?"":($("addDirector")?.value.trim()||null),
-        screenshots:isShort?[]:($("addScreenshots")?.value.split(",").map(value=>value.trim()).filter(Boolean)||[]),
+        screenshots:isShort?[]:($("addScreenshots")?.value.split(/[\\n,]+/).map(value=>value.trim()).filter(Boolean).map(value=>validHttpUrl(value))||[]),
         duration:isShort?"":($("addDuration")?.value.trim()||""),
-        trailer_url:isShort?null:($("addTrailer")?.value.trim()||null),
+        trailer_url:isShort?null:(validHttpUrl($("addTrailer")?.value.trim()||"")||null),
         subtitle_tracks:isShort?[]:parseSubtitleLines($("vhSubtitleTracks")?.value||""),
-        industry:isShort?"All":((($("addLang")?.value||"").toLowerCase().includes("hindi"))?"Bollywood":"All")
+        industry:isShort?"All":($("addIndustry")?.value||"All")
       };
       const {data:created,error}=await db.from("vh_content").insert(row).select("*").single();
       if(error)throw error;
