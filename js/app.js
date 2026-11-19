@@ -25,8 +25,39 @@ window.liveSearch=q=>{const t=q.trim().toLowerCase(),a=data.filter(m=>(m.title+"
 window.toggleMenu=()=> $("navLinks")?.classList.toggle("open");
 window.submitRequest=e=>{e.preventDefault();const r={title:$("reqTitle").value.trim(),type:$("reqType").value,year:$("reqYear").value,language:$("reqLang").value,notes:$("reqNotes").value,date:new Date().toLocaleDateString()};let a=getList("vh_requests");a.unshift(r);setList("vh_requests",a);$("reqTitle").value="";$("reqNotes").value="";renderRequests();toast("Saved on this device. Backend setup is needed for team review.")};
 function renderRequests(){const a=getList("vh_requests");if($("requestsList"))$("requestsList").innerHTML=a.length?a.slice(0,8).map(x=>`<div class="request-item"><b>${safe(x.title)}</b><small>${safe(x.type)} · ${safe(x.date)}</small></div>`).join(""):"<p>No requests yet.</p>";if($("statRequests"))$("statRequests").textContent=a.length}
-window.loginUser=e=>{e.preventDefault();toast("Secure login is not connected. Configure Supabase Auth before collecting passwords.")};window.registerUser=e=>{e.preventDefault();toast("Sign-up is disabled until secure authentication is configured.")};window.loginGuest=()=>toast("Guest browsing is available.");window.logoutUser=()=>toast("No signed-in account.");window.logoutAllDevices=()=>toast("Multi-device logout requires secure backend authentication.");window.togglePassword=id=>{const x=$(id);if(x)x.type=x.type==="password"?"text":"password"};
-window.adminLogin=e=>{e.preventDefault();toast("Admin access is disabled in static demo mode. Configure server-side roles and database policies first.")};window.adminLogout=()=>showPage("home");window.adminTab=(tab,el)=>{document.querySelectorAll(".admin-tab").forEach(x=>x.classList.remove("active"));$("tab-"+tab)?.classList.add("active");el?.parentElement?.querySelectorAll("button").forEach(x=>x.classList.toggle("active",x===el))};
-["addMovie","importFromDrive","updateAdminCredentials","addSubAdmin","addCategory","addSong","saveWebsiteSettings"].forEach(fn=>window[fn]=e=>{e?.preventDefault?.();toast("Publishing requires a secure backend and verified content rights.")});window.filterManageList=()=>{};window.filterUsersList=()=>{};
-document.addEventListener("DOMContentLoaded",()=>{render();renderRequests();document.addEventListener("keydown",e=>{if(e.key==="/"&&!["INPUT","TEXTAREA"].includes(document.activeElement.tagName)){e.preventDefault();toggleSearch()}if(e.key==="Escape"){closeModal();closePlayer();closeDownloadModal()}})});
+window.loginGuest=()=>toast("Guest browsing is available.");
+window.togglePassword=id=>{
+  const x=$(id);
+  if(x)x.type=x.type==="password"?"text":"password";
+};
+
+window.adminTab=(tab,el)=>{
+  document.querySelectorAll(".admin-tab").forEach(x=>x.classList.remove("active"));
+  $("tab-"+tab)?.classList.add("active");
+  el?.parentElement?.querySelectorAll("button").forEach(x=>x.classList.toggle("active",x===el));
+};
+
+["addMovie","importFromDrive","updateAdminCredentials","addSubAdmin","addCategory","addSong","saveWebsiteSettings"].forEach(fn=>window[fn]=e=>{
+  e?.preventDefault?.();
+  toast("Publishing requires a secure backend and verified content rights.");
+});
+
+window.filterManageList=()=>{};
+window.filterUsersList=()=>{};
+
+document.addEventListener("DOMContentLoaded",()=>{
+  render();
+  renderRequests();
+  document.addEventListener("keydown",e=>{
+    if(e.key==="/"&&!["INPUT","TEXTAREA"].includes(document.activeElement.tagName)){
+      e.preventDefault();
+      toggleSearch();
+    }
+    if(e.key==="Escape"){
+      closeModal();
+      closePlayer();
+      closeDownloadModal();
+    }
+  });
+});
 })();
