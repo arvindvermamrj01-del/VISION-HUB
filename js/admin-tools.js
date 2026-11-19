@@ -185,6 +185,7 @@
         telegram_url:$("settingTelegram")?.value.trim()||"",
         seo_description:$("settingSeo")?.value.trim()||"",
         maintenance_mode:$("settingMaintenance")?.value||"off",
+        adsense_publisher_id:$("settingAdsensePublisher")?.value.trim()||"",
         donation_upi_id:$("settingDonationUpi")?.value.trim()||"",
         donation_qr_url:$("settingDonationQr")?.value.trim()||"",
         donation_message:$("settingDonationMessage")?.value.trim()||"Support Vision Hub development"
