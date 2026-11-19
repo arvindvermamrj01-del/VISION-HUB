@@ -165,8 +165,8 @@
       const {data:created,error}=await db.from("vh_content").insert(row).select("*").single();
       if(error)throw error;
       const assetRows=[
-        ...uploaded.map(x=>({content_id:created.id,storage_path:x.path,storage_provider:"supabase",resolution:x.resolution,is_primary:x.is_primary,language:isShort?"":($("vhMediaLanguages")?.value.trim()||"")})),
-        ...links.map(x=>({content_id:created.id,storage_path:x.url,storage_provider:x.storage_provider||provider,resolution:x.resolution,is_primary:x.is_primary,language:isShort?"":($("vhMediaLanguages")?.value.trim()||"")}))
+        ...uploaded.map(x=>({content_id:created.id,asset_type:"video",storage_path:x.path,storage_provider:"supabase",resolution:x.resolution,is_primary:x.is_primary,language:isShort?"":($("vhMediaLanguages")?.value.trim()||"")})),
+        ...links.map(x=>({content_id:created.id,asset_type:"video",storage_path:x.url,storage_provider:x.storage_provider||provider,resolution:x.resolution,is_primary:x.is_primary,language:isShort?"":($("vhMediaLanguages")?.value.trim()||"")}))
       ];
       if(assetRows.length){
         const {error:assetError}=await db.from("vh_media_assets").insert(assetRows);
