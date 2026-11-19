@@ -5,7 +5,7 @@
   if (!db) return;
   const $ = id => document.getElementById(id);
   const providers = ["supabase", "terabox", "mega", "degoo", "google_drive", "mediafire", "pcloud", "box", "icedrive", "koofr", "internxt", "telegram"];
-  const directUploadProviders = ["supabase"];
+  const directUploadProviders = ["supabase","terabox"];
   let teraboxDevice = null;
   const isAdmin = async () => {
     const { data: { user }, error } = await db.auth.getUser();
