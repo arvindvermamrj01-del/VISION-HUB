@@ -122,6 +122,16 @@
       const item=(window.VISION_HUB_DATA||[]).find(x=>String(x.id)===String(id));
       const button=$("modalPlayBtn");
       if(button&&item?.isSupabaseContent){
+        if(item.storage_provider==="google_drive"){
+          button.onclick=()=>{
+            const iframe=$("playerIframe"),fallback=$("playerFallback"),overlay=$("playerOverlay"),title=$("playerTitle");
+            if(iframe)iframe.src=item.video_url||("https://drive.google.com/file/d/"+encodeURIComponent(item.storage_path)+"/preview");
+            if(fallback)fallback.classList.remove("active");
+            if(title)title.textContent="▶ "+(item.title||"Now Playing");
+            overlay?.classList.add("open");
+          };
+          return result;
+        }
         button.onclick=async()=>{
           try{
             const {data,error}=await db.from("vh_media_assets").select("*").eq("content_id",Number(id));
