@@ -37,3 +37,9 @@ This repository has no Cloudflare account credentials, Supabase SQL execution ac
 New direct uploads use the private Supabase Storage bucket `vh-private-media`. The player creates six-hour signed URLs for published content and tracks. The existing public `vh-media` bucket is intentionally retained for backwards compatibility with old URLs; files already in that bucket remain publicly accessible until they are migrated and re-uploaded.
 
 Before deploying the new upload/player code to an existing Supabase project, run `supabase/private-media-migration.sql` in the Supabase SQL Editor as project owner. The full `supabase/setup.sql` also includes these objects for a fresh setup. Do not make the legacy bucket private until its existing media has been migrated and verified.
+
+
+## Primary-admin-managed staff accounts
+The Control Center supports three least-privilege staff roles: `sub_admin` (catalogue and requests), `content_editor` (catalogue publishing only), and `moderator` (request moderation only). Staff provisioning runs through the Cloudflare Pages Function `/api/admin/subadmins`; the Supabase service-role key is used server-side only and must never be exposed in browser code. Temporary passwords must be at least 12 characters and should be delivered securely.
+
+For an existing Supabase database, run `supabase/sub-admin-role-migration.sql` as project owner before using staff provisioning. Fresh installations should use the updated `supabase/setup.sql`. The primary `admin` role remains the only role allowed to read login activity, manage users/staff, configure site settings, or view administrative analytics.
