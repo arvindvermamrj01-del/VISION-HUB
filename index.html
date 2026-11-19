@@ -336,6 +336,31 @@
       </section>
     </div>
 
+    <!-- Public Supabase authentication pages -->
+    <section id="page-login" class="page">
+      <div class="auth-container"><div class="auth-box">
+        <div class="auth-brand">🎬 Vision Hub</div><h2>Welcome Back</h2>
+        <form onsubmit="loginUser(event)">
+          <div class="form-group"><label for="userEmail">Email</label><input id="userEmail" type="email" autocomplete="email" required></div>
+          <div class="form-group"><label for="userPassword">Password</label><input id="userPassword" type="password" autocomplete="current-password" required></div>
+          <button class="btn-primary full-width" type="submit">Login</button>
+        </form>
+        <p style="margin-top:16px">New here? <a href="#register" onclick="showPage('register')">Create an account</a></p>
+      </div></div>
+    </section>
+    <section id="page-register" class="page">
+      <div class="auth-container"><div class="auth-box">
+        <div class="auth-brand">🎬 Vision Hub</div><h2>Create Account</h2>
+        <form onsubmit="registerUser(event)">
+          <div class="form-group"><label for="registerName">Full name</label><input id="registerName" type="text" autocomplete="name" required></div>
+          <div class="form-group"><label for="registerEmail">Email</label><input id="registerEmail" type="email" autocomplete="email" required></div>
+          <div class="form-group"><label for="registerPassword">Password (minimum 8 characters)</label><input id="registerPassword" type="password" autocomplete="new-password" minlength="8" required></div>
+          <button class="btn-primary full-width" type="submit">Create Account</button>
+        </form>
+        <p style="margin-top:16px">Already registered? <a href="#login" onclick="showPage('login')">Login</a></p>
+      </div></div>
+    </section>
+
     <!-- 9. RESTRICTED ADMIN LOGIN PAGE -->
     <!-- Accessible strictly via #control-center or Ctrl+Shift+A; never linked in public navbar -->
     <div id="page-admin-login" class="page">
@@ -344,7 +369,7 @@
           <div class="auth-brand">⚙️ Vision Hub Control Center</div>
           <h2>Restricted Administrative Portal</h2>
           <p class="auth-sub" style="color: var(--warning);">
-            <i class="fas fa-shield-alt"></i> Authorized Administrative Personnel Only
+            <i class="fas fa-shield-alt"></i> Authorized Admin & Staff Only
           </p>
 
           <div class="admin-security-pill">
@@ -354,7 +379,7 @@
           <!-- Admin Authentication Form -->
           <form id="adminLoginForm" onsubmit="adminLogin(event)">
             <div class="form-group">
-              <label>Admin Email or Username</label>
+              <label>Staff Login Email</label>
               <input type="text" id="adminUser" placeholder="admin or admin email" autocomplete="username" required/>
             </div>
             <div class="form-group">
@@ -384,41 +409,44 @@
             <div><span id="adminRoleBadge" class="admin-role-badge">Admin</span></div>
           </div>
           <nav class="admin-nav">
-            <button class="admin-nav-btn active" onclick="adminTab('dashboard',this)">
+            <button data-vh-roles="admin" class="admin-nav-btn active" onclick="adminTab('dashboard',this)">
               <i class="fas fa-tachometer-alt"></i> Dashboard
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('add-movie',this)">
+            <button data-vh-roles="admin,sub_admin,content_editor" class="admin-nav-btn" onclick="adminTab('add-movie',this)">
               <i class="fas fa-plus-circle"></i> Add Content
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('add-shorts',this)"><i class="fas fa-video"></i> Upload Shorts</button>
-            <button class="admin-nav-btn" onclick="adminTab('manage',this)">
+            <button data-vh-roles="admin,sub_admin" class="admin-nav-btn" onclick="adminTab('add-shorts',this)"><i class="fas fa-video"></i> Upload Shorts</button>
+            <button data-vh-roles="admin,sub_admin,content_editor" class="admin-nav-btn" onclick="adminTab('manage',this)">
               <i class="fas fa-film"></i> Manage Catalog
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('drive-import',this)">
+            <button data-vh-roles="admin" class="admin-nav-btn" onclick="adminTab('drive-import',this)">
               <i class="fab fa-google-drive"></i> Drive Import
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('storage-manager',this)">
+            <button data-vh-roles="admin" class="admin-nav-btn" onclick="adminTab('storage-manager',this)">
               <i class="fas fa-cloud"></i> Storage Manager
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('requests-admin',this)">
+            <button data-vh-roles="admin,sub_admin,moderator" class="admin-nav-btn" onclick="adminTab('requests-admin',this)">
               <i class="fas fa-inbox"></i> User Requests
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('reports',this)">
+            <button data-vh-roles="admin" class="admin-nav-btn" onclick="adminTab('reports',this)">
               <i class="fas fa-chart-bar"></i> Analytics & Reports
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('users-admin',this)">
+            <button data-vh-roles="admin" class="admin-nav-btn" onclick="adminTab('users-admin',this)">
               <i class="fas fa-users-cog"></i> User Management
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('team-admin',this)">
+            <button data-vh-roles="admin" class="admin-nav-btn" onclick="adminTab('login-activity',this);loadLoginActivity()">
+              <i class="fas fa-history"></i> Login Activity
+            </button>
+            <button data-vh-roles="admin,sub_admin,content_editor,moderator" class="admin-nav-btn" onclick="adminTab('team-admin',this)">
               <i class="fas fa-user-shield"></i> Admins & Password
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('settings',this)">
+            <button data-vh-roles="admin" class="admin-nav-btn" onclick="adminTab('settings',this)">
               <i class="fas fa-sliders-h"></i> Platform Settings
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('categories',this)">
+            <button data-vh-roles="admin,sub_admin" class="admin-nav-btn" onclick="adminTab('categories',this)">
               <i class="fas fa-tags"></i> Category Manager
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('songs',this)">
+            <button data-vh-roles="admin,sub_admin" class="admin-nav-btn" onclick="adminTab('songs',this)">
               <i class="fas fa-music"></i> Song Management
             </button>
             <button class="admin-nav-btn logout-btn" onclick="adminLogout()">
@@ -431,7 +459,7 @@
         <main class="admin-main">
           
           <!-- TAB 1: Dashboard Overview -->
-          <div id="tab-dashboard" class="admin-tab active">
+          <div data-vh-roles="admin" id="tab-dashboard" class="admin-tab active">
             <h2>📊 Dashboard & Performance Overview</h2>
             <div class="stats-grid">
               <div class="stat-card blue">
@@ -468,7 +496,7 @@
           </div>
 
           <!-- TAB 2: Add Movie / Series (With Multi-Resolution Downloads & Telegram Integration) -->
-          <div id="tab-add-movie" class="admin-tab">
+          <div data-vh-roles="admin,sub_admin,content_editor" id="tab-add-movie" class="admin-tab">
             <h2>➕ Add New Movie / Web Series</h2>
             <form class="admin-form" onsubmit="addMovie(event)">
               <div class="form-row">
@@ -529,19 +557,21 @@
                 <label for="addStorageProvider">Upload / Link Storage</label>
                 <select id="addStorageProvider">
                   <option value="supabase">Supabase (Default)</option>
-                  <option value="terabox">TeraBox (1 TB advertised free — API setup required)</option>
-                  <option value="mega">MEGA (about 20 GB — setup required)</option>
-                  <option value="degoo">Degoo (free quota varies — manual link)</option>
-                  <option value="google_drive">Google Drive (15 GB — API setup required)</option>
-                  <option value="mediafire">MediaFire (10 GB — setup required)</option>
-                  <option value="pcloud">pCloud (up to 10 GB — API setup required)</option>
-                  <option value="box">Box (10 GB — API setup required)</option>
-                  <option value="icedrive">Icedrive (about 10 GB — manual link)</option>
-                  <option value="koofr">Koofr (about 10 GB — API setup required)</option>
-                  <option value="internxt">Internxt (free quota varies — manual link)</option>
-                  <option value="telegram">Telegram (post link)</option>
+                  <option value="terabox">TeraBox (connect account first)</option>
+                  <option value="mega">MEGA (link only; API pending)</option>
+                  <option value="degoo">Degoo (link only; API pending)</option>
+                  <option value="google_drive">Google Drive (connect account first)</option>
+                  <option value="mediafire">MediaFire (link only; API pending)</option>
+                  <option value="pcloud">pCloud (link only; OAuth pending)</option>
+                  <option value="box">Box (link only; OAuth pending)</option>
+                  <option value="icedrive">Icedrive (link only; API pending)</option>
+                  <option value="koofr">Koofr (link only; API pending)</option>
+                  <option value="internxt">Internxt (link only; API pending)</option>
+                  <option value="telegram">Telegram (post link only; not large video storage)</option>
                 </select>
                 <input type="file" id="addVideoFile" accept="video/*"/>
+                <p id="teraboxUploadProgress" role="status" aria-live="polite"></p>
+                <p id="googleDriveUploadProgress" role="status" aria-live="polite"></p>
               </div>
 
               <!-- Multi-Resolution Download Link Inputs -->
@@ -612,7 +642,7 @@
           </div>
 
           <!-- TAB: Upload Shorts -->
-          <div id="tab-add-shorts" class="admin-tab">
+          <div data-vh-roles="admin,sub_admin" id="tab-add-shorts" class="admin-tab">
             <h2>📱 Upload & Publish Shorts</h2>
             <p style="color:var(--text-muted);margin-bottom:18px;">Only upload original or properly licensed short videos.</p>
             <form class="admin-form" onsubmit="publishShort(event)">
@@ -625,19 +655,21 @@
                 <label for="shortStorageProvider">Upload / Link Storage</label>
                 <select id="shortStorageProvider">
                   <option value="supabase">Supabase (Default)</option>
-                  <option value="terabox">TeraBox (1 TB advertised free — API setup required)</option>
-                  <option value="mega">MEGA (about 20 GB — setup required)</option>
-                  <option value="degoo">Degoo (free quota varies — manual link)</option>
-                  <option value="google_drive">Google Drive (15 GB — API setup required)</option>
-                  <option value="mediafire">MediaFire (10 GB — setup required)</option>
-                  <option value="pcloud">pCloud (up to 10 GB — API setup required)</option>
-                  <option value="box">Box (10 GB — API setup required)</option>
-                  <option value="icedrive">Icedrive (about 10 GB — manual link)</option>
-                  <option value="koofr">Koofr (about 10 GB — API setup required)</option>
-                  <option value="internxt">Internxt (free quota varies — manual link)</option>
-                  <option value="telegram">Telegram (post link)</option>
+                  <option value="terabox">TeraBox (requires connected account)</option>
+                  <option value="mega">MEGA (link only; API pending)</option>
+                  <option value="degoo">Degoo (link only; API pending)</option>
+                  <option value="google_drive">Google Drive (connect account first)</option>
+                  <option value="mediafire">MediaFire (link only; API pending)</option>
+                  <option value="pcloud">pCloud (link only; OAuth pending)</option>
+                  <option value="box">Box (link only; OAuth pending)</option>
+                  <option value="icedrive">Icedrive (link only; API pending)</option>
+                  <option value="koofr">Koofr (link only; API pending)</option>
+                  <option value="internxt">Internxt (link only; API pending)</option>
+                  <option value="telegram">Telegram (post link only; not large video storage)</option>
                 </select>
                 <input type="file" id="shortVideoFile" accept="video/*"/>
+                <p id="teraboxShortUploadProgress" role="status" aria-live="polite"></p>
+                <p id="googleDriveShortUploadProgress" role="status" aria-live="polite"></p>
                 <label for="shortVideoUrl">Or authorised video / post URL</label>
                 <input type="url" id="shortVideoUrl" placeholder="https://..."/>
               </div>
@@ -650,7 +682,7 @@
           </div>
 
           <!-- TAB 3: Manage Content -->
-          <div id="tab-manage" class="admin-tab">
+          <div data-vh-roles="admin,sub_admin,content_editor" id="tab-manage" class="admin-tab">
             <h2>🎬 Manage Catalog Content</h2>
             <div class="admin-toolbar">
               <input type="text" id="manageSearch" placeholder="Filter by title, genre, language..." oninput="filterManageList(this.value)"/>
@@ -659,7 +691,7 @@
           </div>
 
           <!-- TAB 4: Google Drive Import -->
-          <div id="tab-drive-import" class="admin-tab">
+          <div data-vh-roles="admin" id="tab-drive-import" class="admin-tab">
             <h2>☁️ Google Drive Direct Import</h2>
             <div class="drive-import-box">
               <div class="drive-icon"><i class="fab fa-google-drive"></i></div>
@@ -689,7 +721,7 @@
           </div>
 
           <!-- STORAGE MANAGER -->
-          <div id="tab-storage-manager" class="admin-tab">
+          <div data-vh-roles="admin" id="tab-storage-manager" class="admin-tab">
             <h2>☁️ Storage Manager</h2>
             <p style="color:var(--text-muted);margin-bottom:18px;">Choose the default provider for new uploads. You can override it on each Movie, Series or Short upload.</p>
             <form class="admin-form" onsubmit="saveStorageSettings(event)">
@@ -697,17 +729,17 @@
                 <label for="defaultStorageProvider">Default Storage Provider</label>
                 <select id="defaultStorageProvider">
                   <option value="supabase">Supabase (recommended)</option>
-                  <option value="terabox">TeraBox</option>
-                  <option value="mega">MEGA</option>
-                  <option value="degoo">Degoo</option>
-                  <option value="google_drive">Google Drive</option>
-                  <option value="mediafire">MediaFire</option>
-                  <option value="pcloud">pCloud</option>
-                  <option value="box">Box</option>
-                  <option value="icedrive">Icedrive</option>
-                  <option value="koofr">Koofr</option>
-                  <option value="internxt">Internxt</option>
-                  <option value="telegram">Telegram</option>
+                  <option value="terabox">TeraBox (requires connected account)</option>
+                  <option value="mega" disabled>MEGA (not connected)</option>
+                  <option value="degoo" disabled>Degoo (not connected)</option>
+                  <option value="google_drive">Google Drive (requires connected account)</option>
+                  <option value="mediafire" disabled>MediaFire (not connected)</option>
+                  <option value="pcloud" disabled>pCloud (OAuth pending)</option>
+                  <option value="box" disabled>Box (OAuth pending)</option>
+                  <option value="icedrive" disabled>Icedrive (not connected)</option>
+                  <option value="koofr" disabled>Koofr (not connected)</option>
+                  <option value="internxt" disabled>Internxt (not connected)</option>
+                  <option value="telegram" disabled>Telegram (delivery only; not video storage)</option>
                 </select>
               </div>
               <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Save Default Storage</button>
@@ -715,26 +747,44 @@
             </form>
             <div class="admin-form" style="margin-top:22px;">
               <h3>Provider availability</h3>
-              <p><strong>Supabase:</strong> Existing upload provider (subject to bucket and RLS configuration).</p>
-              <p><strong>Google Drive, Box, pCloud, Koofr:</strong> Official API options exist; OAuth credentials and server-side upload integration are still required.</p>
-              <p><strong>TeraBox:</strong> Official Open Platform exists; application approval and server-side OAuth credentials are required.</p>
+              <p><strong>Supabase:</strong> Private-bucket direct uploads with signed playback URLs (subject to SQL migration).</p>
+              <p><strong>Google Drive:</strong> OAuth connection and resumable chunk upload are integrated; videos use the Drive preview iframe and are shared as viewer links for public playback. Live account testing is still required. <strong>Box:</strong> Official chunked upload API exists; OAuth and account limits apply. <strong>pCloud, Koofr:</strong> OAuth and tested upload connectors are still required.</p>
+              <p><strong>TeraBox:</strong> Official Open Platform device authorization, chunked upload and HLS playback up to 1080p are integrated. Developer app approval, server-side credentials and a connected account are required; live upload/playback still needs account testing.</p>
               <p><strong>MEGA:</strong> Third-party SDK options exist; no website connector is configured.</p>
               <p><strong>MediaFire:</strong> API credentials and a tested upload connector are still required.</p>
               <p><strong>Degoo, Icedrive, Internxt:</strong> Manual authorised links only until a supported integration is verified.</p>
-              <p><strong>Telegram:</strong> Channel/post links can be saved; bot upload automation is not connected yet.</p>
-              <p style="color:var(--text-muted);font-size:.88rem;">Selecting a provider does not connect its account or enable uploads yet. Until its connector is configured, use an authorised share/direct URL. Never paste passwords, API tokens or private keys into this page.</p>
+              <p><strong>Telegram:</strong> Useful for bot announcements and small file delivery, not large video storage; Bot API uploads are currently limited to 50 MB per file.</p>
+              <p style="color:var(--text-muted);font-size:.88rem;">Direct file upload is available through Supabase, TeraBox and Google Drive after their required setup and account connection. Other providers remain link-only. Never paste passwords, API tokens or private keys into this page.</p>
+            </div>
+            <div class="admin-form" style="margin-top:22px;">
+              <h3>TeraBox Account Connection</h3>
+              <p>Connect using TeraBox Open Platform device authorization. Credentials and tokens are handled server-side and stored encrypted.</p>
+              <button id="connectTeraBoxButton" class="btn-primary" type="button" onclick="connectTeraBox()">Connect TeraBox Account</button>
+              <div id="teraboxQrWrap" style="display:none;margin:16px 0;text-align:center;">
+                <img id="teraboxQr" alt="TeraBox authorization QR code" style="max-width:220px;width:100%;height:auto;background:#fff;padding:10px;border-radius:10px;">
+                <p>Scan this QR code in the TeraBox app to authorize Vision Hub.</p>
+              </div>
+              <p id="teraboxConnectionStatus" role="status" aria-live="polite">TeraBox account not connected.</p>
+              <p id="teraboxQuota" style="color:var(--text-muted)"></p>
+            </div>
+            <div class="admin-form" style="margin-top:22px;">
+              <h3>Google Drive Account Connection</h3>
+              <p>Connect the primary Admin's Google Drive account through Google OAuth. Uploaded videos are shared as viewer links so the public player can embed them.</p>
+              <button id="connectGoogleDriveButton" class="btn-primary" type="button" onclick="connectGoogleDrive()">Connect Google Drive</button>
+              <p id="googleDriveConnectionStatus" role="status" aria-live="polite">Google Drive account not connected.</p>
+              <p id="googleDriveQuota" style="color:var(--text-muted)"></p>
             </div>
           </div>
 
           <!-- TAB 5: User Requests Management -->
-          <div id="tab-requests-admin" class="admin-tab">
+          <div data-vh-roles="admin,sub_admin,moderator" id="tab-requests-admin" class="admin-tab">
             <h2>📥 User Movie & Show Requests</h2>
             <p style="color: var(--text-muted); margin-bottom: 20px;">Review user submissions, approve for ingestion or decline requests.</p>
             <div id="adminRequestsList" class="admin-requests"></div>
           </div>
 
           <!-- TAB 6: Analytics & Reports -->
-          <div id="tab-reports" class="admin-tab">
+          <div data-vh-roles="admin" id="tab-reports" class="admin-tab">
             <h2>📊 Platform Reports & Insights</h2>
             <div class="reports-grid">
               <div class="report-card">
@@ -757,7 +807,7 @@
           </div>
 
           <!-- TAB 7: User Management -->
-          <div id="tab-users-admin" class="admin-tab">
+          <div data-vh-roles="admin" id="tab-users-admin" class="admin-tab">
             <h2>👥 Registered Users & Privacy Management</h2>
             <p style="color: var(--text-muted); margin-bottom: 16px;">
               <i class="fas fa-lock" style="color: var(--warning);"></i> 
@@ -784,14 +834,30 @@
             </div>
           </div>
 
+          <!-- Primary-admin-only login activity; the database policy also enforces this restriction. -->
+          <div data-vh-roles="admin" id="tab-login-activity" class="admin-tab">
+            <h2>🔐 User Login Activity</h2>
+            <p style="color: var(--text-muted); margin-bottom: 16px;">Recent sign-ins recorded by Vision Hub. Only the primary Admin account can read these records.</p>
+            <div class="admin-toolbar">
+              <button class="btn-primary" type="button" onclick="loadLoginActivity()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+            <p id="loginActivityStatus" role="status" aria-live="polite">Open this tab to load recent login events.</p>
+            <div class="user-table-container">
+              <table class="user-table">
+                <thead><tr><th>#</th><th>User</th><th>Profile ID</th><th>Role</th><th>Login Time</th></tr></thead>
+                <tbody id="loginActivityTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
           <!-- TAB 8: Admins, Sub-Admins & Password Management -->
-          <div id="tab-team-admin" class="admin-tab">
-            <h2>🛡️ Admin Credentials & Sub-Admin Roles</h2>
+          <div data-vh-roles="admin,sub_admin,content_editor,moderator" id="tab-team-admin" class="admin-tab">
+            <h2>🛡️ Primary Admin Credentials & Staff Roles</h2>
             
             <!-- Section 1: Change Password & Username Form -->
             <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 28px;">
-              <h3 style="margin-bottom: 6px;"><i class="fas fa-key" style="color: var(--accent);"></i> Change Admin Credentials</h3>
-              <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">Change your secure admin password. Login email is managed in Supabase; it cannot be changed here.</p>
+              <h3 style="margin-bottom: 6px;"><i class="fas fa-key" style="color: var(--accent);"></i> Change Your Password</h3>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">Update your own staff login password. Login email is managed in Supabase and cannot be changed here.</p>
               
               <form class="admin-form" onsubmit="updateAdminCredentials(event)">
                 <div class="form-row">
@@ -806,7 +872,7 @@
                 </div>
                 <div class="form-row">
                   <div class="form-group">
-                    <label>New Password * (Min 6 chars)</label>
+                    <label>New Password * (Min 10 chars)</label>
                     <input type="password" id="changeNewPass" placeholder="New strong password" required/>
                   </div>
                   <div class="form-group">
@@ -821,10 +887,10 @@
             </div>
 
             <!-- Section 2: Sub-Admin setup placeholder -->
-            <div id="superAdminOnlySection" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px;">
+            <div data-vh-roles="admin" id="superAdminOnlySection" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px;">
               <h3 style="margin-bottom: 6px;"><i class="fas fa-users-cog" style="color: var(--accent2);"></i> Sub-Admin Team Management</h3>
               <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">
-                Sub-Admin creation is not active yet. It requires a Supabase Edge Function using the server-side Auth Admin API. This form is a placeholder and will not create an account until that secure function is deployed.
+                Only the primary Admin can create or revoke staff accounts. Credentials are processed by a server-side Cloudflare Function; staff passwords are never stored in the website database.
               </p>
 
               <form class="admin-form" onsubmit="addSubAdmin(event)">
@@ -834,14 +900,14 @@
                     <input type="text" id="subName" placeholder="e.g. Vikas Kumar" required/>
                   </div>
                   <div class="form-group">
-                    <label>Sub-Admin Username *</label>
-                    <input type="text" id="subUsername" placeholder="e.g. vikas_admin" required/>
+                    <label>Sub-Admin Login Email *</label>
+                    <input type="text" id="subUsername" type="email" placeholder="name@example.com" required/>
                   </div>
                 </div>
                 <div class="form-row">
                   <div class="form-group">
-                    <label>Sub-Admin Password *</label>
-                    <input type="password" id="subPassword" placeholder="Min 6 characters" required/>
+                    <label>Temporary Password * (minimum 12 characters)</label>
+                    <input type="password" id="subPassword" minlength="12" placeholder="At least 12 characters" required/>
                   </div>
                   <div class="form-group">
                     <label>Assigned Role *</label>
@@ -858,7 +924,7 @@
               </form>
 
               <div style="margin-top: 26px;">
-                <h4>Sub-Admin Accounts (not enabled yet)</h4>
+                <h4>Sub-Admin Accounts</h4>
                 <div id="subAdminsList" class="subadmin-grid"></div>
               </div>
             </div>
@@ -866,7 +932,7 @@
           </div>
 
           <!-- TAB 10: Category Manager (Admin Only) -->
-          <div id="tab-categories" class="admin-tab">
+          <div data-vh-roles="admin,sub_admin" id="tab-categories" class="admin-tab">
             <h2>🏷️ Category Manager</h2>
             <div class="tab-categories-form">
               <h3 style="margin-bottom:14px;"><i class="fas fa-plus-circle" style="color:var(--accent);"></i> Add New Category</h3>
@@ -889,7 +955,7 @@
           </div>
 
           <!-- TAB 11: Song / Music Management (Admin Only) -->
-          <div id="tab-songs" class="admin-tab">
+          <div data-vh-roles="admin,sub_admin" id="tab-songs" class="admin-tab">
             <h2>🎵 Song &amp; Music Management</h2>
             <div class="tab-songs-form">
               <h3 style="margin-bottom:14px;"><i class="fas fa-plus-circle" style="color:var(--accent);"></i> Add New Song</h3>
@@ -920,7 +986,7 @@
           </div>
 
           <!-- TAB 9: Platform Settings (With Telegram Channel Link Configuration) -->
-          <div id="tab-settings" class="admin-tab">
+          <div data-vh-roles="admin" id="tab-settings" class="admin-tab">
             <h2>⚙️ Vision Hub Platform Settings</h2>
             <form class="admin-form" onsubmit="saveWebsiteSettings(event)">
               <div class="form-group">
@@ -943,6 +1009,28 @@
                   <option value="on">On (Staff Access Only)</option>
                 </select>
               </div>
+              <hr/>
+              <h3>Google AdSense</h3>
+              <div class="form-group">
+                <label>AdSense Publisher ID</label>
+                <input type="text" id="settingAdsensePublisher" placeholder="ca-pub-XXXXXXXXXXXXXXXX" pattern="ca-pub-[0-9]{16}" autocomplete="off"/>
+                <small style="color:var(--text-muted)">Publisher ID is saved as configuration only. Ads will not be displayed until Google approves the site and ad slot IDs/placements are configured. Never paste account passwords or OAuth tokens here.</small>
+              </div>
+              <hr/>
+              <h3>❤️ Donation Settings</h3>
+              <div class="form-group">
+                <label>UPI ID</label>
+                <input type="text" id="settingDonationUpi" placeholder="yourname@upi" autocomplete="off"/>
+              </div>
+              <div class="form-group">
+                <label>Donation QR Code Image URL (HTTPS)</label>
+                <input type="url" id="settingDonationQr" placeholder="https://.../upi-qr.png"/>
+              </div>
+              <div class="form-group">
+                <label>Donation Message</label>
+                <textarea id="settingDonationMessage" rows="2" maxlength="300">Support Vision Hub development</textarea>
+              </div>
+              <small style="color:var(--text-muted)">Only publish a UPI ID and QR code you own or are authorised to use. Payments are made in the user's UPI app and are not automatically verified by this website.</small>
               <div class="form-group">
                 <label>Google Drive Integration Status</label>
                 <p style="color: var(--success); font-weight: 600; font-size: 0.9rem;">
@@ -1167,11 +1255,18 @@
 <script src="js/supabase-auth.js"></script>
 <script src="js/app.js"></script>
 <script src="js/analytics.js"></script>
-<script src="js/content-admin.js"></script>
+<script src="js/terabox-md5.js"></script>
+  <script src="js/terabox-upload.js"></script>
+  <script src="js/google-drive-upload.js"></script>
+  <script src="js/content-admin.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
+  <script src="js/media-admin.js"></script>
 <script src="js/storage-manager.js"></script>
 <script src="js/request-manager.js"></script>
 <script src="js/admin-tools.js"></script>
 <script src="js/maintenance-mode.js"></script>
 <script src="js/public-settings.js"></script>
+<script src="js/community-hub.js"></script>
+  <script src="js/login-activity.js"></script>
 </body>
 </html>

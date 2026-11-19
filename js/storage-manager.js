@@ -5,6 +5,8 @@
   if (!db) return;
   const $ = id => document.getElementById(id);
   const providers = ["supabase", "terabox", "mega", "degoo", "google_drive", "mediafire", "pcloud", "box", "icedrive", "koofr", "internxt", "telegram"];
+  const directUploadProviders = ["supabase","terabox","google_drive"];
+  let teraboxDevice = null;
   const isAdmin = async () => {
     const { data: { user }, error } = await db.auth.getUser();
     if (error || !user) throw new Error("Admin login required.");
@@ -18,7 +20,7 @@
       await isAdmin();
       const { data, error } = await db.from("vh_storage_settings").select("default_provider").eq("id", 1).maybeSingle();
       if (error) throw error;
-      const provider = providers.includes(data?.default_provider) ? data.default_provider : "supabase";
+      const provider = directUploadProviders.includes(data?.default_provider) ? data.default_provider : "supabase";
       window.VH_STORAGE_DEFAULT = provider;
       const defaultSelect = $("defaultStorageProvider");
       if (defaultSelect) defaultSelect.value = provider;
@@ -43,6 +45,7 @@
       const user = await isAdmin();
       const provider = $("defaultStorageProvider")?.value || "supabase";
       if (!providers.includes(provider)) throw new Error("Invalid storage provider.");
+      if (!directUploadProviders.includes(provider)) throw new Error("Only Supabase, connected TeraBox and connected Google Drive accounts support direct file uploads right now. Other provider connectors are still being integrated.");
       const { error } = await db.from("vh_storage_settings").upsert({
         id: 1, default_provider: provider, updated_by: user.id, updated_at: new Date().toISOString()
       }, { onConflict: "id" });
@@ -62,6 +65,87 @@
       if (button) button.disabled = false;
     }
   };
-  document.addEventListener("DOMContentLoaded", loadSettings);
-  db.auth.onAuthStateChange((_event, session) => { if (session?.user) loadSettings(); });
+  function sessionHeaders(session){return {authorization:"Bearer "+session.access_token};}
+  function bytesLabel(value){
+    const n=Number(value||0);if(!n)return "0 B";
+    const units=["B","KB","MB","GB","TB"];const index=Math.min(Math.floor(Math.log(n)/Math.log(1024)),units.length-1);
+    return (n/Math.pow(1024,index)).toFixed(index?2:0)+" "+units[index];
+  }
+  async function loadTeraBoxStatus(){
+    const status=$("teraboxConnectionStatus"),quota=$("teraboxQuota");if(!status)return;
+    try{
+      const {data:{session}}=await db.auth.getSession();if(!session){status.textContent="Primary Admin login required.";return;}
+      const response=await fetch("/api/storage/terabox/status",{headers:sessionHeaders(session)});
+      const payload=await response.json();
+      if(!response.ok)throw new Error(payload.error||"TeraBox status unavailable.");
+      if(!payload.connected){status.textContent="TeraBox account not connected.";if(quota)quota.textContent="";return;}
+      status.textContent="TeraBox connected · Account ID "+payload.account_id;
+      if(quota)quota.textContent="Storage used: "+bytesLabel(payload.used_bytes)+" of "+bytesLabel(payload.total_bytes);
+    }catch(error){status.textContent=error.message||"TeraBox status unavailable.";}
+  }
+  async function pollTeraBox(){
+    if(!teraboxDevice)return;
+    if(Date.now()>=teraboxDevice.expiresAt){
+      teraboxDevice=null;$("teraboxQrWrap").style.display="none";$("teraboxConnectionStatus").textContent="QR authorization expired. Start a new connection.";return;
+    }
+    try{
+      const {data:{session}}=await db.auth.getSession();
+      const response=await fetch("/api/storage/terabox/poll",{method:"POST",headers:{...sessionHeaders(session),"content-type":"application/json"},body:JSON.stringify({device_code:teraboxDevice.code})});
+      const payload=await response.json();
+      if(response.status===202||payload.pending){
+        $("teraboxConnectionStatus").textContent="Waiting for TeraBox app authorization…";
+        teraboxDevice.timer=setTimeout(pollTeraBox,teraboxDevice.interval*1000);return;
+      }
+      if(!response.ok)throw new Error(payload.error||"TeraBox authorization failed.");
+      teraboxDevice=null;$("teraboxQrWrap").style.display="none";
+      $("teraboxConnectionStatus").textContent="TeraBox connected successfully.";
+      await loadTeraBoxStatus();
+    }catch(error){teraboxDevice=null;$("teraboxQrWrap").style.display="none";$("teraboxConnectionStatus").textContent=error.message||"TeraBox authorization failed.";}
+  }
+  window.connectTeraBox=async function(){
+    const button=$("connectTeraBoxButton"),status=$("teraboxConnectionStatus");
+    if(button)button.disabled=true;
+    if(teraboxDevice?.timer)clearTimeout(teraboxDevice.timer);
+    try{
+      const {data:{session}}=await db.auth.getSession();if(!session)throw new Error("Primary Admin login required.");
+      status.textContent="Requesting TeraBox authorization QR…";
+      const response=await fetch("/api/storage/terabox/device",{method:"POST",headers:sessionHeaders(session)});
+      const payload=await response.json();if(!response.ok)throw new Error(payload.error||"TeraBox connection is not configured.");
+      $("teraboxQr").src=payload.qrcode_url;$("teraboxQrWrap").style.display="block";
+      teraboxDevice={code:payload.device_code,interval:Math.max(3,payload.interval||5),expiresAt:Date.now()+payload.expires_in*1000,timer:null};
+      status.textContent="Scan the QR code in the TeraBox app. Authorization expires in "+Math.ceil(payload.expires_in/60)+" minutes.";
+      teraboxDevice.timer=setTimeout(pollTeraBox,teraboxDevice.interval*1000);
+    }catch(error){status.textContent=error.message||"Could not connect TeraBox.";}
+    finally{if(button)button.disabled=false;}
+  };
+  async function loadGoogleDriveStatus(){
+    const status=$("googleDriveConnectionStatus"),quota=$("googleDriveQuota");if(!status)return;
+    try{
+      const params=new URLSearchParams(window.location.search);
+      const callbackError=params.get("google_drive_error");
+      if(callbackError){status.textContent=callbackError;return;}
+      const {data:{session}}=await db.auth.getSession();if(!session){status.textContent="Primary Admin login required.";return;}
+      if(params.get("google_drive_connected")==="1")status.textContent="Google OAuth connected. Checking Drive account…";
+      const response=await fetch("/api/storage/google-drive/status",{headers:sessionHeaders(session)});
+      const payload=await response.json();
+      if(!response.ok)throw new Error(payload.error||"Google Drive status unavailable.");
+      if(!payload.connected){status.textContent="Google Drive account not connected.";if(quota)quota.textContent="";return;}
+      status.textContent="Google Drive connected · "+(payload.email||"Connected account");
+      if(quota)quota.textContent="Storage used: "+bytesLabel(payload.used_bytes)+" of "+bytesLabel(payload.total_bytes);
+    }catch(error){status.textContent=error.message||"Google Drive status unavailable.";}
+  }
+  window.connectGoogleDrive=async function(){
+    const button=$("connectGoogleDriveButton"),status=$("googleDriveConnectionStatus");
+    if(button)button.disabled=true;
+    try{
+      const {data:{session}}=await db.auth.getSession();if(!session)throw new Error("Primary Admin login required.");
+      status.textContent="Opening Google OAuth consent…";
+      const response=await fetch("/api/storage/google-drive/connect",{method:"POST",headers:sessionHeaders(session)});
+      const payload=await response.json();if(!response.ok)throw new Error(payload.error||"Google Drive OAuth is not configured.");
+      window.location.href=payload.authorization_url;
+    }catch(error){status.textContent=error.message||"Could not connect Google Drive.";}
+    finally{if(button)button.disabled=false;}
+  };
+  document.addEventListener("DOMContentLoaded",()=>{loadSettings();loadTeraBoxStatus();loadGoogleDriveStatus();});
+  db.auth.onAuthStateChange((_event, session) => { if (session?.user) { loadSettings(); loadTeraBoxStatus(); loadGoogleDriveStatus(); } });
 })();

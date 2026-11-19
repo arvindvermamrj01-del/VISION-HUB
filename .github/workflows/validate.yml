@@ -24,3 +24,5 @@ jobs:
             echo "Checking $file"
             node --check "$file"
           done
+      - name: Run provider utility tests
+        run: node --test tests/*.test.mjs

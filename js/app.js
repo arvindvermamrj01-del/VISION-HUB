@@ -12,7 +12,7 @@ function grid(id,items){const el=$(id);if(el)el.innerHTML=items.length?items.map
 function hero(){const m=data[heroIndex%data.length];if(!m)return;current=m;if($("heroBg"))$("heroBg").style.backgroundImage=`url("${m.backdrop||m.poster}")`;if($("heroTitle"))$("heroTitle").textContent=m.title;if($("heroDesc"))$("heroDesc").textContent=m.description;if($("heroMeta"))$("heroMeta").textContent=`${m.year} · ${m.duration} · ★ ${m.rating}`;if($("heroPlayBtn"))$("heroPlayBtn").onclick=()=>openMovie(m.id);if($("heroListBtn"))$("heroListBtn").onclick=()=>toggleItem(m.id)}
 function render(){const f=data.filter(m=>(industry==="All"||m.industry===industry)&&(genre==="All"||m.genre===genre));grid("trendingGrid",f.filter(x=>x.type==="Movie").slice(0,6));grid("seriesGrid",data.filter(x=>x.type==="Web Series"));grid("newGrid",[...data].sort((a,b)=>b.year-a.year).slice(0,6));grid("allMoviesGrid",data.filter(x=>x.type==="Movie"&&(movieGenre==="All"||x.genre===movieGenre)));grid("allSeriesGrid",data.filter(x=>x.type==="Web Series"));grid("shortsGrid",data.filter(x=>x.type==="Short"));renderWatchlist();hero()}
 window.renderVisionHub=render;
-window.showPage=name=>{if(name==="login"||name==="register")name="home";if(name==="admin"&&!window.VH_IS_ADMIN){name="admin-login"}document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));$("page-"+name)?.classList.add("active");document.querySelectorAll(".nav-link").forEach(a=>a.classList.toggle("active",a.getAttribute("href")==="#"+name));$("navLinks")?.classList.remove("open");window.scrollTo({top:0,behavior:"smooth"});if(name==="watchlist")renderWatchlist()};
+window.showPage=name=>{if(name==="admin"&&!window.VH_IS_STAFF){name="admin-login"}document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));$("page-"+name)?.classList.add("active");document.querySelectorAll(".nav-link").forEach(a=>a.classList.toggle("active",a.getAttribute("href")==="#"+name));$("navLinks")?.classList.remove("open");window.scrollTo({top:0,behavior:"smooth"});if(name==="watchlist")renderWatchlist();window.dispatchEvent(new CustomEvent("vh:page-shown",{detail:name}))};
 window.openHiddenAdminLogin=()=>window.showPage("admin-login");
 window.addEventListener("hashchange",()=>{if(location.hash==="#control-center")window.openHiddenAdminLogin()});
 if(location.hash==="#control-center"||location.pathname.replace(/\/+$/,"")==="/control-center")window.openHiddenAdminLogin();
@@ -36,18 +36,22 @@ window.togglePassword=id=>{
 };
 
 window.adminTab=(tab,el)=>{
+  const role=window.VH_ROLE||"user";
+  const access={
+    dashboard:["admin"],"add-movie":["admin","sub_admin","content_editor"],
+    "add-shorts":["admin","sub_admin"],manage:["admin","sub_admin","content_editor"],
+    "requests-admin":["admin","sub_admin","moderator"],categories:["admin","sub_admin"],songs:["admin","sub_admin"],
+    "drive-import":["admin"],"storage-manager":["admin"],reports:["admin"],"users-admin":["admin"],
+    "login-activity":["admin"],"team-admin":["admin","sub_admin","content_editor","moderator"],settings:["admin"]
+  };
+  if(!(access[tab]||[]).includes(role)){toast("Is section ke liye permission nahi hai.");return;}
   document.querySelectorAll(".admin-tab").forEach(x=>x.classList.remove("active"));
   $("tab-"+tab)?.classList.add("active");
   el?.parentElement?.querySelectorAll("button").forEach(x=>x.classList.toggle("active",x===el));
 };
 
-["addMovie","importFromDrive","updateAdminCredentials","addSubAdmin","addCategory","addSong","saveWebsiteSettings"].forEach(fn=>window[fn]=e=>{
-  e?.preventDefault?.();
-  toast("Publishing requires a secure backend and verified content rights.");
-});
-
-window.filterManageList=()=>{};
-window.filterUsersList=()=>{};
+// Admin actions are implemented by the dedicated content-admin.js and admin-tools.js modules.
+// Do not install fallback handlers here: they can overwrite real backend-backed functions.
 
 document.addEventListener("DOMContentLoaded",()=>{
   render();
