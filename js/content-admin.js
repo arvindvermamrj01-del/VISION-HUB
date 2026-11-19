@@ -255,6 +255,21 @@
     if(id==null||!window.confirm("Delete this published item permanently?"))return;
     try{
       await requireAdmin();
+      const {data:assets,error:assetsError}=await db.from("vh_media_assets").select("storage_path,storage_provider").eq("content_id",id);
+      if(assetsError)throw assetsError;
+      const {data:{session}}=await db.auth.getSession();
+      for(const asset of assets||[]){
+        const provider=String(asset.storage_provider||"").toLowerCase();
+        const path=String(asset.storage_path||"");
+        if(!["supabase","cloudflare_r2"].includes(provider)||!path||/^https?:\/\//i.test(path))continue;
+        const response=await fetch("/api/media/delete",{
+          method:"POST",
+          headers:{"Authorization":"Bearer "+(session?.access_token||""),"Content-Type":"application/json"},
+          body:JSON.stringify({contentId:String(id),storagePath:path,provider})
+        });
+        const result=await response.json().catch(()=>({}));
+        if(!response.ok)throw new Error(result.error||"Media file could not be removed. Content was kept.");
+      }
       const {error}=await db.from("vh_content").delete().eq("id",id);
       if(error)throw error;
       const catalog=window.VISION_HUB_DATA||[];for(let i=catalog.length-1;i>=0;i--){if(catalog[i].isSupabaseContent&&String(catalog[i].id)===String(id))catalog.splice(i,1);}
