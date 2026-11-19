@@ -4,7 +4,8 @@ export async function onRequestDelete({request,env}){
   const path=new URL(request.url).searchParams.get("path")||"";
   if(!path.startsWith(teraboxFolder(env))||path.includes(".."))return json({error:"Invalid TeraBox file path"},400);
   const profile=await supabase(env,"profiles?id=eq."+encodeURIComponent(auth.user.id)+"&select=role");
-  const profileRows=profile.ok?await profile.json():[];
+  if(!profile.ok)return json({error:"Could not verify staff role"},503);
+  const profileRows=await profile.json();
   const role=profileRows?.[0]?.role;
   const contentQuery=new URL(env.SUPABASE_URL+"/rest/v1/vh_content");
   contentQuery.searchParams.set("storage_provider","eq.terabox");
