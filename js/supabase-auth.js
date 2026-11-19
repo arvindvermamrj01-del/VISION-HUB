@@ -99,10 +99,7 @@ if (!username || !password) {
   return;
 }
 
-const email =
-  username.toLowerCase() === "admin"
-    ? "arvindvermamrj01@gmail.com"
-    : username;
+const email = username;
 
 const btn = el("adminSubmitBtn");
 if (btn) btn.disabled = true;
@@ -199,19 +196,8 @@ try {
 
   if (error) throw error;
 
-  if (data.user && data.session) {
-    const { error: profileError } = await db
-      .from("profiles")
-      .upsert({
-        id: data.user.id,
-        fullname: name,
-        role: "user"
-      });
-
-    if (profileError) throw profileError;
-  }
-
-  msg("Registration successful. Email confirmation check karo.");
+  // The database trigger creates the basic profile. Browser code never assigns roles.
+  msg(data.session ? "Registration successful." : "Registration received. Email confirmation check karo.");
 } catch (err) {
   console.error(err);
   msg(err.message || "Registration failed.");
