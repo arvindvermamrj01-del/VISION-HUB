@@ -536,8 +536,16 @@
                 <label for="addStorageProvider">Upload / Link Storage</label>
                 <select id="addStorageProvider">
                   <option value="supabase">Supabase (Default)</option>
-                  <option value="google_drive">Google Drive (authorised share/direct link)</option>
-                  <option value="terabox">TeraBox (external link)</option>
+                  <option value="terabox">TeraBox (1 TB advertised free — API setup required)</option>
+                  <option value="mega">MEGA (about 20 GB — setup required)</option>
+                  <option value="degoo">Degoo (free quota varies — manual link)</option>
+                  <option value="google_drive">Google Drive (15 GB — API setup required)</option>
+                  <option value="mediafire">MediaFire (10 GB — setup required)</option>
+                  <option value="pcloud">pCloud (up to 10 GB — API setup required)</option>
+                  <option value="box">Box (10 GB — API setup required)</option>
+                  <option value="icedrive">Icedrive (about 10 GB — manual link)</option>
+                  <option value="koofr">Koofr (about 10 GB — API setup required)</option>
+                  <option value="internxt">Internxt (free quota varies — manual link)</option>
                   <option value="telegram">Telegram (post link)</option>
                 </select>
                 <input type="file" id="addVideoFile" accept="video/*"/>
@@ -624,8 +632,16 @@
                 <label for="shortStorageProvider">Upload / Link Storage</label>
                 <select id="shortStorageProvider">
                   <option value="supabase">Supabase (Default)</option>
-                  <option value="google_drive">Google Drive (authorised share/direct link)</option>
-                  <option value="terabox">TeraBox (external link)</option>
+                  <option value="terabox">TeraBox (1 TB advertised free — API setup required)</option>
+                  <option value="mega">MEGA (about 20 GB — setup required)</option>
+                  <option value="degoo">Degoo (free quota varies — manual link)</option>
+                  <option value="google_drive">Google Drive (15 GB — API setup required)</option>
+                  <option value="mediafire">MediaFire (10 GB — setup required)</option>
+                  <option value="pcloud">pCloud (up to 10 GB — API setup required)</option>
+                  <option value="box">Box (10 GB — API setup required)</option>
+                  <option value="icedrive">Icedrive (about 10 GB — manual link)</option>
+                  <option value="koofr">Koofr (about 10 GB — API setup required)</option>
+                  <option value="internxt">Internxt (free quota varies — manual link)</option>
                   <option value="telegram">Telegram (post link)</option>
                 </select>
                 <input type="file" id="shortVideoFile" accept="video/*"/>
@@ -688,8 +704,16 @@
                 <label for="defaultStorageProvider">Default Storage Provider</label>
                 <select id="defaultStorageProvider">
                   <option value="supabase">Supabase (recommended)</option>
-                  <option value="google_drive">Google Drive</option>
                   <option value="terabox">TeraBox</option>
+                  <option value="mega">MEGA</option>
+                  <option value="degoo">Degoo</option>
+                  <option value="google_drive">Google Drive</option>
+                  <option value="mediafire">MediaFire</option>
+                  <option value="pcloud">pCloud</option>
+                  <option value="box">Box</option>
+                  <option value="icedrive">Icedrive</option>
+                  <option value="koofr">Koofr</option>
+                  <option value="internxt">Internxt</option>
                   <option value="telegram">Telegram</option>
                 </select>
               </div>
@@ -698,11 +722,14 @@
             </form>
             <div class="admin-form" style="margin-top:22px;">
               <h3>Provider availability</h3>
-              <p><strong>Supabase:</strong> File upload is enabled using your existing vh-media bucket.</p>
-              <p><strong>Google Drive:</strong> Authorised share/direct URLs can be saved. OAuth/API upload is not connected yet.</p>
-              <p><strong>TeraBox:</strong> External links can be saved. An official supported upload/streaming API has not been connected.</p>
-              <p><strong>Telegram:</strong> Channel/post links can be saved. Bot upload automation is not connected yet.</p>
-              <p style="color:var(--text-muted);font-size:.88rem;">For providers not yet connected, paste an authorised URL instead of selecting a local file. Direct in-page playback depends on the provider allowing video streaming.</p>
+              <p><strong>Supabase:</strong> Existing upload provider (subject to bucket and RLS configuration).</p>
+              <p><strong>Google Drive, Box, pCloud, Koofr:</strong> Official API options exist; OAuth credentials and server-side upload integration are still required.</p>
+              <p><strong>TeraBox:</strong> Official Open Platform exists; application approval and server-side OAuth credentials are required.</p>
+              <p><strong>MEGA:</strong> Third-party SDK options exist; no website connector is configured.</p>
+              <p><strong>MediaFire:</strong> API credentials and a tested upload connector are still required.</p>
+              <p><strong>Degoo, Icedrive, Internxt:</strong> Manual authorised links only until a supported integration is verified.</p>
+              <p><strong>Telegram:</strong> Channel/post links can be saved; bot upload automation is not connected yet.</p>
+              <p style="color:var(--text-muted);font-size:.88rem;">Selecting a provider does not connect its account or enable uploads yet. Until its connector is configured, use an authorised share/direct URL. Never paste passwords, API tokens or private keys into this page.</p>
             </div>
           </div>
 
