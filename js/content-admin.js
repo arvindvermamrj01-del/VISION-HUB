@@ -50,7 +50,7 @@
       const el = $(id);
       if (el) el.dispatchEvent(new Event("visionhub:catalog-updated"));
     });
-    document.dispatchEvent(new CustomEvent("visionhub:content-loaded"));
+    window.renderVisionHub?.();\n    document.dispatchEvent(new CustomEvent("visionhub:content-loaded"));
   }
   async function publish(form, type) {
     const user = await requireAdmin();
