@@ -379,7 +379,7 @@
           <!-- Admin Authentication Form -->
           <form id="adminLoginForm" onsubmit="adminLogin(event)">
             <div class="form-group">
-              <label>Admin Email or Username</label>
+              <label>Staff Login Email</label>
               <input type="text" id="adminUser" placeholder="admin or admin email" autocomplete="username" required/>
             </div>
             <div class="form-group">
@@ -868,7 +868,7 @@
             <div id="superAdminOnlySection" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px;">
               <h3 style="margin-bottom: 6px;"><i class="fas fa-users-cog" style="color: var(--accent2);"></i> Sub-Admin Team Management</h3>
               <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">
-                Sub-Admin creation is not active yet. It requires a Supabase Edge Function using the server-side Auth Admin API. This form is a placeholder and will not create an account until that secure function is deployed.
+                Only the primary Admin can create or revoke staff accounts. Credentials are processed by a server-side Cloudflare Function; staff passwords are never stored in the website database.
               </p>
 
               <form class="admin-form" onsubmit="addSubAdmin(event)">
@@ -884,7 +884,7 @@
                 </div>
                 <div class="form-row">
                   <div class="form-group">
-                    <label>Sub-Admin Password *</label>
+                    <label>Temporary Password * (minimum 12 characters)</label>
                     <input type="password" id="subPassword" minlength="12" placeholder="At least 12 characters" required/>
                   </div>
                   <div class="form-group">
