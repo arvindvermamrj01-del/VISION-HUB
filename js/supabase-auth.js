@@ -17,6 +17,8 @@
   });
   window.VH_SUPABASE = db;
   window.VH_IS_ADMIN = false;
+  window.VH_ROLE = "user";
+  window.VH_IS_STAFF = false;
   let profileCheck = Promise.resolve(null);
 
   function notify(message) {
@@ -32,6 +34,8 @@
   }
   function signedOutUI() {
     window.VH_IS_ADMIN = false;
+    window.VH_ROLE = "user";
+    window.VH_IS_STAFF = false;
     el("authNav")?.classList.remove("hidden");
     el("userNav")?.classList.add("hidden");
     el("adminNav")?.classList.add("hidden");
@@ -47,14 +51,22 @@
     if (error) {
       console.error("Vision Hub profile lookup failed:", error.message);
       window.VH_IS_ADMIN = false;
+      window.VH_ROLE = "user";
+      window.VH_IS_STAFF = false;
       el("adminNav")?.classList.add("hidden");
       el("adminNavLink")?.classList.add("hidden");
       notify("Profile verification failed. Admin access is disabled until it can be verified.");
     } else {
-      window.VH_IS_ADMIN = profile?.role === "admin";
+      window.VH_ROLE = profile?.role || "user";
+      window.VH_IS_ADMIN = window.VH_ROLE === "admin";
+      window.VH_IS_STAFF = ["admin","sub_admin","content_editor","moderator"].includes(window.VH_ROLE);
       if (profile?.fullname) name = profile.fullname;
-      el("adminNav")?.classList.toggle("hidden", !window.VH_IS_ADMIN);
-      el("adminNavLink")?.classList.toggle("hidden", !window.VH_IS_ADMIN);
+      el("adminNav")?.classList.toggle("hidden", !window.VH_IS_STAFF);
+      el("adminNavLink")?.classList.toggle("hidden", !window.VH_IS_STAFF);
+      document.querySelectorAll("[data-vh-roles]").forEach(node => {
+        const allowed = node.dataset.vhRoles.split(",").map(x => x.trim());
+        node.classList.toggle("hidden", !allowed.includes(window.VH_ROLE));
+      });
     }
     const initial = String(name).trim().charAt(0).toUpperCase() || "U";
     ["userAvatar","profileAvatar"].forEach(id => { if (el(id)) el(id).textContent = initial; });
