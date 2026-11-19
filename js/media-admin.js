@@ -14,7 +14,7 @@
     if(error||!user) throw new Error("Main Admin login required.");
     const {data:profile,error:pErr}=await db.from("profiles").select("role").eq("id",user.id).maybeSingle();
     if(pErr) throw pErr;
-    if(profile?.role!=="admin") throw new Error("Only the main Admin can manage media.");
+    if(profile?.role!=="admin" || profile?.is_primary_admin === false) throw new Error("Only the primary Admin can manage media.");
     return user;
   }
   function injectPanel() {
