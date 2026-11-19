@@ -71,8 +71,16 @@
     if (!db) {host.textContent="Suggestions will appear when the database is connected.";return;}
     const {data,error}=await db.from("vh_ideas").select("id,title,description,status,vote_count,created_at").order("vote_count",{ascending:false}).limit(100);
     if(error){host.textContent="Could not load suggestions: "+error.message;return;}
-    host.innerHTML=(data||[]).length?(data||[]).map(x=>'<article style="'+style+'"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><strong>'+esc(x.title)+'</strong><span>'+esc(x.status||"Under review")+' · '+Number(x.vote_count||0)+' votes</span></div><p>'+esc(x.description||"")+'</p><button type="button" class="btn-primary" onclick="window.VH_voteIdea('+Number(x.id)+')">▲ Vote</button></article>').join(""):"<p>No suggestions yet. Be the first to share an idea.</p>";
+    const admin=await isAdmin();
+    host.innerHTML=(data||[]).length?(data||[]).map(x=>'<article style="'+style+'"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><strong>'+esc(x.title)+'</strong><span>'+esc(x.status||"Under review")+' · '+Number(x.vote_count||0)+' votes</span></div><p>'+esc(x.description||"")+'</p><button type="button" class="btn-primary" onclick="window.VH_voteIdea('+Number(x.id)+')">▲ Vote</button>'+(admin?'<div style="margin-top:10px"><select id="vhidea-'+Number(x.id)+'"><option value="under_review">Under review</option><option value="accepted">Accepted</option><option value="in_progress">In progress</option><option value="completed">Completed</option><option value="declined">Declined</option></select> <button type="button" onclick="window.VH_updateIdea('+Number(x.id)+')">Update status</button></div>':'')+'</article>').join(""):"<p>No suggestions yet. Be the first to share an idea.</p>";
+    if(admin)(data||[]).forEach(x=>{const s=$("vhidea-"+x.id);if(s)s.value=x.status;});
   }
+  window.VH_updateIdea=async id=>{
+    if(!await isAdmin())return toast("Admin access required.");
+    const status=$("vhidea-"+id)?.value;
+    const {error}=await db.from("vh_ideas").update({status}).eq("id",id);
+    if(error)return toast(error.message);toast("Suggestion status updated.");loadIdeas();
+  };
   window.VH_voteIdea=async id=>{
     const user=await currentUser(); if(!user)return toast("Please log in to vote.");
     const {error}=await db.from("vh_idea_votes").insert({idea_id:id,user_id:user.id});
@@ -113,5 +121,6 @@
     if(error)return toast(error.message);toast("Website update published.");loadChangelog();
   }
   document.addEventListener("DOMContentLoaded",()=>{ensurePages();loadIdeas();loadChangelog();loadAdminFeedback();});
+  db?.auth.onAuthStateChange(()=>{loadIdeas();loadAdminFeedback();loadChangelog();});
   window.addEventListener("vh:page-shown",event=>{if(event.detail==="feedback")loadAdminFeedback();if(event.detail==="improvements"){loadIdeas();loadChangelog();}});
 })();
