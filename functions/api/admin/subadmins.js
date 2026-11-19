@@ -38,7 +38,8 @@ export async function onRequestPost({request,env}){
   if(!created.ok)return json({error:created.status===422?"This email may already be registered.":(account.msg||account.message||"Could not create staff account")},400);
   const uid=account.id;
   const profile=await sb(env,"/rest/v1/profiles?id=eq."+encodeURIComponent(uid),{method:"PATCH",headers:{"Prefer":"return=representation"},body:JSON.stringify({fullname,role})});
-  if(!profile.ok){
+  const assigned=profile.ok?await profile.json().catch(()=>[]):[];
+  if(!profile.ok||!assigned.length){
     await fetch(env.SUPABASE_URL+"/auth/v1/admin/users/"+encodeURIComponent(uid),{method:"DELETE",headers:{apikey:env.SUPABASE_SERVICE_ROLE_KEY,authorization:"Bearer "+env.SUPABASE_SERVICE_ROLE_KEY}});
     return json({error:"Profile role assignment failed; the new Auth account was rolled back"},500);
   }
