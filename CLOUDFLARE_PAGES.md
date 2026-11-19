@@ -22,12 +22,17 @@ Add these in Cloudflare Dashboard → Workers & Pages → your Pages project →
 - `TERABOX_PRIVATE_SECRET` — TeraBox Open Platform signing secret; mark as Secret.
 - `TERABOX_APP_FOLDER` — exact app folder path assigned by TeraBox, for example `/From: Other Applications/Vision Hub-<assigned-app-id>/`; configure as a variable.
 - `PROVIDER_TOKEN_ENCRYPTION_KEY` — 32 random bytes as 64 hex characters or Base64; mark as Secret.
+- `GOOGLE_CLIENT_ID` — OAuth 2.0 Client ID from Google Cloud Console.
+- `GOOGLE_CLIENT_SECRET` — OAuth 2.0 Client Secret; mark as Secret.
+- `GOOGLE_REDIRECT_URI` — exact deployed callback URL, e.g. `https://YOUR-DOMAIN/api/storage/google-drive/callback`.
+- `GOOGLE_OAUTH_STATE_SECRET` — at least 32 random characters; mark as Secret.
+- `GOOGLE_DRIVE_FOLDER_ID` — optional Drive folder ID where Vision Hub uploads should be stored.
 
 Never put the service-role key or Telegram bot token in any browser JavaScript file or commit them to Git.
 
 ## Telegram setup
 1. Run `supabase/cloudflare-telegram.sql` in the Supabase SQL Editor after reviewing it.
-2. Add the variables/secrets required by the features you enable to Cloudflare Pages. Telegram needs SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, TELEGRAM_BOT_TOKEN and TELEGRAM_WEBHOOK_SECRET. TeraBox additionally needs TERABOX_CLIENT_ID, TERABOX_CLIENT_SECRET, TERABOX_PRIVATE_SECRET, TERABOX_APP_FOLDER and PROVIDER_TOKEN_ENCRYPTION_KEY. Keep the service-role key and bot token marked Secret.
+2. Add the variables/secrets required by the features you enable to Cloudflare Pages. Telegram needs SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, TELEGRAM_BOT_TOKEN and TELEGRAM_WEBHOOK_SECRET. TeraBox additionally needs TERABOX_CLIENT_ID, TERABOX_CLIENT_SECRET, TERABOX_PRIVATE_SECRET, TERABOX_APP_FOLDER and PROVIDER_TOKEN_ENCRYPTION_KEY. Google Drive additionally needs GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI and GOOGLE_OAUTH_STATE_SECRET; GOOGLE_DRIVE_FOLDER_ID is optional. Keep the service-role key and bot token marked Secret.
 3. Deploy the Pages project so `/api/telegram/webhook` exists.
 4. Register the webhook with Telegram's setWebhook API, using the deployed URL `https://YOUR-DOMAIN/api/telegram/webhook` and the exact TELEGRAM_WEBHOOK_SECRET as `secret_token`.
 5. Open the bot in Telegram and send `/start` to opt in. Send `/stop` to opt out.
@@ -59,3 +64,15 @@ TeraBox now has a chunked upload client, server-side upload proxy, provider-awar
 
 
 TeraBox credentials are issued only after applying for an Open Platform application. The current code supports secure device-code connection, quota display, chunked uploads and HLS player integration; live account testing is still required. The official API's documented streaming types are M3U8_AUTO_480, M3U8_AUTO_720 and M3U8_AUTO_1080, so do not promise 2K/4K/8K through this provider.
+
+
+## Google Drive setup
+1. In Google Cloud Console, create/select a project and enable the Google Drive API.
+2. Configure the OAuth consent screen and create an OAuth 2.0 Web application client.
+3. Add the exact Cloudflare callback URL as an authorized redirect URI: `https://YOUR-DOMAIN/api/storage/google-drive/callback`.
+4. Add GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI and GOOGLE_OAUTH_STATE_SECRET to Cloudflare Pages. Use a random state secret of at least 32 characters.
+5. Optionally set GOOGLE_DRIVE_FOLDER_ID to a folder owned by the connected account.
+6. Connect Google Drive from the Control Center as the primary Admin. The app requests the drive.file scope and stores access/refresh tokens encrypted in vh_provider_connections.
+7. Google Drive uploads are made readable by anyone with the link so published videos can play in the website iframe. Only upload media that Vision Hub is authorized to distribute. Google Workspace policies may block public sharing.
+
+Google Drive uploads use the official resumable upload API through bounded chunks. They play using Google's preview iframe; this is not an adaptive-bitrate HLS transcoder and should not be advertised as true 2K/4K/8K processing.
