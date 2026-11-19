@@ -24,8 +24,9 @@ using (
 );
 
 drop policy if exists "admins upload private media" on storage.objects;
-create policy "admins upload private media" on storage.objects for insert to authenticated
-with check (bucket_id='vh-private-media' and (storage.foldername(name))[1]=auth.uid()::text and public.vh_is_admin());
+drop policy if exists "staff upload private media" on storage.objects;
+create policy "staff upload private media" on storage.objects for insert to authenticated
+with check (bucket_id='vh-private-media' and (storage.foldername(name))[1]=auth.uid()::text and public.vh_can_manage_content());
 
 drop policy if exists "admins delete private media" on storage.objects;
 drop policy if exists "staff delete linked private media" on storage.objects;
