@@ -39,6 +39,7 @@ function showPage(id) {
 function showSignedOut() {
 window.VH_IS_ADMIN = false;
 window.VH_ROLE = "guest";
+window.VH_USER_ID = null;
 el("authNav")?.classList.remove("hidden");
 el("userNav")?.classList.add("hidden");
 el("adminNav")?.classList.add("hidden");
@@ -89,6 +90,7 @@ if (profile?.fullname) {
 if (el("statJoined")) {
   el("statJoined").textContent = profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : "—";
 }
+window.VH_USER_ID = user.id;
 window.VH_ROLE = profile?.role || "user";
 window.VH_IS_ADMIN = ["admin", "sub_admin", "content_editor", "moderator"].includes(window.VH_ROLE);
 const roleBadge = el("adminRoleBadge");
