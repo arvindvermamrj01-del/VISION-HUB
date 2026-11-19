@@ -9,6 +9,7 @@
   let activeItem = null;
   let activeVideo = null;
   let lastProgressSave = 0;
+  let activeProgressContentId = null;
 
   const toast = message => typeof window.toast === "function" ? window.toast(message) : window.alert(message);
   const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -451,9 +452,23 @@
     $("playerFallback")?.classList.add("active");
     activeVideo.onerror=()=>toast("Video stream nahi chal paayi. Direct file URL aur storage access check karein.");
     if(activeVideo.src!==asset.url){activeVideo.pause();activeVideo.src=asset.url;activeVideo.load();}
+    const video=activeVideo;
     const progressKey="vh_progress_"+String(item.id);
+    if(activeProgressContentId!==String(item.id)){activeProgressContentId=String(item.id);lastProgressSave=0;}
     let resumeApplied=false;
-    activeVideo.onloadedmetadata=async()=>{
+    const persistPosition=(position,duration=video.duration)=>{
+      if(!Number.isFinite(position)||position<1)return;
+      try{localStorage.setItem(progressKey,String(position))}catch(_){}
+      db.auth.getUser().then(async({data:{user}})=>{
+        if(!user)return;
+        const {error}=await db.from("vh_watch_progress").upsert({
+          user_id:user.id,content_id:String(item.id),position_seconds:position,
+          duration_seconds:Number(duration)||0,updated_at:new Date().toISOString()
+        },{onConflict:"user_id,content_id"});
+        if(error)console.debug("Watch progress sync unavailable:",error.message);
+      }).catch(error=>console.debug("Watch progress sync unavailable:",error.message));
+    };
+    video.onloadedmetadata=async()=>{
       if(resumeApplied)return;
       resumeApplied=true;
       let position=0;
@@ -465,21 +480,36 @@
           if(!error&&data?.position_seconds)position=Number(data.position_seconds);
         }
       }catch(error){console.debug("Cloud resume point unavailable:",error.message);}
-      if(Number.isFinite(position)&&position>5&&position<activeVideo.duration-5)activeVideo.currentTime=position;
+      if(video!==$("playerFallback")?.querySelector("video"))return;
+      if(Number.isFinite(position)&&position>5&&position<video.duration-5)video.currentTime=position;
     };
-    activeVideo.ontimeupdate=()=>{
-      if(!Number.isFinite(activeVideo.currentTime)||activeVideo.currentTime<1)return;
-      const position=activeVideo.currentTime;
-      try{localStorage.setItem(progressKey,String(position))}catch(_){}
+    video.ontimeupdate=()=>{
+      if(!Number.isFinite(video.currentTime)||video.currentTime<1)return;
       const now=Date.now();
       if(now-lastProgressSave<20000)return;
       lastProgressSave=now;
+      persistPosition(video.currentTime);
+    };
+    video.onpause=()=>{
+      if(Number.isFinite(video.currentTime)&&video.currentTime>1&&video.currentTime<video.duration-5){
+        lastProgressSave=Date.now();
+        persistPosition(video.currentTime);
+      }
+    };
+    video.onended=()=>{
+      try{localStorage.setItem(progressKey,"0")}catch(_){}
       db.auth.getUser().then(async({data:{user}})=>{
         if(!user)return;
-        const {error}=await db.from("vh_watch_progress").upsert({user_id:user.id,content_id:String(item.id),position_seconds:position,duration_seconds:Number(activeVideo.duration)||0,updated_at:new Date().toISOString()},{onConflict:"user_id,content_id"});
-        if(error)console.debug("Watch progress sync unavailable:",error.message);
+        const {error}=await db.from("vh_watch_progress").upsert({
+          user_id:user.id,content_id:String(item.id),position_seconds:0,
+          duration_seconds:Number(video.duration)||0,updated_at:new Date().toISOString()
+        },{onConflict:"user_id,content_id"});
+        if(error)console.debug("Completed playback state was not synced:",error.message);
       }).catch(()=>{});
+      window.renderVisionHub?.();
     };
+    video.onerror=()=>toast("Video stream nahi chal paayi. Direct file URL aur storage access check karein.");
+    if(video.src!==asset.url){video.pause();video.src=asset.url;video.load();}
     activeVideo.play().catch(()=>{});
     const status=$("playerOverlay")?.querySelector(".player-controls span:nth-child(2)");
     if(status)status.textContent=(asset.resolution||"Original")+" · supplied source";
