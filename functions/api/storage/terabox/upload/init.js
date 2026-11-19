@@ -1,4 +1,4 @@
-import {json,requireContentStaff,getFreshTeraBoxConnection,postForm,teraboxFolder} from "../../../../lib/terabox.js";
+import {json,requireContentStaff,getFreshTeraBoxConnection,postForm,teraboxFolder,signTeraBoxUploadToken,hashUploadList} from "../../../../lib/terabox.js";
 export async function onRequestPost({request,env}){
   const auth=await requireContentStaff(request,env);if(auth.response)return auth.response;
   let body;try{body=await request.json();}catch(_){return json({error:"Invalid JSON"},400);}
@@ -15,6 +15,7 @@ export async function onRequestPost({request,env}){
     if(Number(result.return_type)===2)return json({already_exists:true,path,file:result.info||null});
     if(!result.uploadid||!Array.isArray(result.block_list))throw new Error("TeraBox pre-upload returned an incomplete upload session.");
     const requestedParts=result.block_list.length?result.block_list:[0];
-    return json({path,uploadid:result.uploadid,parts:requestedParts.map(Number),block_md5s:hashes});
+    const uploadToken=await signTeraBoxUploadToken({uid:auth.user.id,exp:Date.now()+6*60*60*1000,path,uploadid:result.uploadid,hashes_digest:await hashUploadList(hashes)},env);
+    return json({path,upload_token:uploadToken,parts:requestedParts.map(Number)});
   }catch(error){return json({error:error.message||"TeraBox upload could not be initialized"},502);}
 }
