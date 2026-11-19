@@ -98,7 +98,7 @@
       const {error:upErr}=await db.storage.from(bucket).upload(path,file,{upsert:false,contentType:file.type||"text/vtt"});
       if(upErr)throw upErr; uploadedPath=path;
       const {data:pub}=db.storage.from(bucket).getPublicUrl(path);
-      const {error:dbErr}=await db.from("vh_media_assets").insert({content_id:contentId,asset_type:type,resolution,language,label,asset_url:pub.publicUrl,storage_provider:"supabase",mime_type:file.type||"text/vtt",file_size_bytes:file.size,created_by:user.id});
+      const {error:dbErr}=await db.from("vh_media_assets").insert({content_id:contentId,asset_type:type,resolution,language,label,asset_url:pub.publicUrl,storage_provider:"supabase",mime_type:file.type||"text/vtt",file_size_bytes:file.size,storage_path:path,created_by:user.id});
       if(dbErr)throw dbErr;
       status.textContent="Upload complete."; event.currentTarget.reset(); $("vhMediaType").dispatchEvent(new Event("change")); await loadAssets();
     }catch(e){
@@ -113,6 +113,25 @@
       if(data?.storage_path)await db.storage.from(bucket).remove([data.storage_path]);
       await loadAssets();toast("Media track deleted.");
     }catch(e){toast(e.message||"Could not delete media track.");}
+  }
+  function injectLoginAudit(){
+    const host=$("tab-users-admin"); if(!host||$("vhLoginActivity"))return;
+    const section=document.createElement("section");section.id="vhLoginActivity";section.className="admin-form";section.style.marginTop="24px";
+    section.innerHTML='<h3>🔐 Login Activity — Main Admin Only</h3><p style="color:var(--text-muted)">Only the primary Admin role can read this log. Sub-admin accounts are denied by database policy. No IP address is collected by this feature.</p><div id="vhLoginActivityRows">Loading…</div>';
+    host.appendChild(section);
+  }
+  async function loadLoginAudit(){
+    const out=$("vhLoginActivityRows");if(!out)return;
+    try{
+      await admin();
+      const [logs,profiles]=await Promise.all([
+        db.from("vh_login_activity").select("id,user_id,user_agent,created_at").order("created_at",{ascending:false}).limit(200),
+        db.from("profiles").select("id,fullname,role")
+      ]);
+      if(logs.error)throw logs.error;if(profiles.error)throw profiles.error;
+      const names=new Map((profiles.data||[]).map(p=>[p.id,(p.fullname||"User")+" · "+p.role]));
+      out.innerHTML=(logs.data||[]).length?(logs.data||[]).map(x=>'<div class="request-item"><strong>'+esc(names.get(x.user_id)||x.user_id)+'</strong><small>'+esc(new Date(x.created_at).toLocaleString())+' · '+esc((x.user_agent||"Browser not provided").slice(0,120))+'</small></div>').join(""):"<p>No login events recorded yet. New sign-ins will appear here.</p>";
+    }catch(e){out.textContent=e.message||"Login activity is unavailable. Apply the updated SQL first.";}
   }
   function installPlayerTracks(){
     const original=window.openMovie;
@@ -165,7 +184,7 @@
     };
     wrapped.__vhTracksInstalled=true;window.openMovie=wrapped;
   }
-  document.addEventListener("DOMContentLoaded",()=>{injectPanel();loadTitles();installPlayerTracks();});
-  db.auth.onAuthStateChange((_event,session)=>{if(session?.user){injectPanel();loadTitles();}});
-  window.addEventListener("vh:page-shown",name=>{if(name.detail==="admin"){injectPanel();loadTitles();}});
+  document.addEventListener("DOMContentLoaded",()=>{injectPanel();loadTitles();installPlayerTracks();injectLoginAudit();loadLoginAudit();});
+  db.auth.onAuthStateChange((_event,session)=>{if(session?.user){injectPanel();loadTitles();injectLoginAudit();loadLoginAudit();}});
+  window.addEventListener("vh:page-shown",name=>{if(name.detail==="admin"){injectPanel();loadTitles();injectLoginAudit();loadLoginAudit();}});
 })();
