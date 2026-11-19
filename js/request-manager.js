@@ -47,6 +47,11 @@
     try {
       const { error } = await db.from("vh_requests").insert(request);
       if (error) throw error;
+      // Analytics is best-effort: a tracking failure must never undo a successful request.
+      db.from("vh_analytics_events").insert({ event_type: "request_submit" })
+        .then(({ error: analyticsError }) => {
+          if (analyticsError) console.debug("Request analytics not stored:", analyticsError.message);
+        });
       localRecent(request);
       $("reqTitle").value = "";
       $("reqYear").value = "";
