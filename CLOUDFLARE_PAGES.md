@@ -16,13 +16,13 @@ Add these in Cloudflare Dashboard → Workers & Pages → your Pages project →
 - `SUPABASE_ANON_KEY` — Supabase publishable/anon key (not service role).
 - `SUPABASE_SERVICE_ROLE_KEY` — Supabase service-role key; mark as Secret. Server-side only.
 - `TELEGRAM_BOT_TOKEN` — token from BotFather; mark as Secret.
-- `TELEGRAM_WEBHOOK_SECRET` — a long random secret (letters/numbers/underscore/hyphen); mark as Secret.
+- `TELEGRAM_WEBHOOK_SECRET` — a long random secret (letters/numbers/underscore/hyphen); mark as Secret.\n- `TERABOX_CLIENT_ID` — approved TeraBox Open Platform AppKey; mark as Secret/variable.\n- `TERABOX_CLIENT_SECRET` — TeraBox Open Platform SecretKey; mark as Secret.\n- `TERABOX_PRIVATE_SECRET` — TeraBox Open Platform signing secret; mark as Secret.\n- `PROVIDER_TOKEN_ENCRYPTION_KEY` — 32 random bytes as 64 hex characters or Base64; mark as Secret.
 
 Never put the service-role key or Telegram bot token in any browser JavaScript file or commit them to Git.
 
 ## Telegram setup
 1. Run `supabase/cloudflare-telegram.sql` in the Supabase SQL Editor after reviewing it.
-2. Add all five variables/secrets listed above to Cloudflare Pages (SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET). Keep the service-role key and bot token marked Secret.
+2. Add the variables/secrets required by the features you enable to Cloudflare Pages. Telegram needs SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, TELEGRAM_BOT_TOKEN and TELEGRAM_WEBHOOK_SECRET. TeraBox additionally needs TERABOX_CLIENT_ID, TERABOX_CLIENT_SECRET, TERABOX_PRIVATE_SECRET and PROVIDER_TOKEN_ENCRYPTION_KEY. Keep the service-role key and bot token marked Secret.
 3. Deploy the Pages project so `/api/telegram/webhook` exists.
 4. Register the webhook with Telegram's setWebhook API, using the deployed URL `https://YOUR-DOMAIN/api/telegram/webhook` and the exact TELEGRAM_WEBHOOK_SECRET as `secret_token`.
 5. Open the bot in Telegram and send `/start` to opt in. Send `/stop` to opt out.
@@ -51,3 +51,6 @@ The Control Center includes a primary-admin-only TeraBox device-code connection 
 Run `supabase/provider-connections.sql` in Supabase before connecting. The API stores encrypted tokens in a server-only table and refreshes the rotating refresh token server-side. TeraBox developer approval is separate from a normal consumer account; its device authorization flow may require the TeraBox app and VPN access according to its official integration documentation.
 
 This is the account-connection/quota phase only. TeraBox direct chunk upload and player streaming are not yet wired into the catalogue. Its documented HLS streaming types are 480p, 720p and 1080p, so it must not be presented as a 2K/4K/8K source. Supabase remains the only enabled direct-upload provider until each connector is implemented and tested.
+
+
+TeraBox credentials are issued only after applying for an Open Platform application. The current code supports the secure device-code connection and quota display; file upload/playback integration is not yet complete. The official API's documented streaming types are M3U8_AUTO_480, M3U8_AUTO_720 and M3U8_AUTO_1080, so do not promise 2K/4K/8K through this provider.
