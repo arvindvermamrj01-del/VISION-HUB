@@ -86,7 +86,7 @@
   async function pollTeraBox(){
     if(!teraboxDevice)return;
     if(Date.now()>=teraboxDevice.expiresAt){
-      teraboxDevice=null;$("teraboxConnectionStatus").textContent="QR authorization expired. Start a new connection.";return;
+      teraboxDevice=null;$("teraboxQrWrap").style.display="none";$("teraboxConnectionStatus").textContent="QR authorization expired. Start a new connection.";return;
     }
     try{
       const {data:{session}}=await db.auth.getSession();
@@ -100,7 +100,7 @@
       teraboxDevice=null;$("teraboxQrWrap").style.display="none";
       $("teraboxConnectionStatus").textContent="TeraBox connected successfully.";
       await loadTeraBoxStatus();
-    }catch(error){teraboxDevice=null;$("teraboxConnectionStatus").textContent=error.message||"TeraBox authorization failed.";}
+    }catch(error){teraboxDevice=null;$("teraboxQrWrap").style.display="none";$("teraboxConnectionStatus").textContent=error.message||"TeraBox authorization failed.";}
   }
   window.connectTeraBox=async function(){
     const button=$("connectTeraBoxButton"),status=$("teraboxConnectionStatus");
