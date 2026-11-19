@@ -96,7 +96,12 @@
     const provider = providerSelect?.value || window.VH_STORAGE_DEFAULT || "supabase";
     if (!title) throw new Error("Title required hai.");
     if (!file && !urlInput) throw new Error("Video file upload karein ya authorised video URL dein.");
-    const videoUrl = await uploadVideo(file, user, provider) || urlInput;
+    let videoUrl = urlInput;
+    if (file) videoUrl = await uploadVideo(file, user, provider);
+    if (!videoUrl) throw new Error("Video URL is missing.");
+    let parsedVideoUrl;
+    try { parsedVideoUrl = new URL(videoUrl); } catch (_) { throw new Error("Valid HTTPS video or authorised provider URL dein."); }
+    if (parsedVideoUrl.protocol !== "https:") throw new Error("Only HTTPS media URLs are accepted.");
     const row = {
       title, content_type: type, video_url: videoUrl, storage_provider: provider, published: true, created_by: user.id,
       poster_url: type === "Short" ? null : ($("addPoster")?.value.trim() || null),
@@ -115,6 +120,17 @@
     addToCatalog(data);
     form?.reset();
     toast(type + " successfully publish ho gaya.");
+    try {
+      const { data: { session } } = await db.auth.getSession();
+      if (session?.access_token) {
+        const response = await fetch("/api/telegram/notify", {
+          method: "POST",
+          headers: { "content-type": "application/json", authorization: "Bearer " + session.access_token },
+          body: JSON.stringify({ title, type, url: window.location.origin })
+        });
+        if (!response.ok) console.warn("Telegram notification was not sent:", await response.text());
+      }
+    } catch (notifyError) { console.warn("Telegram notification unavailable:", notifyError); }
     await loadPublished();
   }
   window.addMovie = async function(e) {
