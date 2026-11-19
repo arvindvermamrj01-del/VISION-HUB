@@ -165,7 +165,7 @@
             if(audios.length){
               const a=document.createElement("select");a.setAttribute("aria-label","Audio language");a.innerHTML='<option value="">Original audio</option>'+audios.map(v=>`<option value="${esc(v.asset_url)}">${esc(v.language)}</option>`).join("");
               audio=document.createElement("audio");audio.preload="none";audio.style.display="none";video.parentElement.appendChild(audio);
-              a.addEventListener("change",()=>{audio.pause();if(!a.value)return;audio.src=a.value;audio.currentTime=video.currentTime;audio.play().catch(()=>{});});
+              a.addEventListener("change",()=>{audio.pause();video.muted=Boolean(a.value);if(!a.value)return;audio.src=a.value;audio.currentTime=video.currentTime;audio.play().catch(()=>{});});
               video.addEventListener("play",()=>{if(audio?.src)audio.play().catch(()=>{});});
               video.addEventListener("pause",()=>audio?.pause());
               video.addEventListener("seeking",()=>{if(audio?.src)audio.currentTime=video.currentTime;});
