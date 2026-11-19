@@ -725,17 +725,17 @@
                 <label for="defaultStorageProvider">Default Storage Provider</label>
                 <select id="defaultStorageProvider">
                   <option value="supabase">Supabase (recommended)</option>
-                  <option value="terabox">TeraBox</option>
-                  <option value="mega">MEGA</option>
-                  <option value="degoo">Degoo</option>
-                  <option value="google_drive">Google Drive</option>
-                  <option value="mediafire">MediaFire</option>
-                  <option value="pcloud">pCloud</option>
-                  <option value="box">Box</option>
-                  <option value="icedrive">Icedrive</option>
-                  <option value="koofr">Koofr</option>
-                  <option value="internxt">Internxt</option>
-                  <option value="telegram">Telegram</option>
+                  <option value="terabox" disabled>TeraBox (connect first; upload connector pending)</option>
+                  <option value="mega" disabled>MEGA (not connected)</option>
+                  <option value="degoo" disabled>Degoo (not connected)</option>
+                  <option value="google_drive" disabled>Google Drive (OAuth pending)</option>
+                  <option value="mediafire" disabled>MediaFire (not connected)</option>
+                  <option value="pcloud" disabled>pCloud (OAuth pending)</option>
+                  <option value="box" disabled>Box (OAuth pending)</option>
+                  <option value="icedrive" disabled>Icedrive (not connected)</option>
+                  <option value="koofr" disabled>Koofr (not connected)</option>
+                  <option value="internxt" disabled>Internxt (not connected)</option>
+                  <option value="telegram" disabled>Telegram (delivery only; not video storage)</option>
                 </select>
               </div>
               <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Save Default Storage</button>
@@ -751,6 +751,17 @@
               <p><strong>Degoo, Icedrive, Internxt:</strong> Manual authorised links only until a supported integration is verified.</p>
               <p><strong>Telegram:</strong> Channel/post links can be saved; bot upload automation is not connected yet.</p>
               <p style="color:var(--text-muted);font-size:.88rem;">Selecting a provider does not connect its account or enable uploads yet. Until its connector is configured, use an authorised share/direct URL. Never paste passwords, API tokens or private keys into this page.</p>
+            </div>
+            <div class="admin-form" style="margin-top:22px;">
+              <h3>TeraBox Account Connection</h3>
+              <p>Connect using TeraBox Open Platform device authorization. Credentials and tokens are handled server-side and stored encrypted.</p>
+              <button id="connectTeraBoxButton" class="btn-primary" type="button" onclick="connectTeraBox()">Connect TeraBox Account</button>
+              <div id="teraboxQrWrap" style="display:none;margin:16px 0;text-align:center;">
+                <img id="teraboxQr" alt="TeraBox authorization QR code" style="max-width:220px;width:100%;height:auto;background:#fff;padding:10px;border-radius:10px;">
+                <p>Scan this QR code in the TeraBox app to authorize Vision Hub.</p>
+              </div>
+              <p id="teraboxConnectionStatus" role="status" aria-live="polite">TeraBox account not connected.</p>
+              <p id="teraboxQuota" style="color:var(--text-muted)"></p>
             </div>
           </div>
 
