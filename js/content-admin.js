@@ -13,6 +13,7 @@
   const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const slug = value => String(value || "media").normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g,"-").replace(/^-+|-+$/g,"").slice(-100) || "media";
   const qualityOrder = ["180p","240p","360p","420p","480p","720p","1080p","2K","4K","8K"];
+  const dbResolution = value => !value || String(value).toLowerCase() === "original" ? null : String(value).toLowerCase();
 
   async function requireAdmin() {
     const {data:{user},error} = await db.auth.getUser();
@@ -165,8 +166,8 @@
       const {data:created,error}=await db.from("vh_content").insert(row).select("*").single();
       if(error)throw error;
       const assetRows=[
-        ...uploaded.map(x=>({content_id:created.id,asset_type:"video",asset_url:"private://"+x.path,storage_path:x.path,storage_provider:"supabase",resolution:x.resolution,is_primary:x.is_primary,language:isShort?"":($("vhMediaLanguages")?.value.trim()||"")})),
-        ...links.map(x=>({content_id:created.id,asset_type:"video",asset_url:x.url,storage_path:x.url,storage_provider:x.storage_provider||provider,resolution:x.resolution,is_primary:x.is_primary,language:isShort?"":($("vhMediaLanguages")?.value.trim()||"")}))
+        ...uploaded.map(x=>({content_id:created.id,asset_type:"video",asset_url:"private://"+x.path,storage_path:x.path,storage_provider:"supabase",resolution:dbResolution(x.resolution),is_primary:x.is_primary,language:isShort?"":($("vhMediaLanguages")?.value.trim()||"")})),
+        ...links.map(x=>({content_id:created.id,asset_type:"video",asset_url:x.url,storage_path:x.url,storage_provider:x.storage_provider||provider,resolution:dbResolution(x.resolution),is_primary:x.is_primary,language:isShort?"":($("vhMediaLanguages")?.value.trim()||"")}))
       ];
       if(assetRows.length){
         const {error:assetError}=await db.from("vh_media_assets").insert(assetRows);
