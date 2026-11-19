@@ -195,6 +195,11 @@
       };
     };
   }
+  window.addEventListener("vh:google-drive-upload-progress", event => {
+    const detail=event.detail||{};
+    const text="Google Drive upload: chunk "+Number(detail.completed||0)+" of "+Number(detail.total||0)+" complete.";
+    ["googleDriveUploadProgress","googleDriveShortUploadProgress"].forEach(id=>{const node=$(id);if(node)node.textContent=text;});
+  });
   window.addEventListener("vh:terabox-upload-progress", event => {
     const detail=event.detail||{};
     const text="TeraBox upload: chunk "+Number(detail.completed||0)+" of "+Number(detail.total||0)+" complete.";
