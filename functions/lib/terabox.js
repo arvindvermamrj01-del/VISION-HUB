@@ -124,7 +124,9 @@ export async function getFreshTeraBoxConnection(env){
     client_id:env.TERABOX_CLIENT_ID,client_secret:env.TERABOX_CLIENT_SECRET,
     refresh_token:row.refresh_token,timestamp,sign
   });
-  const info=await tokenInfo(tokens.access_token);
+  let info;
+  try{info=await tokenInfo(tokens.access_token);}
+  catch(_){info={api_domain:row.api_domain,upload_domain:row.upload_domain,user_id:row.account_id};}
   await saveTeraBoxTokens(env,{id:row.connected_by},tokens,info,row.refresh_expires_at);
   return await loadTeraBoxConnection(env);
 }
