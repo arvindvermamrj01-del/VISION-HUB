@@ -11,12 +11,12 @@
   };
   const safe = value => String(value || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const slug = name => String(name).toLowerCase().replace(/[^a-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "");
-  async function requireAdmin() {
+  async function requireContentStaff() {
     const { data: { user }, error } = await db.auth.getUser();
     if (error || !user) throw new Error("Pehle Admin account se login karein.");
     const { data: profile, error: profileError } = await db.from("profiles").select("role").eq("id", user.id).maybeSingle();
     if (profileError) throw profileError;
-    if (!profile || profile.role !== "admin") throw new Error("Admin permission nahi hai.");
+    if (!profile || !["admin","sub_admin","content_editor"].includes(profile.role)) throw new Error("Content management permission nahi hai.");
     return user;
   }
   async function uploadVideo(file, user, provider) {
@@ -61,7 +61,7 @@
   window.deletePublishedContent = async id => {
     if (!Number.isFinite(Number(id)) || !window.confirm("Delete this published item permanently?")) return;
     try {
-      await requireAdmin();
+      await requireContentStaff();
       const { data: row, error: readError } = await db.from("vh_content").select("storage_path").eq("id", Number(id)).maybeSingle();
       if (readError) throw readError;
       const { error } = await db.from("vh_content").delete().eq("id", Number(id));
@@ -90,7 +90,7 @@
     document.dispatchEvent(new CustomEvent("visionhub:content-loaded"));
   }
   async function publish(form, type) {
-    const user = await requireAdmin();
+    const user = await requireContentStaff();
     const title = $(type === "Short" ? "shortTitle" : "addTitle")?.value.trim();
     const file = $(type === "Short" ? "shortVideoFile" : "addVideoFile")?.files?.[0] || null;
     const urlInput = type === "Short" ? $("shortVideoUrl")?.value.trim() : $("addVideo")?.value.trim();
