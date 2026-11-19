@@ -32,7 +32,7 @@
     for(let i=0;i<parts.length;i++){
       const partseq=Number(parts[i]);
       const chunk=file.slice(partseq*chunkSize,Math.min(file.size,(partseq+1)*chunkSize));
-      const form=new FormData();form.set("path",init.path);form.set("uploadid",init.uploadid);form.set("partseq",String(partseq));form.set("file",chunk,"chunk.bin");
+      const form=new FormData();form.set("path",init.path);form.set("uploadid",init.uploadid);form.set("partseq",String(partseq));form.set("expected_md5",hashes[partseq]);form.set("file",chunk,"chunk.bin");
       await api("/api/storage/terabox/upload/part",{method:"POST",body:form});
       window.dispatchEvent(new CustomEvent("vh:terabox-upload-progress",{detail:{completed:i+1,total:parts.length}}));
     }
