@@ -5,7 +5,7 @@
 create table if not exists public.vh_storage_settings (
   id smallint primary key default 1 check (id = 1),
   default_provider text not null default 'supabase'
-    check (default_provider in ('supabase','google_drive','terabox','telegram')),
+    check (default_provider in ('supabase','terabox','mega','degoo','google_drive','mediafire','pcloud','box','icedrive','koofr','internxt','telegram')),
   updated_by uuid references auth.users(id) on delete set null,
   updated_at timestamptz not null default now()
 );
