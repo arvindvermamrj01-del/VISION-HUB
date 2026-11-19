@@ -239,7 +239,8 @@ on conflict (id) do update set public=false, file_size_limit=excluded.file_size_
 alter table public.vh_content add column if not exists storage_path text;
 
 drop policy if exists "admins upload private media" on storage.objects;
-create policy "admins upload private media" on storage.objects for insert to authenticated
+drop policy if exists "staff upload private media" on storage.objects;
+create policy "staff upload private media" on storage.objects for insert to authenticated
 with check (bucket_id='vh-private-media' and (storage.foldername(name))[1]=auth.uid()::text and public.vh_can_manage_content());
 
 -- Legacy bucket retained for existing published links; new uploads must use vh-private-media.
