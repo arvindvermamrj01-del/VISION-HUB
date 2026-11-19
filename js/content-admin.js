@@ -3,7 +3,7 @@
   "use strict";
   const db = window.VH_SUPABASE;
   if (!db) return;
-  const BUCKET = "vh-media";
+  const BUCKET = "vh-private-media";
   const $ = id => document.getElementById(id);
   const toast = message => {
     if (typeof window.toast === "function") window.toast(message);
@@ -28,8 +28,7 @@
     const path = user.id + "/" + Date.now() + "-" + slug(file.name || "video");
     const { error } = await db.storage.from(BUCKET).upload(path, file, { upsert: false, contentType: file.type });
     if (error) throw error;
-    const { data } = db.storage.from(BUCKET).getPublicUrl(path);
-    return data.publicUrl;
+    return { storagePath: path };
   }
   function addToCatalog(row) {
     const item = {
@@ -38,7 +37,7 @@
       rating: row.rating || "—", language: row.language || "", duration: row.duration || "",
       poster: row.poster_url || "https://placehold.co/400x600/171b2b/ffffff?text=Vision+Hub",
       backdrop: row.poster_url || "", description: row.description || "", cast: row.cast || "",
-      trailer: row.trailer_url || "", video_url: row.video_url, is_short: row.content_type === "Short"
+      trailer: row.trailer_url || "", video_url: row.video_url, storage_path: row.storage_path || null, is_short: row.content_type === "Short"
     };
     const list = window.VISION_HUB_DATA || (window.VISION_HUB_DATA = []);
     const index = list.findIndex(x => x.id === item.id);
@@ -96,14 +95,19 @@
     const provider = providerSelect?.value || window.VH_STORAGE_DEFAULT || "supabase";
     if (!title) throw new Error("Title required hai.");
     if (!file && !urlInput) throw new Error("Video file upload karein ya authorised video URL dein.");
-    let videoUrl = urlInput;
-    if (file) videoUrl = await uploadVideo(file, user, provider);
-    if (!videoUrl) throw new Error("Video URL is missing.");
-    let parsedVideoUrl;
-    try { parsedVideoUrl = new URL(videoUrl); } catch (_) { throw new Error("Valid HTTPS video or authorised provider URL dein."); }
-    if (parsedVideoUrl.protocol !== "https:") throw new Error("Only HTTPS media URLs are accepted.");
+    let videoUrl = urlInput || "";
+    let storagePath = null;
+    if (file) {
+      const uploaded = await uploadVideo(file, user, provider);
+      storagePath = uploaded.storagePath;
+    } else {
+      if (!videoUrl) throw new Error("Video URL is missing.");
+      let parsedVideoUrl;
+      try { parsedVideoUrl = new URL(videoUrl); } catch (_) { throw new Error("Valid HTTPS video or authorised provider URL dein."); }
+      if (parsedVideoUrl.protocol !== "https:") throw new Error("Only HTTPS media URLs are accepted.");
+    }
     const row = {
-      title, content_type: type, video_url: videoUrl, storage_provider: provider, published: true, created_by: user.id,
+      title, content_type: type, video_url: videoUrl, storage_path: storagePath, storage_provider: provider, published: true, created_by: user.id,
       poster_url: type === "Short" ? null : ($("addPoster")?.value.trim() || null),
       genre: type === "Short" ? "Shorts" : ($("addGenre")?.value || "Drama"),
       language: type === "Short" ? "" : ($("addLang")?.value.trim() || ""),
@@ -116,7 +120,10 @@
       industry: type === "Short" ? "All" : (($("addLang")?.value || "").toLowerCase().includes("hindi") ? "Bollywood" : "All")
     };
     const { data, error } = await db.from("vh_content").insert(row).select("*").single();
-    if (error) throw error;
+    if (error) {
+      if (storagePath) await db.storage.from(BUCKET).remove([storagePath]).catch(() => {});
+      throw error;
+    }
     addToCatalog(data);
     form?.reset();
     toast(type + " successfully publish ho gaya.");
