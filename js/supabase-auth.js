@@ -102,7 +102,7 @@ if (window.VH_IS_ADMIN) {
   const rootOnly = ["users-admin", "team-admin", "settings", "storage-manager", "categories", "songs", "reports", "dashboard"];
   const allowed = window.VH_ROLE === "admin" ? null :
     window.VH_ROLE === "moderator" ? ["requests-admin"] :
-    window.VH_ROLE === "content_editor" ? ["add-movie", "add-shorts", "manage"] :
+    window.VH_ROLE === "content_editor" ? ["add-movie", "manage"] :
     ["add-movie", "add-shorts", "manage", "requests-admin"];
   document.querySelectorAll("#page-admin .admin-nav-btn").forEach(button => {
     const match = button.getAttribute("onclick")?.match(/adminTab\('([^']+)'/);
