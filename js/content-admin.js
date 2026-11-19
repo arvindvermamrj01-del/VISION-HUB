@@ -118,6 +118,21 @@
     }
   }
 
+  async function mapWithConcurrency(items,limit,mapper) {
+    const output=new Array(items.length);
+    let cursor=0;
+    const workerCount=Math.min(Math.max(1,Number(limit)||1),items.length);
+    const workers=Array.from({length:workerCount},async()=>{
+      while(true){
+        const index=cursor++;
+        if(index>=items.length)return;
+        output[index]=await mapper(items[index],index);
+      }
+    });
+    await Promise.all(workers);
+    return output;
+  }
+
   async function loadPublished() {
     const {data:rows,error}=await db.from("vh_content").select("*").eq("published",true).order("created_at",{ascending:false});
     if(error){console.error("Published content load failed:",error);toast("Catalog load failed: "+error.message);return;}
@@ -128,12 +143,16 @@
       if(result.error) console.warn("Media asset metadata unavailable; falling back to primary video URL:",result.error.message);
       else assetRows=result.data||[];
     }
-    const grouped=new Map();
-    for(const asset of assetRows){
+    // Resolve private links in small parallel batches instead of serial network round-trips.
+    const resolvedAssets=await mapWithConcurrency(assetRows,8,async asset=>{
       const url=await signedAsset(asset);
-      if(!url)continue;
+      return url?{...asset,resolved_url:url,url}:null;
+    });
+    const grouped=new Map();
+    for(const asset of resolvedAssets){
+      if(!asset)continue;
       const list=grouped.get(String(asset.content_id))||[];
-      list.push({...asset,resolved_url:url,url});
+      list.push(asset);
       grouped.set(String(asset.content_id),list);
     }
     (rows||[]).forEach(row=>addToCatalog(row,grouped.get(String(row.id))||[]));
