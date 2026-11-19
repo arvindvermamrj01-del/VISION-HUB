@@ -18,13 +18,27 @@
     if(!file||!file.type.startsWith("video/"))throw new Error("Choose a valid video file.");
     const init=await api("/api/storage/google-drive/upload/init",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({file_name:file.name,mime_type:file.type||"video/mp4",size:file.size})});
     const chunkSize=Math.max(256*1024,Math.floor(Number(init.chunk_size||8*MB)/(256*1024))*256*1024);
-    let final=null,completed=0,total=Math.ceil(file.size/chunkSize);
-    for(let start=0;start<file.size;start+=chunkSize){
-      const chunk=file.slice(start,Math.min(file.size,start+chunkSize));
-      const form=new FormData();form.set("upload_token",init.upload_token);form.set("start",String(start));form.set("total",String(file.size));form.set("file",chunk,"chunk.bin");
-      const result=await api("/api/storage/google-drive/upload/part",{method:"POST",body:form});
-      completed++;window.dispatchEvent(new CustomEvent("vh:google-drive-upload-progress",{detail:{completed,total}}));
-      if(result.complete)final=result;
+    let final=null,offset=0,retries=0,completed=0,total=Math.ceil(file.size/chunkSize);
+    const nextOffset=range=>{
+      const match=String(range||"").match(/(?:bytes=)?\\s*(\\d+)-(\\d+)/i);
+      return match?Number(match[2])+1:0;
+    };
+    while(offset<file.size){
+      const end=Math.min(file.size,offset+chunkSize),chunk=file.slice(offset,end);
+      const form=new FormData();form.set("upload_token",init.upload_token);form.set("start",String(offset));form.set("total",String(file.size));form.set("file",chunk,"chunk.bin");
+      let result;
+      try{
+        result=await api("/api/storage/google-drive/upload/part",{method:"POST",body:form});
+      }catch(uploadError){
+        const statusForm=new FormData();statusForm.set("upload_token",init.upload_token);statusForm.set("total",String(file.size));statusForm.set("status","1");
+        result=await api("/api/storage/google-drive/upload/part",{method:"POST",body:statusForm});
+      }
+      if(result.complete){final=result;break;}
+      const updated=nextOffset(result.range);
+      if(updated===offset){retries++;if(retries>3)throw new Error("Google Drive upload made no progress after three retries.");}
+      else{offset=updated;retries=0;}
+      completed=Math.min(total,Math.floor(offset/chunkSize));
+      window.dispatchEvent(new CustomEvent("vh:google-drive-upload-progress",{detail:{completed,total}}));
     }
     if(!final?.file?.id)throw new Error("Google Drive did not confirm the completed upload.");
     return {storagePath:final.file.id,videoUrl:final.preview_url,provider:"google_drive"};
