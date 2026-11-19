@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 const setup = readFileSync(new URL("../supabase/setup.sql", import.meta.url), "utf8");
 const roles = readFileSync(new URL("../supabase/sub-admin-role-migration.sql", import.meta.url), "utf8");
 const providers = readFileSync(new URL("../supabase/provider-connections.sql", import.meta.url), "utf8");
+const mediaMigration = readFileSync(new URL("../supabase/private-media-migration.sql", import.meta.url), "utf8");
 
 test("only the primary admin role can pass the admin SQL helper", () => {
   const fn = setup.match(/create or replace function public\.vh_is_admin\(\)[\s\S]*?\$vh\$;/i)?.[0] || "";
@@ -35,4 +36,11 @@ test("private media bucket is private and provider OAuth credentials are server-
 test("private media writes are staff-scoped and deletes require linked content authority", () => {
   assert.match(setup, /create policy "staff upload private media"[\s\S]*?vh_can_manage_content\(\)/i);
   assert.match(setup, /create policy "staff delete linked private media"[\s\S]*?vh_can_manage_content_item\(c\.content_type\)/i);
+});
+
+test("existing-project media migration creates the columns and tables used by upload code", () => {
+  assert.match(mediaMigration, /alter table public\.vh_content add column if not exists storage_provider/i);
+  assert.match(mediaMigration, /create table if not exists public\.vh_media_assets/i);
+  assert.match(mediaMigration, /published private media signed read/i);
+  assert.match(mediaMigration, /staff delete linked private media/i);
 });
