@@ -25,7 +25,7 @@
       users = data || [];
       renderUsers($("userManageSearch")?.value || "");
     } catch (error) {
-      body.innerHTML = '<tr><td colspan="6">' + esc(error.message || "Users could not be loaded.") + '</td></tr>';
+      body.innerHTML = '<tr><td colspan="7">' + esc(error.message || "Users could not be loaded.") + '</td></tr>';
     }
   }
   function renderUsers(query="") {
