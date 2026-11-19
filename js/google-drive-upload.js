@@ -21,7 +21,7 @@
     let final=null,completed=0,total=Math.ceil(file.size/chunkSize);
     for(let start=0;start<file.size;start+=chunkSize){
       const chunk=file.slice(start,Math.min(file.size,start+chunkSize));
-      const form=new FormData();form.set("session_url",init.session_url);form.set("start",String(start));form.set("total",String(file.size));form.set("file",chunk,"chunk.bin");
+      const form=new FormData();form.set("upload_token",init.upload_token);form.set("start",String(start));form.set("total",String(file.size));form.set("file",chunk,"chunk.bin");
       const result=await api("/api/storage/google-drive/upload/part",{method:"POST",body:form});
       completed++;window.dispatchEvent(new CustomEvent("vh:google-drive-upload-progress",{detail:{completed,total}}));
       if(result.complete)final=result;
