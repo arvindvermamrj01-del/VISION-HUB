@@ -1,79 +1,120 @@
-(() => {
-  "use strict";
-
-  if (!window.supabase) {
-  console.error("Supabase library missing.");
-  return;
-}
-
-if (!window.VH_SUPABASE_URL) {
-  console.error("Supabase URL missing.");
-  return;
-}
-
-if (!window.VH_SUPABASE_PUBLISHABLE_KEY) {
-  console.error("Supabase key missing.");
-  return;
-}
-
-  const client = window.supabase.createClient(
-    window.VH_SUPABASE_URL,
-    window.VH_SUPABASE_PUBLISHABLE_KEY
-  );
-
-  window.VH_SUPABASE = client;
-
-  const el = id => document.getElementById(id);
-
-  function notify(message) {
-    if (typeof window.toast === "function") {
-      window.toast(message);
+if (email) {
+      credentials = {
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name
+          }
+        }
+      };
+    } else if (phoneNumber) {
+      credentials = {
+        phone: countryCode + phoneNumber,
+        password,
+        options: {
+          data: {
+            full_name: name
+          }
+        }
+      };
     } else {
-      alert(message);
-    }
-  }
-
-async function showSignedIn(user) {
-  if (el("authNav")) el("authNav").classList.add("hidden");
-  if (el("userNav")) el("userNav").classList.remove("hidden");
-
-  const name = (user.user_metadata && user.user_metadata.full_name)
-    ? user.user_metadata.full_name
-    : (user.email ? user.email : "User");
-
-  const initial = name.trim().charAt(0).toUpperCase();
-
-  ["userAvatar", "profileAvatar"].forEach(id => {
-    if (el(id)) el(id).textContent = initial;
-  });
-
-  if (el("profileName")) el("profileName").textContent = name;
-  if (el("profileEmail")) el("profileEmail").textContent = user.email || "";
-
-  window.VH_IS_ADMIN = false;
-
-  const { data: profile, error } = await client
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  const isAdmin = !error && profile?.role === "admin";
-  window.VH_IS_ADMIN = isAdmin;
-
-  const dropdown = el("userDropdown");
-
-  if (dropdown) {
-    let adminLink = el("adminNavLink");
-
-    if (!adminLink) {
-      adminLink = document.createElement("a");
-      adminLink.id = "adminNavLink";
-      adminLink.textContent = "Admin Control Center";
-      adminLink.onclick = () => window.showPage("admin");
-      dropdown.appendChild(adminLink);
+      notify("Email ya phone number bhariye.");
+      return;
     }
 
-    adminLink.classList.toggle("hidden", !isAdmin);
-  }
-}
+    const { data, error } =
+      await client.auth.signUp(credentials);
+
+    if (error) {
+      notify(error.message);
+      return;
+    }
+
+    if (data.session && data.user) {
+      await showSignedIn(data.user);
+      notify("Account created successfully!");
+    } else {
+      notify(
+        "Account created. Agar email confirmation on hai, " +
+        "to email verify karke login karein."
+      );
+    }
+  };
+
+  // Admin login
+  window.adminLogin = async function (event) {
+    event.preventDefault();
+
+    let email = (el("adminUser")?.value || "").trim();
+    const password = el("adminPass")?.value || "";
+
+    if (!email || !password) {
+      notify("Admin username aur password bhariye.");
+      return;
+    }
+
+    if (email.toLowerCase() === "admin") {
+      email = "arvindvermamrj01@gmail.com";
+    }
+
+    const { data, error } =
+      await client.auth.signInWithPassword({
+        email,
+        password
+      });
+
+    if (error) {
+      notify(error.message);
+      return;
+    }
+
+    await showSignedIn(data.user);
+
+    if (!window.VH_IS_ADMIN) {
+      await client.auth.signOut();
+      notify("Access denied. Admin account required.");
+      return;
+    }
+
+    notify("Admin login successful!");
+
+    if (typeof window.showPage === "function") {
+      window.showPage("admin");
+    }
+  };
+
+  // Logout
+  window.logoutUser = async function () {
+    const { error } = await client.auth.signOut();
+
+    if (error) {
+      notify(error.message);
+      return;
+    }
+
+    window.VH_IS_ADMIN = false;
+
+    if (el("userNav")) {
+      el("userNav").classList.add("hidden");
+    }
+
+    if (el("authNav")) {
+      el("authNav").classList.remove("hidden");
+    }
+
+    notify("Logout successful!");
+
+    if (typeof window.showPage === "function") {
+      window.showPage("home");
+    }
+  };
+
+  window.logoutAllDevices = async function () {
+    const { error } = await client.auth.signOut({
+      scope: "global"
+    });
+
+    if (error) {
+      notify(error.message);
+    }
