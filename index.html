@@ -409,44 +409,44 @@
             <div><span id="adminRoleBadge" class="admin-role-badge">Admin</span></div>
           </div>
           <nav class="admin-nav">
-            <button class="admin-nav-btn active" onclick="adminTab('dashboard',this)">
+            <button data-vh-roles="admin" class="admin-nav-btn active" onclick="adminTab('dashboard',this)">
               <i class="fas fa-tachometer-alt"></i> Dashboard
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('add-movie',this)">
+            <button data-vh-roles="admin,sub_admin,content_editor" class="admin-nav-btn" onclick="adminTab('add-movie',this)">
               <i class="fas fa-plus-circle"></i> Add Content
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('add-shorts',this)"><i class="fas fa-video"></i> Upload Shorts</button>
-            <button class="admin-nav-btn" onclick="adminTab('manage',this)">
+            <button data-vh-roles="admin,sub_admin,content_editor" class="admin-nav-btn" onclick="adminTab('add-shorts',this)"><i class="fas fa-video"></i> Upload Shorts</button>
+            <button data-vh-roles="admin,sub_admin,content_editor" class="admin-nav-btn" onclick="adminTab('manage',this)">
               <i class="fas fa-film"></i> Manage Catalog
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('drive-import',this)">
+            <button data-vh-roles="admin" class="admin-nav-btn" onclick="adminTab('drive-import',this)">
               <i class="fab fa-google-drive"></i> Drive Import
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('storage-manager',this)">
+            <button data-vh-roles="admin" class="admin-nav-btn" onclick="adminTab('storage-manager',this)">
               <i class="fas fa-cloud"></i> Storage Manager
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('requests-admin',this)">
+            <button data-vh-roles="admin,sub_admin,moderator" class="admin-nav-btn" onclick="adminTab('requests-admin',this)">
               <i class="fas fa-inbox"></i> User Requests
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('reports',this)">
+            <button data-vh-roles="admin" class="admin-nav-btn" onclick="adminTab('reports',this)">
               <i class="fas fa-chart-bar"></i> Analytics & Reports
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('users-admin',this)">
+            <button data-vh-roles="admin" class="admin-nav-btn" onclick="adminTab('users-admin',this)">
               <i class="fas fa-users-cog"></i> User Management
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('login-activity',this);loadLoginActivity()">
+            <button data-vh-roles="admin" class="admin-nav-btn" onclick="adminTab('login-activity',this);loadLoginActivity()">
               <i class="fas fa-history"></i> Login Activity
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('team-admin',this)">
+            <button data-vh-roles="admin" class="admin-nav-btn" onclick="adminTab('team-admin',this)">
               <i class="fas fa-user-shield"></i> Admins & Password
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('settings',this)">
+            <button data-vh-roles="admin" class="admin-nav-btn" onclick="adminTab('settings',this)">
               <i class="fas fa-sliders-h"></i> Platform Settings
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('categories',this)">
+            <button data-vh-roles="admin,sub_admin" class="admin-nav-btn" onclick="adminTab('categories',this)">
               <i class="fas fa-tags"></i> Category Manager
             </button>
-            <button class="admin-nav-btn" onclick="adminTab('songs',this)">
+            <button data-vh-roles="admin,sub_admin" class="admin-nav-btn" onclick="adminTab('songs',this)">
               <i class="fas fa-music"></i> Song Management
             </button>
             <button class="admin-nav-btn logout-btn" onclick="adminLogout()">
@@ -459,7 +459,7 @@
         <main class="admin-main">
           
           <!-- TAB 1: Dashboard Overview -->
-          <div id="tab-dashboard" class="admin-tab active">
+          <div data-vh-roles="admin" id="tab-dashboard" class="admin-tab active">
             <h2>📊 Dashboard & Performance Overview</h2>
             <div class="stats-grid">
               <div class="stat-card blue">
@@ -496,7 +496,7 @@
           </div>
 
           <!-- TAB 2: Add Movie / Series (With Multi-Resolution Downloads & Telegram Integration) -->
-          <div id="tab-add-movie" class="admin-tab">
+          <div data-vh-roles="admin,sub_admin,content_editor" id="tab-add-movie" class="admin-tab">
             <h2>➕ Add New Movie / Web Series</h2>
             <form class="admin-form" onsubmit="addMovie(event)">
               <div class="form-row">
@@ -640,7 +640,7 @@
           </div>
 
           <!-- TAB: Upload Shorts -->
-          <div id="tab-add-shorts" class="admin-tab">
+          <div data-vh-roles="admin,sub_admin,content_editor" id="tab-add-shorts" class="admin-tab">
             <h2>📱 Upload & Publish Shorts</h2>
             <p style="color:var(--text-muted);margin-bottom:18px;">Only upload original or properly licensed short videos.</p>
             <form class="admin-form" onsubmit="publishShort(event)">
@@ -678,7 +678,7 @@
           </div>
 
           <!-- TAB 3: Manage Content -->
-          <div id="tab-manage" class="admin-tab">
+          <div data-vh-roles="admin,sub_admin,content_editor" id="tab-manage" class="admin-tab">
             <h2>🎬 Manage Catalog Content</h2>
             <div class="admin-toolbar">
               <input type="text" id="manageSearch" placeholder="Filter by title, genre, language..." oninput="filterManageList(this.value)"/>
@@ -687,7 +687,7 @@
           </div>
 
           <!-- TAB 4: Google Drive Import -->
-          <div id="tab-drive-import" class="admin-tab">
+          <div data-vh-roles="admin" id="tab-drive-import" class="admin-tab">
             <h2>☁️ Google Drive Direct Import</h2>
             <div class="drive-import-box">
               <div class="drive-icon"><i class="fab fa-google-drive"></i></div>
@@ -717,7 +717,7 @@
           </div>
 
           <!-- STORAGE MANAGER -->
-          <div id="tab-storage-manager" class="admin-tab">
+          <div data-vh-roles="admin" id="tab-storage-manager" class="admin-tab">
             <h2>☁️ Storage Manager</h2>
             <p style="color:var(--text-muted);margin-bottom:18px;">Choose the default provider for new uploads. You can override it on each Movie, Series or Short upload.</p>
             <form class="admin-form" onsubmit="saveStorageSettings(event)">
@@ -755,14 +755,14 @@
           </div>
 
           <!-- TAB 5: User Requests Management -->
-          <div id="tab-requests-admin" class="admin-tab">
+          <div data-vh-roles="admin,sub_admin,moderator" id="tab-requests-admin" class="admin-tab">
             <h2>📥 User Movie & Show Requests</h2>
             <p style="color: var(--text-muted); margin-bottom: 20px;">Review user submissions, approve for ingestion or decline requests.</p>
             <div id="adminRequestsList" class="admin-requests"></div>
           </div>
 
           <!-- TAB 6: Analytics & Reports -->
-          <div id="tab-reports" class="admin-tab">
+          <div data-vh-roles="admin" id="tab-reports" class="admin-tab">
             <h2>📊 Platform Reports & Insights</h2>
             <div class="reports-grid">
               <div class="report-card">
@@ -785,7 +785,7 @@
           </div>
 
           <!-- TAB 7: User Management -->
-          <div id="tab-users-admin" class="admin-tab">
+          <div data-vh-roles="admin" id="tab-users-admin" class="admin-tab">
             <h2>👥 Registered Users & Privacy Management</h2>
             <p style="color: var(--text-muted); margin-bottom: 16px;">
               <i class="fas fa-lock" style="color: var(--warning);"></i> 
@@ -813,7 +813,7 @@
           </div>
 
           <!-- Primary-admin-only login activity; the database policy also enforces this restriction. -->
-          <div id="tab-login-activity" class="admin-tab">
+          <div data-vh-roles="admin" id="tab-login-activity" class="admin-tab">
             <h2>🔐 User Login Activity</h2>
             <p style="color: var(--text-muted); margin-bottom: 16px;">Recent sign-ins recorded by Vision Hub. Only the primary Admin account can read these records.</p>
             <div class="admin-toolbar">
@@ -829,7 +829,7 @@
           </div>
 
           <!-- TAB 8: Admins, Sub-Admins & Password Management -->
-          <div id="tab-team-admin" class="admin-tab">
+          <div data-vh-roles="admin" id="tab-team-admin" class="admin-tab">
             <h2>🛡️ Admin Credentials & Sub-Admin Roles</h2>
             
             <!-- Section 1: Change Password & Username Form -->
@@ -878,14 +878,14 @@
                     <input type="text" id="subName" placeholder="e.g. Vikas Kumar" required/>
                   </div>
                   <div class="form-group">
-                    <label>Sub-Admin Username *</label>
-                    <input type="text" id="subUsername" placeholder="e.g. vikas_admin" required/>
+                    <label>Sub-Admin Login Email *</label>
+                    <input type="text" id="subUsername" type="email" placeholder="name@example.com" required/>
                   </div>
                 </div>
                 <div class="form-row">
                   <div class="form-group">
                     <label>Sub-Admin Password *</label>
-                    <input type="password" id="subPassword" placeholder="Min 6 characters" required/>
+                    <input type="password" id="subPassword" minlength="12" placeholder="At least 12 characters" required/>
                   </div>
                   <div class="form-group">
                     <label>Assigned Role *</label>
@@ -902,7 +902,7 @@
               </form>
 
               <div style="margin-top: 26px;">
-                <h4>Sub-Admin Accounts (not enabled yet)</h4>
+                <h4>Sub-Admin Accounts</h4>
                 <div id="subAdminsList" class="subadmin-grid"></div>
               </div>
             </div>
@@ -910,7 +910,7 @@
           </div>
 
           <!-- TAB 10: Category Manager (Admin Only) -->
-          <div id="tab-categories" class="admin-tab">
+          <div data-vh-roles="admin,sub_admin" id="tab-categories" class="admin-tab">
             <h2>🏷️ Category Manager</h2>
             <div class="tab-categories-form">
               <h3 style="margin-bottom:14px;"><i class="fas fa-plus-circle" style="color:var(--accent);"></i> Add New Category</h3>
@@ -933,7 +933,7 @@
           </div>
 
           <!-- TAB 11: Song / Music Management (Admin Only) -->
-          <div id="tab-songs" class="admin-tab">
+          <div data-vh-roles="admin,sub_admin" id="tab-songs" class="admin-tab">
             <h2>🎵 Song &amp; Music Management</h2>
             <div class="tab-songs-form">
               <h3 style="margin-bottom:14px;"><i class="fas fa-plus-circle" style="color:var(--accent);"></i> Add New Song</h3>
@@ -964,7 +964,7 @@
           </div>
 
           <!-- TAB 9: Platform Settings (With Telegram Channel Link Configuration) -->
-          <div id="tab-settings" class="admin-tab">
+          <div data-vh-roles="admin" id="tab-settings" class="admin-tab">
             <h2>⚙️ Vision Hub Platform Settings</h2>
             <form class="admin-form" onsubmit="saveWebsiteSettings(event)">
               <div class="form-group">
