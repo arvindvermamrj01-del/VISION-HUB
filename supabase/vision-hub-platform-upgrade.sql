@@ -136,6 +136,25 @@ create policy "vh_media_assets_public_read" on public.vh_media_assets
   ));
 create policy "vh_media_assets_staff_all" on public.vh_media_assets
   for all to authenticated
+  using (public.vh_can_manage_content_item(content_id))
+  with check (public.vh_can_manage_content_item(content_id));
+grant select on public.vh_media_assets to anon, authenticated;
+grant insert, update, delete on public.vh_media_assets to authenticated;
+grant usage, select on sequence public.vh_media_assets_id_seq to authenticated;
+
+-- Extend provider selectors without storing credentials in SQL.
+alter table public.vh_storage_settings drop constraint if exists vh_storage_settings_default_provider_check;
+alter table public.vh_storage_settings add constraint vh_storage_settings_default_provider_check
+  check (default_provider in (
+    'supabase','cloudflare_r2','terabox','mega','degoo','google_drive',
+    'mediafire','pcloud','box','icedrive','koofr','internxt','telegram'
+  ));
+
+drop policy if exists "vh_content_admin_all" on public.vh_content;
+drop policy if exists "Admins can manage content" on public.vh_content;
+drop policy if exists "vh_content_staff_all" on public.vh_content;
+create policy "vh_content_staff_all" on public.vh_content
+  for all to authenticated
   using (
     exists (
       select 1 from public.profiles p
@@ -156,25 +175,6 @@ create policy "vh_media_assets_staff_all" on public.vh_media_assets
         )
     )
   );
-grant select on public.vh_media_assets to anon, authenticated;
-grant insert, update, delete on public.vh_media_assets to authenticated;
-grant usage, select on sequence public.vh_media_assets_id_seq to authenticated;
-
--- Extend provider selectors without storing credentials in SQL.
-alter table public.vh_storage_settings drop constraint if exists vh_storage_settings_default_provider_check;
-alter table public.vh_storage_settings add constraint vh_storage_settings_default_provider_check
-  check (default_provider in (
-    'supabase','cloudflare_r2','terabox','mega','degoo','google_drive',
-    'mediafire','pcloud','box','icedrive','koofr','internxt','telegram'
-  ));
-
-drop policy if exists "vh_content_admin_all" on public.vh_content;
-drop policy if exists "Admins can manage content" on public.vh_content;
-drop policy if exists "vh_content_staff_all" on public.vh_content;
-create policy "vh_content_staff_all" on public.vh_content
-  for all to authenticated
-  using (public.vh_can_manage_content_item(content_id))
-  with check (public.vh_can_manage_content_item(content_id));
 
 drop policy if exists "vh_requests_admin_select" on public.vh_requests;
 drop policy if exists "vh_requests_admin_update" on public.vh_requests;
