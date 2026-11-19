@@ -121,7 +121,11 @@
   async function loadGoogleDriveStatus(){
     const status=$("googleDriveConnectionStatus"),quota=$("googleDriveQuota");if(!status)return;
     try{
+      const params=new URLSearchParams(window.location.search);
+      const callbackError=params.get("google_drive_error");
+      if(callbackError){status.textContent=callbackError;return;}
       const {data:{session}}=await db.auth.getSession();if(!session){status.textContent="Primary Admin login required.";return;}
+      if(params.get("google_drive_connected")==="1")status.textContent="Google OAuth connected. Checking Drive account…";
       const response=await fetch("/api/storage/google-drive/status",{headers:sessionHeaders(session)});
       const payload=await response.json();
       if(!response.ok)throw new Error(payload.error||"Google Drive status unavailable.");
