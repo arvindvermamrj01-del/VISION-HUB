@@ -661,3 +661,7 @@ body.vh-movie-detail-open{overflow:hidden}
  #page-admin .vh-activity-toolbar select,#page-admin .vh-activity-toolbar input{width:100%;max-width:none}
  #page-admin #tab-login-activity .admin-table{min-width:1040px}
 }
+
+/* Keep the global account menu hidden whenever auth logic marks it hidden.
+   The ID-level layout rule above must not override the hidden utility class. */
+#userNav.hidden{display:none!important}
