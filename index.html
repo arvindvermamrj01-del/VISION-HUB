@@ -514,38 +514,40 @@
     <!-- 9. RESTRICTED ADMIN LOGIN PAGE -->
     <!-- Accessible strictly via #control-center or Ctrl+Shift+A; never linked in public navbar -->
     <div id="page-admin-login" class="page">
-      <div class="auth-container">
-        <div class="auth-box admin-auth-box">
-          <div class="auth-brand">⚙️ Vision Hub Control Center</div>
-          <h2>Restricted Administrative Portal</h2>
-          <p class="auth-sub" style="color: var(--warning);">
-            <i class="fas fa-shield-alt"></i> Authorized Administrative Personnel Only
-          </p>
-
-          <div class="admin-security-pill">
-            <i class="fas fa-shield-alt"></i> Sign-in is verified by Supabase Auth, and Control Center access requires an authorised database staff role.
+      <div class="admin-login-shell">
+        <aside class="admin-login-aside">
+          <span class="admin-login-kicker"><i class="fas fa-sparkles"></i> VISION HUB · CONTROL CENTER</span>
+          <h1>Your platform,<br><span>in one place.</span></h1>
+          <p>Manage the catalog, review community activity, and keep your media library organised.</p>
+          <div class="admin-login-highlights">
+            <div><i class="fas fa-film"></i><span><strong>Catalog</strong><small>Content, seasons and media</small></span></div>
+            <div><i class="fas fa-cloud-arrow-up"></i><span><strong>Storage</strong><small>Private media and quality sources</small></span></div>
+            <div><i class="fas fa-shield-halved"></i><span><strong>Access</strong><small>Role-verified sign-in</small></span></div>
           </div>
-
-          <!-- Admin Authentication Form -->
+          <div class="admin-login-secure"><i class="fas fa-lock"></i> Sign-in is verified by Supabase Auth and your database staff role.</div>
+        </aside>
+        <section class="admin-auth-box">
+          <div class="admin-auth-heading">
+            <span class="admin-auth-icon"><i class="fas fa-user-shield"></i></span>
+            <div><span class="admin-login-kicker">SECURE SIGN IN</span><h2>Welcome back</h2></div>
+          </div>
+          <p class="auth-sub">Use your owner username or authorised staff email.</p>
           <form id="adminLoginForm" onsubmit="adminLogin(event)">
             <div class="form-group">
-              <label>Owner Username or Staff Email</label>
+              <label for="adminUser">Owner username or staff email</label>
               <input type="text" id="adminUser" placeholder="admin or admin email" autocomplete="username" required/>
             </div>
             <div class="form-group">
-              <label>Password</label>
+              <label for="adminPass">Password</label>
               <div class="input-group">
-                <input type="password" id="adminPass" placeholder="••••••••" autocomplete="current-password" required/>
-                <button type="button" onclick="togglePassword('adminPass')"><i class="fas fa-eye"></i></button>
+                <input type="password" id="adminPass" placeholder="Enter your password" autocomplete="current-password" required/>
+                <button type="button" onclick="togglePassword('adminPass')" aria-label="Show or hide password"><i class="fas fa-eye"></i></button>
               </div>
             </div>
-
-            <button type="submit" id="adminSubmitBtn" class="btn-admin-login full-width">
-              <i class="fas fa-key"></i> Authenticate & Enter Control Center
-            </button>
+            <button type="submit" id="adminSubmitBtn" class="btn-admin-login full-width"><i class="fas fa-arrow-right-to-bracket"></i> Secure sign in</button>
           </form>
-
-        </div>
+          <div class="admin-auth-foot"><i class="fas fa-circle-info"></i> Access is limited to authorised Vision Hub staff.</div>
+        </section>
       </div>
     </div>
 
