@@ -109,7 +109,7 @@ create table if not exists public.vh_content (
   created_by uuid not null references auth.users(id) on delete restrict,
   created_at timestamptz not null default now(),
   storage_provider text not null default 'supabase'
-    check (storage_provider in ('supabase','terabox','mega','degoo','google_drive','mediafire','pcloud','box','icedrive','koofr','internxt','telegram'))
+    check (storage_provider in ('supabase','cloudflare_r2','backblaze_b2','terabox','mega','degoo','google_drive','mediafire','pcloud','box','icedrive','koofr','internxt','telegram'))
 );
 alter table public.vh_content add column if not exists storage_provider text not null default 'supabase';
 alter table public.vh_content enable row level security;
