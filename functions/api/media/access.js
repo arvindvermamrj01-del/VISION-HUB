@@ -1,5 +1,6 @@
 import { json, supabaseAdminHeaders, supabaseBase } from "../../_shared/auth.js";
 import { presignR2 } from "../../_shared/r2.js";
+import { presignB2 } from "../../_shared/b2.js";
 
 const encodePath = value => String(value).split("/").map(encodeURIComponent).join("/");
 
@@ -12,7 +13,7 @@ export async function onRequestPost({ request, env }) {
     const contentId = String(body.contentId || "").trim();
     const storagePath = String(body.storagePath || "").trim();
     const provider = String(body.provider || "").trim().toLowerCase();
-    if (!contentId || !storagePath || !["supabase", "cloudflare_r2"].includes(provider)) {
+    if (!contentId || !storagePath || !["supabase", "cloudflare_r2", "backblaze_b2"].includes(provider)) {
       return json({ error: "Invalid media access request." }, 400);
     }
     const base = supabaseBase(env);
@@ -36,8 +37,10 @@ export async function onRequestPost({ request, env }) {
     const assetRows = await assetResponse.json();
     if (!assetRows.length) return json({ error: "This media file is not attached to the published title." }, 404);
 
-    if (provider === "cloudflare_r2") {
-      const signed = await presignR2(env, "GET", storagePath, "", 21600);
+    if (provider === "cloudflare_r2" || provider === "backblaze_b2") {
+      const signed = provider === "backblaze_b2"
+        ? await presignB2(env, "GET", storagePath, "", 21600)
+        : await presignR2(env, "GET", storagePath, "", 21600);
       return json({ url: signed.url, expiresIn: 21600 });
     }
     const bucket = "vh-private-media";
