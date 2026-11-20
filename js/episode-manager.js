@@ -124,6 +124,14 @@
   function renderSeriesEpisodes(series){
     const panel=$("seriesEpisodesPanel"),host=$("seriesEpisodesList");
     if(!panel||!host)return;
+    const playButton=$("modalPlayBtn"),downloadButton=document.querySelector("#movieModal .btn-download");
+    if(series&&series.type==="Web Series"){
+      if(playButton){playButton.disabled=true;playButton.innerHTML='<i class="fas fa-list"></i> Choose an Episode';playButton.title="Select an episode from the list below";}
+      if(downloadButton)downloadButton.classList.add("hidden");
+    }else{
+      if(playButton){playButton.disabled=false;playButton.innerHTML='<i class="fas fa-play"></i> Watch Now';playButton.title="Watch now";}
+      if(downloadButton)downloadButton.classList.remove("hidden");
+    }
     if(!series||series.type!=="Web Series"){panel.classList.add("hidden");host.textContent="";return;}
     const episodes=(window.VISION_HUB_DATA||[]).filter(item=>item.type==="Episode"&&String(item.parent_series_id)===String(series.id)).sort((a,b)=>(Number(a.season_number)-Number(b.season_number))||(Number(a.episode_number)-Number(b.episode_number)));
     if(!episodes.length){panel.classList.remove("hidden");host.innerHTML="<p>Episodes will appear here as soon as this series is updated by the team.</p>";return;}
