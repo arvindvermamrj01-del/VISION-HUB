@@ -446,8 +446,8 @@
             <form id="userPasswordForm" class="admin-form" style="margin-top:16px;">
               <h3>Change Password</h3>
               <div class="form-group"><label for="userCurrentPassword">Current password</label><input id="userCurrentPassword" type="password" autocomplete="current-password" required/></div>
-              <div class="form-group"><label for="userNewPassword">New password</label><input id="userNewPassword" type="password" autocomplete="new-password" minlength="12" required/></div>
-              <div class="form-group"><label for="userConfirmPassword">Confirm new password</label><input id="userConfirmPassword" type="password" autocomplete="new-password" minlength="12" required/></div>
+              <div class="form-group"><label for="userNewPassword">New password</label><input id="userNewPassword" type="password" autocomplete="new-password" minlength="6" required/></div>
+              <div class="form-group"><label for="userConfirmPassword">Confirm new password</label><input id="userConfirmPassword" type="password" autocomplete="new-password" minlength="6" required/></div>
               <button type="submit" class="btn-primary full-width">Update Password</button>
             </form>
           </div>
@@ -485,8 +485,8 @@
           <h1>Set a New Password</h1>
           <p class="auth-sub">Choose a new secure password for your account.</p>
           <form id="userResetPasswordForm">
-            <div class="form-group"><label for="resetNewPassword">New password</label><input id="resetNewPassword" type="password" autocomplete="new-password" minlength="12" required/></div>
-            <div class="form-group"><label for="resetConfirmPassword">Confirm new password</label><input id="resetConfirmPassword" type="password" autocomplete="new-password" minlength="12" required/></div>
+            <div class="form-group"><label for="resetNewPassword">New password</label><input id="resetNewPassword" type="password" autocomplete="new-password" minlength="6" required/></div>
+            <div class="form-group"><label for="resetConfirmPassword">Confirm new password</label><input id="resetConfirmPassword" type="password" autocomplete="new-password" minlength="6" required/></div>
             <button type="submit" class="btn-primary full-width">Save New Password</button>
           </form>
         </div>
@@ -502,8 +502,8 @@
           <form id="userRegisterForm">
             <div class="form-group"><label for="userRegisterName">Full name</label><input id="userRegisterName" type="text" autocomplete="name" maxlength="100" required/></div>
             <div class="form-group"><label for="userRegisterEmail">Email address</label><input id="userRegisterEmail" type="email" autocomplete="email" required/></div>
-            <div class="form-group"><label for="userRegisterPassword">Password</label><input id="userRegisterPassword" type="password" autocomplete="new-password" minlength="12" required/><small>Use at least 12 characters.</small></div>
-            <div class="form-group"><label for="userRegisterConfirm">Confirm password</label><input id="userRegisterConfirm" type="password" autocomplete="new-password" minlength="12" required/></div>
+            <div class="form-group"><label for="userRegisterPassword">Password</label><input id="userRegisterPassword" type="password" autocomplete="new-password" minlength="6" required/><small>Use at least 6 characters.</small></div>
+            <div class="form-group"><label for="userRegisterConfirm">Confirm password</label><input id="userRegisterConfirm" type="password" autocomplete="new-password" minlength="6" required/></div>
             <button type="submit" class="btn-primary full-width">Create Account</button>
           </form>
           <p class="auth-sub">Already registered? <a href="#" onclick="showPage('login');return false;">Sign in</a></p>

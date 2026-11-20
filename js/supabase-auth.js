@@ -156,7 +156,7 @@ window.registerUser = async function (event) {
   const confirm = el("userRegisterConfirm")?.value || "";
   const button = event?.currentTarget?.querySelector('[type="submit"]');
   if (!name || !email) return msg("Name and email are required.");
-  if (password.length < 12) return msg("Use a password with at least 12 characters.");
+  if (password.length < 6) return msg("Use a password with at least 6 characters.");
   if (password !== confirm) return msg("The two passwords do not match.");
   if (button) button.disabled = true;
   try {
@@ -276,7 +276,7 @@ window.completePasswordReset = async function (event) {
   const password = el("resetNewPassword")?.value || "";
   const confirm = el("resetConfirmPassword")?.value || "";
   const button = form?.querySelector('[type="submit"]');
-  if (password.length < 12) return msg("Use a password with at least 12 characters.");
+  if (password.length < 6) return msg("Use a password with at least 6 characters.");
   if (password !== confirm) return msg("The two passwords do not match.");
   if (button) button.disabled = true;
   try {
