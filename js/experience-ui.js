@@ -63,27 +63,6 @@
       button.classList.toggle("active",active);button.setAttribute("aria-current",active?"page":"false");
     });
   }
-  function animateReorder(group,selected){
-    if(!group||!selected)return;
-    const buttons=[...group.querySelectorAll(":scope > .vh-sidebar-button")];
-    const index=buttons.indexOf(selected);if(index<=0)return;
-    const before=new Map(buttons.map(button=>[button,button.getBoundingClientRect()]));
-    const reordered=[selected,...buttons.filter(button=>button!==selected)];
-    reordered.forEach(button=>group.appendChild(button));
-    reordered.forEach(button=>{
-      const old=before.get(button),now=button.getBoundingClientRect();
-      if(!old)return;
-      const dx=old.left-now.left,dy=old.top-now.top;
-      if(!dx&&!dy)return;
-      try{
-        const isSelected=button===selected;
-        button.animate([
-          {transform:`translate(${dx}px,${dy}px) scale(${isSelected?.98:1})`},
-          {transform:"translate(0,0) scale(1)"}
-        ],{duration:isSelected?560:460,easing:"cubic-bezier(.16,1,.3,1)"});
-      }catch(_){}
-    });
-  }
   function execute(button){
     const page=button.dataset.vhPage,action=button.dataset.vhAction;
     const donationModal=document.getElementById("donationModal");
@@ -98,8 +77,6 @@
     if(mobileQuery()){
       try{button.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});}catch(_){}
       pauseAutoSlide(2200);
-    }else if(button.classList.contains("vh-sidebar-button")){
-      animateReorder(button.closest("[data-vh-nav-group]"),button);
     }
     if(action==="donate"){window.openDonationPanel?.();return;}
     if(action==="settings"){window.toggleThemePanel?.();return;}
@@ -128,29 +105,6 @@
   function bindDesktopSidebar(){
     const sidebar=document.getElementById("vhAppSidebar");if(!sidebar||sidebar.dataset.bound==="1")return;
     sidebar.dataset.bound="1";
-    const tooltip=document.createElement("div");tooltip.className="vh-nav-tooltip";tooltip.setAttribute("role","tooltip");tooltip.hidden=true;document.body.appendChild(tooltip);
-    let activeTarget=null;
-    const hideTooltip=()=>{activeTarget=null;tooltip.hidden=true;tooltip.classList.remove("visible");};
-    const showTooltip=button=>{
-      if(mobileQuery()||!button)return;
-      activeTarget=button;tooltip.textContent=button.getAttribute("aria-label")||button.title||"";
-      const rect=button.getBoundingClientRect();
-      tooltip.style.left=Math.round(rect.right+11)+"px";
-      tooltip.style.top=Math.round(rect.top+rect.height/2)+"px";
-      tooltip.hidden=false;requestAnimationFrame(()=>tooltip.classList.add("visible"));
-    };
-    sidebar.addEventListener("pointerover",event=>{
-      if(event.pointerType==="touch")return;
-      const button=event.target.closest(".vh-sidebar-button");if(button)showTooltip(button);
-    });
-    sidebar.addEventListener("pointerout",event=>{
-      if(!activeTarget)return;
-      if(event.relatedTarget&&activeTarget.contains(event.relatedTarget))return;
-      hideTooltip();
-    });
-    sidebar.addEventListener("focusin",event=>{const button=event.target.closest(".vh-sidebar-button");if(button)showTooltip(button);});
-    sidebar.addEventListener("focusout",hideTooltip);
-    window.addEventListener("scroll",hideTooltip,{passive:true});window.addEventListener("resize",hideTooltip);
     sidebar.addEventListener("click",event=>{
       const button=event.target.closest("button[data-vh-nav],button[data-vh-action]");
       if(button)execute(button);
