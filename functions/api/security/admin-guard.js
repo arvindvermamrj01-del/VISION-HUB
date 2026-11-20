@@ -1,4 +1,4 @@
-import { json, requireUser, requireRole, clientIp, recordSecurityEvent, createAdminSessionCookie, clearAdminSessionCookie } from "../../_shared/auth.js";
+import { json, requireUser, clientIp, recordSecurityEvent, createAdminSessionCookie, clearAdminSessionCookie } from "../../_shared/auth.js";
 
 const STAFF_ROLES = ["admin", "sub_admin", "content_editor", "moderator"];
 const MAX_FAILURES = 5;
@@ -88,6 +88,10 @@ export async function onRequestPost({ request, env }) {
       // Password was accepted by Supabase Auth in the secret panel. Re-check the live staff role before minting the HttpOnly session.
       const identity = await requireUser(request, env);
       if (!identity.profile || !STAFF_ROLES.includes(identity.profile.role)) {
+        await db.prepare(
+          "UPDATE vh_admin_login_attempts SET status='failed',finished_at=unixepoch(),user_id=?,account_email=?,user_role=? " +
+          "WHERE attempt_id=? AND ip_address=? AND status='pending'"
+        ).bind(identity.user.id, identity.user.email || null, identity.profile?.role || "unknown", attemptId, ip).run();
         await recordSecurityEvent(request, env, "admin_login_denied", identity);
         return json({ error: "This account is not authorised for the Secure Admin panel." }, 403);
       }
