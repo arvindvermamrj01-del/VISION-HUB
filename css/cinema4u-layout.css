@@ -570,3 +570,8 @@ body.vh-movie-detail-open{overflow:hidden}
  #movieModal .detail-player-source-note{margin-left:0;width:100%}
  #movieModal .detail-player-heading{align-items:flex-start;flex-direction:column}
 }
+
+/* Keep download actions accessible above the full-page detail surface. */
+#downloadModal{position:fixed!important;inset:0!important;z-index:1950!important}
+#playerOverlay{z-index:1960!important}
+#movieModal.vh-lights-out .vh-detail-backdrop{opacity:.06}
