@@ -162,19 +162,60 @@
     }catch(e){host.textContent=e.message||"Songs unavailable.";}
   }
   window.addSong=async event=>{
-    const form=event?.currentTarget;event?.preventDefault();const title=$("songTitle")?.value.trim(),artist=$("songArtist")?.value.trim(),audio=$("songFileUrl")?.value.trim(),poster=$("songPoster")?.value.trim()||null;
-    if(!title||!audio)return toast("Song title and authorised audio URL are required.");
-    let audioUrl,posterUrl=null;
-    try{audioUrl=new URL(audio);if(audioUrl.protocol!=="https:")throw new Error();if(poster){posterUrl=new URL(poster);if(posterUrl.protocol!=="https:")throw new Error();}}catch(_){return toast("Use valid HTTPS audio and poster URLs.");}
-    const button=event?.currentTarget?.querySelector('[type="submit"]');if(button)button.disabled=true;
-    try{const user=await requireAdmin();const {error}=await db.from("vh_songs").insert({title,artist,audio_url:audioUrl.href,poster_url:posterUrl?.href||null,is_published:true,created_by:user.id});if(error)throw error;
-      form?.reset();toast("Song added.");await loadSongs();await window.refreshSongLibrary?.();}
-    catch(e){toast(e.message||"Song could not be added.");}finally{if(button)button.disabled=false;}
+    const form=event?.currentTarget;event?.preventDefault();
+    const title=$("songTitle")?.value.trim(),artist=$("songArtist")?.value.trim(),directAudio=$("songFileUrl")?.value.trim()||"",file=$("songAudioFile")?.files?.[0]||null,poster=$("songPoster")?.value.trim()||"";
+    if(!title||(!file&&!directAudio))return toast("Enter a song title and either upload an audio file or provide a direct HTTPS audio URL.");
+    if(file&&directAudio)return toast("Choose either an audio file upload or a direct audio URL, not both.");
+    let posterUrl=null;
+    try{if(poster){posterUrl=new URL(poster);if(posterUrl.protocol!=="https:"||posterUrl.username||posterUrl.password)throw new Error();}}catch(_){return toast("Poster must be a valid HTTPS URL.");}
+    let directUrl=null;
+    if(directAudio){try{directUrl=new URL(directAudio);if(directUrl.protocol!=="https:"||directUrl.username||directUrl.password)throw new Error();}catch(_){return toast("Audio URL must be a valid HTTPS URL.");}}
+    if(file&&(!file.type.startsWith("audio/")||file.size<=0||file.size>1024*1024*1024))return toast("Choose a valid audio file up to 1 GB.");
+    const button=form?.querySelector('[type="submit"]');if(button)button.disabled=true;
+    let uploaded=null,sessionToken="";
+    try{
+      const user=await requireAdmin();
+      const {data:{session},error:sessionError}=await db.auth.getSession();
+      if(sessionError||!session?.access_token)throw new Error("Admin session expired. Sign in again.");
+      sessionToken=session.access_token;
+      let audioUrl=directUrl?.href||"",storageProvider="direct",storagePath=null;
+      if(file){
+        storageProvider=$("songStorageProvider")?.value||"backblaze_b2";
+        if(!["backblaze_b2","cloudflare_r2"].includes(storageProvider))throw new Error("Choose Backblaze B2 or Cloudflare R2 for private audio uploads.");
+        const extension=file.name.split(".").pop()?.toLowerCase()||"";
+        const inferred={"mp3":"audio/mpeg","m4a":"audio/mp4","aac":"audio/aac","ogg":"audio/ogg","opus":"audio/ogg","wav":"audio/wav","flac":"audio/flac"};
+        const contentType=file.type||inferred[extension]||"";
+        if(!contentType.startsWith("audio/"))throw new Error("The selected file does not have a supported audio MIME type.");
+        const signedResponse=await fetch("/api/media/upload-url",{method:"POST",headers:{"Authorization":"Bearer "+sessionToken,"Content-Type":"application/json"},body:JSON.stringify({provider:storageProvider,kind:"audio",contentType,fileName:file.name,fileSize:file.size})});
+        const signed=await signedResponse.json().catch(()=>({}));
+        if(!signedResponse.ok)throw new Error(signed.error||"Could not prepare secure audio upload.");
+        const uploadResponse=await fetch(signed.uploadUrl,{method:"PUT",headers:signed.headers||{"Content-Type":contentType},body:file});
+        if(!uploadResponse.ok)throw new Error("Audio upload to cloud storage failed.");
+        uploaded={provider:storageProvider,path:signed.key};
+        storagePath=signed.key;audioUrl="private://"+signed.key;
+      }
+      const {error}=await db.from("vh_songs").insert({title,artist,audio_url:audioUrl,poster_url:posterUrl?.href||null,storage_provider:storageProvider,storage_path:storagePath,is_published:true,created_by:user.id});
+      if(error)throw error;
+      form?.reset();toast(file?"Song uploaded to private cloud storage.":"Song added.");
+      await loadSongs();await window.refreshSongLibrary?.();
+    }catch(error){
+      if(uploaded&&sessionToken){
+        try{await fetch("/api/media/delete",{method:"POST",headers:{"Authorization":"Bearer "+sessionToken,"Content-Type":"application/json"},body:JSON.stringify({provider:uploaded.provider,storagePath:uploaded.path})});}catch(_){}
+      }
+      toast(error.message||"Song could not be added.");
+    }finally{if(button)button.disabled=false;}
   };
   window.deleteSong=async id=>{
-    if(!window.confirm("Delete this song?"))return;
-    try{await requireAdmin();const {error}=await db.from("vh_songs").delete().eq("id",id);if(error)throw error;toast("Song deleted.");await loadSongs();await window.refreshSongLibrary?.();}
-    catch(e){toast(e.message||"Delete failed.");}
+    if(!window.confirm("Delete this song and its private audio file (if uploaded)?"))return;
+    try{
+      await requireAdmin();
+      const {data:{session},error:sessionError}=await db.auth.getSession();
+      if(sessionError||!session?.access_token)throw new Error("Admin session expired. Sign in again.");
+      const response=await fetch("/api/song/delete",{method:"POST",headers:{"Authorization":"Bearer "+session.access_token,"Content-Type":"application/json"},body:JSON.stringify({songId:id})});
+      const result=await response.json().catch(()=>({}));
+      if(!response.ok)throw new Error(result.error||"Song deletion failed.");
+      toast("Song and stored audio deleted.");await loadSongs();await window.refreshSongLibrary?.();
+    }catch(error){toast(error.message||"Delete failed.");}
   };
 
   window.saveWebsiteSettings=async event=>{
