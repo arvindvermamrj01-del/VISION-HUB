@@ -23,6 +23,24 @@ alert(message);
 }
 }
 
+
+async function securityRequest(path, payload, accessToken) {
+  const headers = { "content-type": "application/json" };
+  if (accessToken) headers.Authorization = "Bearer " + accessToken;
+  const response = await fetch(path, {
+    method: "POST", headers, credentials: "same-origin",
+    body: JSON.stringify(payload || {})
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.error || "Security service unavailable.");
+    error.status = response.status;
+    error.data = data;
+    throw error;
+  }
+  return data;
+}
+
 function authErrorMessage(error, flow) {
   const code = String(error?.code || "").toLowerCase();
   const raw = String(error?.message || "");
@@ -57,12 +75,12 @@ window.dispatchEvent(new Event("vh-auth-state-changed"));
 el("authNav")?.classList.remove("hidden");
 el("userNav")?.classList.add("hidden");
 el("adminNav")?.classList.add("hidden");
-el("adminNavLink")?.classList.add("hidden");
+
 }
 
 async function showSignedIn(user) {
 el("authNav")?.classList.add("hidden");
-el("userNav")?.classList.remove("hidden");
+el("userNav")?.classList.add("hidden");
 
 let name =
   user.user_metadata?.full_name ||
@@ -95,8 +113,13 @@ const { data: profile, error } = await db
   .maybeSingle();
 
 if (error) {
-  console.warn("Profile lookup unavailable; keeping a least-privilege user session:", error.message);
-  return;
+  console.warn("Profile lookup unavailable; hiding account controls until the role can be verified:", error.message);
+  window.VH_ROLE = "unverified";
+  window.VH_IS_ADMIN = false;
+  el("userNav")?.classList.add("hidden");
+  el("adminNav")?.classList.add("hidden");
+  window.dispatchEvent(new Event("vh-auth-state-changed"));
+  return false;
 }
 
 if (profile?.fullname) {
@@ -117,8 +140,9 @@ const roleBadge = el("adminRoleBadge");
 if (roleBadge) roleBadge.textContent = window.VH_ROLE.replaceAll("_", " ");
 
 if (window.VH_IS_ADMIN) {
+  // Staff accounts use the hidden Secure Admin panel; never display a public account avatar or menu.
+  el("userNav")?.classList.add("hidden");
   el("adminNav")?.classList.remove("hidden");
-  el("adminNavLink")?.classList.remove("hidden");
   const rootOnly = ["users-admin", "team-admin", "settings", "storage-manager", "categories", "songs", "reports", "dashboard", "login-activity"];
   const allowed = window.VH_ROLE === "admin" ? null :
     window.VH_ROLE === "moderator" ? ["requests-admin"] :
@@ -140,9 +164,11 @@ if (window.VH_IS_ADMIN) {
   }
 } else {
   el("adminNav")?.classList.add("hidden");
-  el("adminNavLink")?.classList.add("hidden");
+  el("userNav")?.classList.remove("hidden");
+
 }
 
+return true;
 }
 
 window.loginUser = async function (event) {
@@ -153,14 +179,30 @@ window.loginUser = async function (event) {
   const button = form?.querySelector('[type="submit"]');
   if (!email || !password) return msg("Email and password are required.");
   if (button) button.disabled = true;
+  let authSucceeded = false;
   try {
     const { data, error } = await db.auth.signInWithPassword({ email, password });
     if (error) throw error;
-    await showSignedIn(data.user);
-    window.VHLoginActivity?.record(data.user);
+    authSucceeded = true;
+    const roleVerified = await showSignedIn(data.user);
+    if (!roleVerified) {
+      await db.auth.signOut({ scope: "local" });
+      showSignedOut();
+      msg("Your account role could not be verified. Please try again later.");
+      return;
+    }
+    if (window.VH_IS_ADMIN) {
+      await window.VHLoginActivity?.log("admin_login_wrong_entry");
+      await db.auth.signOut({ scope: "local" });
+      showSignedOut();
+      msg("Admin and staff accounts must use the separate Secure Admin Sign-in panel (Ctrl + Shift + A).");
+      return;
+    }
+    await window.VHLoginActivity?.record(data.user, "user_login_success");
     showPage("home");
     msg("Welcome back to Vision Hub.");
   } catch (error) {
+    if (!authSucceeded) await window.VHLoginActivity?.log("user_login_failed");
     msg(authErrorMessage(error, "login"));
   } finally { if (button) button.disabled = false; }
 };
@@ -184,10 +226,18 @@ window.registerUser = async function (event) {
     if (error) throw error;
     form?.reset();
     if (data.session?.user) {
-      await showSignedIn(data.user);
+      const roleVerified = await showSignedIn(data.user);
+      if (!roleVerified || window.VH_IS_ADMIN) {
+        await db.auth.signOut({ scope: "local" });
+        showSignedOut();
+        msg("Staff accounts must be provisioned and signed in through the Secure Admin panel.");
+        return;
+      }
+      await window.VHLoginActivity?.record(data.user, "user_signup");
       showPage("home");
       msg("Your Vision Hub account is ready.");
     } else {
+      await window.VHLoginActivity?.log("user_signup_requested");
       msg("Account created. Check your email to confirm the address, then sign in.");
       showPage("login");
     }
@@ -207,60 +257,95 @@ window.resetUserPassword = async function () {
 };
 
 window.adminLogin = async function (e) {
-e?.preventDefault();
+  e?.preventDefault();
+  const username = el("adminUser")?.value?.trim() || "";
+  const password = el("adminPass")?.value || "";
+  const btn = el("adminSubmitBtn");
+  if (btn) btn.disabled = true;
+  let attemptId = null;
+  let signInStarted = false;
+  let failureRecorded = false;
 
-const username = el("adminUser")?.value?.trim();
-const password = el("adminPass")?.value;
+  try {
+    let gate;
+    try {
+      gate = await securityRequest("/api/security/admin-guard", { action: "check" });
+    } catch (securityError) {
+      const retry = securityError.data?.retryAt ? new Date(securityError.data.retryAt).toLocaleTimeString() : "";
+      msg(securityError.status === 429
+        ? "Admin access temporarily blocked. Try again after " + (retry || "the security cooldown") + "."
+        : "Secure Admin verification is unavailable. Sign-in has been stopped for safety.");
+      return;
+    }
+    attemptId = gate.attemptId;
 
-if (!username || !password) {
-  msg("Username aur password bharo.");
-  return;
-}
+    const validUsername = username.toLowerCase() === "admin" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username);
+    const validPassword = password.length > 0 && password.length <= 256;
+    if (!validUsername || !validPassword) {
+      await securityRequest("/api/security/admin-guard", { action: "failed", attemptId });
+      failureRecorded = true;
+      msg("Incorrect sign-in format. This security attempt has been recorded.");
+      return;
+    }
 
-const email =
-  username.toLowerCase() === "admin"
-    ? "arvindvermamrj01@gmail.com"
-    : username;
+    const email = username.toLowerCase() === "admin" ? "arvindvermamrj01@gmail.com" : username.toLowerCase();
+    signInStarted = true;
+    const { data, error } = await db.auth.signInWithPassword({ email, password });
+    if (error) {
+      await securityRequest("/api/security/admin-guard", { action: "failed", attemptId });
+      failureRecorded = true;
+      msg("Admin username or password is incorrect. Repeated failures will temporarily block this IP.");
+      return;
+    }
 
-const btn = el("adminSubmitBtn");
-if (btn) btn.disabled = true;
+    const { data: profile, error: profileError } = await db
+      .from("profiles")
+      .select("role")
+      .eq("id", data.user.id)
+      .maybeSingle();
+    const allowed = ["admin", "sub_admin", "content_editor", "moderator"];
+    if (profileError || !profile || !allowed.includes(profile.role)) {
+      try {
+        await securityRequest("/api/security/admin-guard", { action: "denied", attemptId }, data.session?.access_token);
+      } catch (_) {
+        await securityRequest("/api/security/admin-guard", { action: "failed", attemptId }).catch(() => null);
+      }
+      await db.auth.signOut({ scope: "local" });
+      showSignedOut();
+      failureRecorded = true;
+      msg("This account is not authorised for the Secure Admin panel.");
+      return;
+    }
 
-try {
-  const { data, error } = await db.auth.signInWithPassword({
-    email,
-    password
-  });
+    const roleVerified = await showSignedIn(data.user);
+    if (!roleVerified || !window.VH_IS_ADMIN) {
+      await db.auth.signOut({ scope: "local" });
+      showSignedOut();
+      await securityRequest("/api/security/admin-guard", { action: "failed", attemptId }).catch(() => null);
+      failureRecorded = true;
+      msg("Admin role verification failed. Access was denied.");
+      return;
+    }
 
-  if (error) throw error;
-
-  const { data: profile, error: profileError } = await db
-    .from("profiles")
-    .select("role")
-    .eq("id", data.user.id)
-    .maybeSingle();
-
-  if (profileError) throw profileError;
-
-  if (!profile || !["admin","sub_admin","content_editor","moderator"].includes(profile.role)) {
-    await db.auth.signOut();
-    msg("Admin ya authorised staff permission nahi hai.");
-    return;
+    await securityRequest("/api/security/admin-guard", { action: "success", attemptId }, data.session?.access_token);
+    showPage("page-admin");
+    msg("Secure Control Center login successful.");
+  } catch (err) {
+    console.error("Secure Admin sign-in failed:", err);
+    if (attemptId && signInStarted && !failureRecorded) {
+      await securityRequest("/api/security/admin-guard", { action: "failed", attemptId }).catch(() => null);
+    }
+    await db.auth.signOut({ scope: "local" }).catch(() => null);
+    showSignedOut();
+    msg(err.message || "Secure Admin sign-in could not be completed.");
+  } finally {
+    if (btn) btn.disabled = false;
   }
-
-  await showSignedIn(data.user);
-  showPage("page-admin");
-  msg("Control Center login successful.");
-} catch (err) {
-  console.error(err);
-  msg(err.message || "Admin login failed.");
-} finally {
-  if (btn) btn.disabled = false;
-}
-
 };
 
-async function signOutAndReset(scope, successMessage) {
+async function signOutAndReset(scope, successMessage, eventType = "user_logout") {
   try {
+    await window.VHLoginActivity?.log(eventType);
     const { error } = await db.auth.signOut({ scope });
     if (error) throw error;
 
@@ -285,7 +370,7 @@ window.logoutAllDevices = function () {
 
 window.adminLogout = function () {
   window.VH_IS_ADMIN = false;
-  return signOutAndReset("local", "Admin session ended.");
+  return signOutAndReset("local", "Admin session ended.", "admin_logout");
 };
 
 window.completePasswordReset = async function (event) {
