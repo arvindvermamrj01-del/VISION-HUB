@@ -2,7 +2,9 @@
 (() => {
   "use strict";
   const mobileQuery=()=>window.matchMedia("(max-width:760px)").matches;
-  let autoSlideTimer=null,autoResumeTimer=null,autoDirection=1,sidebarCollapseTimer=null;
+  let autoSlideTimer=null,autoResumeTimer=null,autoDirection=1,sidebarCollapseTimer=null,lastPointerActivity=0;
+  const AUTO_SLIDE_INTERVAL=3000;
+  const AUTO_RESUME_DELAY=3000;
   const reducedMotion=()=>window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   function clearAutoSlide(){
     if(autoSlideTimer){clearInterval(autoSlideTimer);autoSlideTimer=null;}
@@ -21,17 +23,20 @@
     const delta=(rect.left+rect.width/2)-(bounds.left+bounds.width/2);
     dock.scrollBy({left:delta,behavior:"smooth"});
   }
-  function scheduleAutoSlide(delay=2600){
+  function scheduleAutoSlide(delay=AUTO_RESUME_DELAY){
     clearAutoSlide();if(!mobileQuery()||reducedMotion()||document.hidden)return;
-    autoResumeTimer=setTimeout(()=>{autoSlideTimer=setInterval(slideToNextItem,2600);},Math.max(0,delay));
+    autoResumeTimer=setTimeout(()=>{
+      slideToNextItem();
+      autoSlideTimer=setInterval(slideToNextItem,AUTO_SLIDE_INTERVAL);
+    },Math.max(0,delay));
   }
-  function startAutoSlide(delay=2600){scheduleAutoSlide(delay);}
-  function pauseAutoSlide(resumeAfter=2400){clearAutoSlide();if(mobileQuery())scheduleAutoSlide(resumeAfter);}
+  function startAutoSlide(delay=AUTO_RESUME_DELAY){scheduleAutoSlide(delay);}
+  function pauseAutoSlide(resumeAfter=AUTO_RESUME_DELAY){clearAutoSlide();if(mobileQuery())scheduleAutoSlide(resumeAfter);}
   const items=[
     {page:"home",label:"Home",icon:"fa-house"},
     {page:"movies",label:"Movies",icon:"fa-clapperboard"},
     {page:"series",label:"Web Series",icon:"fa-tv"},
-    {page:"series",label:"Shows",icon:"fa-star"},
+    {page:"shows",label:"Shows",icon:"fa-star"},
     {page:"songs",label:"Songs",icon:"fa-music"},
     {page:"shorts",label:"Shorts",icon:"fa-bolt"},
     {page:"watchlist",label:"Watchlist",icon:"fa-bookmark"},
@@ -46,7 +51,6 @@
     button.type="button";button.className="vh-mobile-nav-item";
     button.setAttribute("aria-label",item.label);button.title=item.label;
     if(item.page)button.dataset.vhPage=item.page;
-    if(item.label==="Shows")button.dataset.vhLabel="Shows";
     if(item.action)button.dataset.vhAction=item.action;
     const icon=document.createElement("i");icon.className="fas "+item.icon;icon.setAttribute("aria-hidden","true");
     const label=document.createElement("span");label.textContent=item.label;
@@ -55,11 +59,11 @@
   function sync(name){
     const page=String(name||"home").replace(/^page-/,"");
     document.querySelectorAll("#vhAppSidebar [data-vh-nav]").forEach(button=>{
-      const active=button.dataset.vhNav===page && button.dataset.vhLabel!=="Shows";
+      const active=button.dataset.vhNav===page;
       button.classList.toggle("active",active);button.setAttribute("aria-current",active?"page":"false");
     });
     document.querySelectorAll(".vh-mobile-dock [data-vh-page]").forEach(button=>{
-      const active=button.dataset.vhPage===page && button.dataset.vhLabel!=="Shows";
+      const active=button.dataset.vhPage===page;
       button.classList.toggle("active",active);button.setAttribute("aria-current",active?"page":"false");
     });
   }
@@ -70,13 +74,13 @@
     if(donationOpen){
       window.closeDonationPanel?.();
       if(action==="donate"){
-        if(mobileQuery())pauseAutoSlide(2400);
+        if(mobileQuery())pauseAutoSlide(AUTO_RESUME_DELAY);
         return;
       }
     }
     if(mobileQuery()){
       try{button.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});}catch(_){}
-      pauseAutoSlide(2200);
+      pauseAutoSlide(AUTO_RESUME_DELAY);
     }else if(button.classList.contains("vh-sidebar-button")){
       revealSidebar();
     }
@@ -91,11 +95,11 @@
     if(document.querySelector(".vh-mobile-dock"))return;
     const dock=document.createElement("nav");dock.className="vh-mobile-dock";dock.setAttribute("aria-label","All Vision Hub sections");
     items.forEach(item=>dock.appendChild(makeButton(item)));
-    dock.addEventListener("pointerdown",()=>pauseAutoSlide(5200),{passive:true});
-    dock.addEventListener("wheel",()=>pauseAutoSlide(5200),{passive:true});
-    dock.addEventListener("focusin",()=>pauseAutoSlide(5200));
-    dock.addEventListener("mouseenter",()=>pauseAutoSlide(5200));
-    dock.addEventListener("mouseleave",()=>startAutoSlide(1800));
+    dock.addEventListener("pointerdown",()=>pauseAutoSlide(AUTO_RESUME_DELAY),{passive:true});
+    dock.addEventListener("wheel",()=>pauseAutoSlide(AUTO_RESUME_DELAY),{passive:true});
+    dock.addEventListener("focusin",()=>pauseAutoSlide(AUTO_RESUME_DELAY));
+    dock.addEventListener("mouseenter",()=>pauseAutoSlide(AUTO_RESUME_DELAY));
+    dock.addEventListener("mouseleave",()=>pauseAutoSlide(AUTO_RESUME_DELAY));
     dock.addEventListener("click",event=>{
       const button=event.target.closest("button[data-vh-page],button[data-vh-action]");
       if(button)execute(button);
@@ -103,6 +107,36 @@
     document.addEventListener("visibilitychange",()=>{if(document.hidden)clearAutoSlide();else startAutoSlide(1800);});
     window.addEventListener("resize",()=>{if(mobileQuery())startAutoSlide(1800);else clearAutoSlide();});
     document.body.appendChild(dock);
+  }
+  function bindResponsiveNavClicks(){
+    if(document.documentElement.dataset.vhNavCaptureBound==="1")return;
+    document.documentElement.dataset.vhNavCaptureBound="1";
+    document.addEventListener("click",event=>{
+      const button=event.target?.closest?.(
+        "#vhAppSidebar button[data-vh-nav],#vhAppSidebar button[data-vh-action],.vh-mobile-dock button[data-vh-page],.vh-mobile-dock button[data-vh-action]"
+      );
+      if(!button)return;
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      if(button.closest("#vhAppSidebar"))revealSidebar();
+      execute(button);
+    },true);
+  }
+  function bindAutoSlideActivity(){
+    const resume=()=>{if(mobileQuery())pauseAutoSlide(AUTO_RESUME_DELAY);};
+    document.addEventListener("pointerdown",resume,{passive:true});
+    document.addEventListener("touchstart",resume,{passive:true});
+    document.addEventListener("wheel",resume,{passive:true});
+    document.addEventListener("keydown",resume);
+    document.addEventListener("click",resume,true);
+    document.addEventListener("pointermove",()=>{
+      if(!mobileQuery())return;
+      const now=Date.now();
+      if(now-lastPointerActivity<350)return;
+      lastPointerActivity=now;
+      pauseAutoSlide(AUTO_RESUME_DELAY);
+    },{passive:true});
   }
   function clearSidebarCollapse(){
     if(sidebarCollapseTimer){clearTimeout(sidebarCollapseTimer);sidebarCollapseTimer=null;}
@@ -117,14 +151,14 @@
     const sidebar=document.getElementById("vhAppSidebar");
     sidebar?.setAttribute("aria-expanded",expanded?"true":"false");
   }
-  function scheduleSidebarCollapse(delay=2000){
+  function scheduleSidebarCollapse(delay=3000){
     clearSidebarCollapse();
     if(mobileQuery()||document.hidden)return;
     sidebarCollapseTimer=setTimeout(()=>{
       const sidebar=document.getElementById("vhAppSidebar");
       const focused=document.activeElement;
       if(sidebar?.contains(focused)&&focused?.matches?.(":focus-visible")){
-        scheduleSidebarCollapse(2000);
+        scheduleSidebarCollapse(3000);
         return;
       }
       setSidebarExpanded(false);
@@ -133,7 +167,7 @@
   function revealSidebar(){
     if(mobileQuery())return;
     setSidebarExpanded(true);
-    scheduleSidebarCollapse(2000);
+    scheduleSidebarCollapse(3000);
   }
   function bindDesktopSidebar(){
     const sidebar=document.getElementById("vhAppSidebar");if(!sidebar||sidebar.dataset.bound==="1")return;
@@ -145,7 +179,7 @@
       scheduleSidebarCollapse(2000);
     },{passive:true});
     sidebar.addEventListener("pointerdown",revealSidebar,{passive:true});
-    sidebar.addEventListener("pointerleave",()=>scheduleSidebarCollapse(2000),{passive:true});
+    sidebar.addEventListener("pointerleave",()=>scheduleSidebarCollapse(3000),{passive:true});
     sidebar.addEventListener("focusin",()=>{
       clearSidebarCollapse();
       setSidebarExpanded(true);
@@ -161,15 +195,15 @@
     });
     document.addEventListener("visibilitychange",()=>{
       if(document.hidden)clearSidebarCollapse();
-      else if(!mobileQuery())scheduleSidebarCollapse(2000);
+      else if(!mobileQuery())scheduleSidebarCollapse(3000);
     });
     window.addEventListener("resize",()=>{
       if(mobileQuery()){clearSidebarCollapse();setSidebarExpanded(false);}
-      else scheduleSidebarCollapse(2000);
+      else scheduleSidebarCollapse(3000);
     },{passive:true});
     if(!mobileQuery()){
       setSidebarExpanded(true);
-      scheduleSidebarCollapse(2000);
+      scheduleSidebarCollapse(3000);
     }
   }
   function setUserDropdownOpen(open){
@@ -204,8 +238,8 @@
     });
   }
   function init(){
-    createDock();bindDesktopSidebar();bindUserDropdown();
-    if(mobileQuery())startAutoSlide(3200);
+    createDock();bindResponsiveNavClicks();bindAutoSlideActivity();bindDesktopSidebar();bindUserDropdown();
+    if(mobileQuery())startAutoSlide(AUTO_RESUME_DELAY);
     document.addEventListener("visionhub:page-changed",event=>sync(event.detail?.name||"home"));
     window.addEventListener("hashchange",()=>sync(location.hash.replace(/^#/,"")||"home"));
     const hash=location.hash.replace(/^#/,"");sync(hash.startsWith("movie-")?"home":(hash||"home"));
