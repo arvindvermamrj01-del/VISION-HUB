@@ -22,8 +22,11 @@
       const user = await requireSession();
       const { error: authError } = await db.auth.updateUser({ data: { full_name: name } });
       if (authError) throw authError;
-      const { error: profileError } = await db.from("profiles").update({ fullname: name }).eq("id", user.id);
-      if (profileError) throw profileError;
+      let profileUpdate = await db.from("profiles").update({ fullname: name }).eq("id", user.id);
+      if (profileUpdate.error && /fullname|PGRST204|42703/i.test(profileUpdate.error.message || "")) {
+        profileUpdate = await db.from("profiles").update({ full_name: name }).eq("id", user.id);
+      }
+      if (profileUpdate.error) throw profileUpdate.error;
       if ($("profileName")) $("profileName").textContent = name;
       if ($("userAvatar")) $("userAvatar").textContent = name.charAt(0).toUpperCase();
       if ($("profileAvatar")) $("profileAvatar").textContent = name.charAt(0).toUpperCase();
