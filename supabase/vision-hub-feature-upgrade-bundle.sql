@@ -142,7 +142,7 @@ create or replace function public.vh_validate_episode_parent()
 returns trigger
 language plpgsql
 set search_path = ''
-as $
+as $$
 declare
   v_parent_type text;
 begin
@@ -162,7 +162,7 @@ begin
   end if;
   return new;
 end;
-$;
+$$;
 
 drop trigger if exists vh_validate_episode_parent_trigger on public.vh_content;
 create trigger vh_validate_episode_parent_trigger
