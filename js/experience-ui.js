@@ -71,6 +71,15 @@
   }
   function bindDesktopSidebar(){
     const sidebar=document.getElementById("vhAppSidebar");if(!sidebar||sidebar.dataset.bound==="1")return;sidebar.dataset.bound="1";
+    const toggle=document.getElementById("vhSidebarToggle");
+    const setExpanded=expanded=>{
+      document.body.classList.toggle("vh-sidebar-expanded",!!expanded);
+      toggle?.setAttribute("aria-expanded",String(!!expanded));
+      toggle?.setAttribute("aria-label",expanded?"Collapse navigation":"Expand navigation");
+      toggle?.setAttribute("title",expanded?"Collapse navigation":"Expand navigation");
+      if(toggle)toggle.innerHTML=expanded?'<i class="fas fa-angles-left"></i>':'<i class="fas fa-angles-right"></i>';
+    };
+    toggle?.addEventListener("click",event=>{event.stopPropagation();setExpanded(!document.body.classList.contains("vh-sidebar-expanded"));});
     sidebar.addEventListener("click",event=>{
       const button=event.target.closest("button[data-vh-nav],button[data-vh-action]");if(!button)return;
       if(button.dataset.vhAction){execute(button);return;}
