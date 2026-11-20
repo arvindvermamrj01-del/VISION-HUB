@@ -4,8 +4,12 @@
   const root=document.documentElement;
   const key="vh_theme_preference";
   const themes={
-    hyperos:{label:"HyperOS Aurora",theme:"hyperos"},
-    coloros:{label:"ColorOS Ocean",theme:"coloros"},
+    hyperos:{label:"Xiaomi HyperOS 4",theme:"hyperos"},
+    miuiOneUi:{label:"MIUI × One UI 9 Blend",theme:"miui-oneui"},
+    oneui:{label:"Samsung One UI 9",theme:"oneui"},
+    oxygenos:{label:"OxygenOS 16",theme:"oxygenos"},
+    hydrogenos:{label:"HydrogenOS Heritage",theme:"hydrogenos"},
+    coloros:{label:"ColorOS 17",theme:"coloros"},
     amoled:{label:"AMOLED Black",theme:"amoled"},
     light:{label:"Light Glass",theme:"light"}
   };
@@ -27,11 +31,17 @@
     if(meta)meta.content=selected==="light"?"#eef3fb":selected==="amoled"?"#000000":selected==="coloros"?"#071b2a":"#0b1020";
   };
   window.setVHTheme=apply;
-  window.toggleThemePanel=()=>{
+  const isMobile=()=>window.matchMedia?.("(max-width:760px)")?.matches===true;
+  const setPanelOpen=open=>{
     const el=panel();if(!el)return;
-    const open=el.classList.toggle("open");
+    el.classList.toggle("open",!!open);
     el.setAttribute("aria-hidden",String(!open));
     document.getElementById("themeToggle")?.setAttribute("aria-expanded",String(open));
+    document.body.classList.toggle("vh-mobile-settings-open",!!open&&isMobile());
+  };
+  window.toggleThemePanel=()=>{
+    const el=panel();if(!el)return;
+    setPanelOpen(!el.classList.contains("open"));
   };
   document.addEventListener("DOMContentLoaded",()=>{
     let saved="coloros";
@@ -46,16 +56,17 @@
     }catch(_){}
     apply(saved);
     document.querySelectorAll("[data-theme-choice]").forEach(button=>{
-      button.addEventListener("click",()=>{apply(button.dataset.themeChoice);panel()?.classList.remove("open");panel()?.setAttribute("aria-hidden","true");document.getElementById("themeToggle")?.setAttribute("aria-expanded","false");});
+      button.addEventListener("click",()=>{apply(button.dataset.themeChoice);setPanelOpen(false);});
     });
     document.addEventListener("click",event=>{
       const el=panel(),toggle=document.getElementById("themeToggle");
-      if(el?.classList.contains("open")&&!el.contains(event.target)&&!toggle?.contains(event.target)){
-        el.classList.remove("open");el.setAttribute("aria-hidden","true");toggle?.setAttribute("aria-expanded","false");
+      const settingsButton=event.target?.closest?.('.vh-mobile-nav-item[data-vh-action="settings"]');
+      if(el?.classList.contains("open")&&!el.contains(event.target)&&!toggle?.contains(event.target)&&!settingsButton){
+        setPanelOpen(false);
       }
     });
     document.addEventListener("keydown",event=>{
-      if(event.key==="Escape"){panel()?.classList.remove("open");panel()?.setAttribute("aria-hidden","true");document.getElementById("themeToggle")?.setAttribute("aria-expanded","false");}
+      if(event.key==="Escape")setPanelOpen(false);
     });
   });
 })();
