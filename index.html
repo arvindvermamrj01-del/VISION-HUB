@@ -1491,6 +1491,53 @@
       <section id="myDonationHistory" class="my-donation-history hidden"><h3>My donation history</h3><div id="myDonationHistoryList"></div></section>
     </section>
   </div>
+    <!-- Privacy, terms and copyright information -->
+    <div id="page-privacy" class="page legal-page">
+      <div class="page-header-banner"><h1>Privacy Policy</h1><p>How Vision Hub handles account, usage and donation information.</p></div>
+      <section class="section legal-content">
+        <h2>Information we handle</h2>
+        <p>When you create an account, Supabase Authentication processes your login credentials. Vision Hub may store your profile name, role, watchlist, viewing progress, content requests, feedback and donation references that you submit.</p>
+        <h2>Usage data and local storage</h2>
+        <p>Vision Hub records limited first-party usage events such as page views, content-detail views, play clicks and download clicks to understand site performance and popular content. Theme preference and basic interface state may be stored in your browser's local storage.</p>
+        <h2>Service providers</h2>
+        <p>The platform may use Supabase for authentication and database services, Cloudflare for hosting and APIs, Backblaze B2 or Cloudflare R2 for private media storage, Google services for authorised Drive imports and advertising, and Telegram for optional bot and channel notifications. Those providers process data under their own terms and privacy policies.</p>
+        <h2>Advertising</h2>
+        <p>If Google AdSense is enabled after approval, Google and its partners may use cookies or similar technologies to serve and measure ads, subject to the consent and privacy requirements that apply in a visitor's region. Advertising is disabled until the site owner configures the required account settings.</p>
+        <h2>Security and retention</h2>
+        <p>Private media is stored in non-public buckets and accessed through signed links. Access to admin functions is role-controlled. Account and platform records are retained as needed to operate the service, protect it from abuse and meet applicable legal obligations.</p>
+        <h2>Your choices</h2>
+        <p>You can manage your account, update your profile, change your password or request account assistance through the site. Do not submit passwords, payment credentials or private API keys in requests or feedback.</p>
+        <p>For questions, use the official <a href="https://t.me/visionhub_official" target="_blank" rel="noopener">Vision Hub Telegram channel</a>. This policy is a platform information notice and should be reviewed by the site owner for local legal requirements before advertising is enabled.</p>
+      </section>
+    </div>
+    <div id="page-terms" class="page legal-page">
+      <div class="page-header-banner"><h1>Terms of Use</h1><p>Rules for using Vision Hub accounts and media features.</p></div>
+      <section class="section legal-content">
+        <h2>Permitted use</h2>
+        <p>Use Vision Hub lawfully and respectfully. Only content that the platform owner or uploader owns, controls or is licensed to distribute may be published. Do not upload, request, share or distribute material that infringes copyright or other rights.</p>
+        <h2>Accounts and security</h2>
+        <p>You are responsible for activity performed through your account. Keep your password private and notify the site team if you suspect unauthorised access. The platform may restrict accounts or content that threaten service security or violate these terms.</p>
+        <h2>Content and external links</h2>
+        <p>Availability, quality, language, subtitles and download options vary by title and by the sources supplied by the content owner. External storage and third-party links may be unavailable or subject to separate terms.</p>
+        <h2>Requests, feedback and donations</h2>
+        <p>Content requests and community feedback are suggestions, not guarantees of publication. Voluntary UPI support is recorded from the reference submitted by the donor; verification is performed manually by the site team. Do not submit another person's payment reference.</p>
+        <h2>Service availability</h2>
+        <p>Features may be updated, suspended or removed for maintenance, security, legal compliance or provider limitations. The platform is provided without a guarantee that every title or external source will always be available.</p>
+        <p>By using Vision Hub, you agree to follow applicable laws and these terms. The site owner should review and adapt this notice to the laws and business practices that apply to the service.</p>
+      </section>
+    </div>
+    <div id="page-copyright" class="page legal-page">
+      <div class="page-header-banner"><h1>Copyright & Content Policy</h1><p>Vision Hub is intended for content that is owned or properly licensed.</p></div>
+      <section class="section legal-content">
+        <h2>Authorised content only</h2>
+        <p>Uploaders and administrators must confirm that they have the rights and permissions required to publish each movie, series, episode, short, poster, trailer, subtitle and download source.</p>
+        <h2>Report a concern</h2>
+        <p>If you believe content on Vision Hub infringes your rights, submit a Community complaint with the exact page or content title, the relevant source URL, a description of the copyrighted work, evidence of ownership or authority to act, and a reliable contact method. Do not include passwords or sensitive payment information.</p>
+        <p>Reports are reviewed by the site team. This online complaint route is not a substitute for any formal notice required by applicable copyright law. The site owner must publish a designated legal contact and complete the required notice-and-takedown process before relying on this page as a formal copyright agent notice.</p>
+        <p><a href="https://t.me/visionhub_official" target="_blank" rel="noopener">Official Vision Hub Telegram channel</a></p>
+      </section>
+    </div>
+
   </div><!-- end #app -->
 
   <section class="vh-ad-section vh-ad-footer" id="vhAdFooter" aria-label="Advertisement" hidden></section>
@@ -1507,6 +1554,9 @@
         <a href="#series" onclick="showPage('series')">Web Series</a>
         <a href="#request" onclick="showPage('request')">Request Movie</a>
         <a href="#community" onclick="showPage('community')">Community</a>
+        <a href="#privacy" onclick="showPage('privacy')">Privacy</a>
+        <a href="#terms" onclick="showPage('terms')">Terms</a>
+        <a href="#copyright" onclick="showPage('copyright')">Copyright</a>
         <button type="button" class="footer-donate-btn" onclick="openDonationPanel()"><i class="fas fa-heart"></i> Support Vision Hub</button>
         <a href="https://t.me/visionhub_official" target="_blank" class="telegram-target-link" style="color: #229ED9;">
           <i class="fab fa-telegram-plane"></i> Join Telegram
