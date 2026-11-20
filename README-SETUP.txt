@@ -185,7 +185,7 @@ and Light Glass. Preferences are saved on the visitor's device.
 The catalog includes search across title/actor/director/genre/language/year,
 release-year and language filters, sorting, latest entries, top-rated content,
 popular genres, Web Series seasons/episodes, watchlist, continue watching,
-shorts, trailers, subtitles and actual supplied download links.
+shorts, trailers, subtitles, actual supplied download links and a searchable public music library using direct HTTPS audio URLs.
 The homepage popular rail uses aggregated content-detail views from the last
 30 days; raw session tags remain admin-only.
 Community feedback supports suggestions, bug reports, complaints, admin
