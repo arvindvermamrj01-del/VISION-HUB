@@ -55,7 +55,7 @@ async function loadPopularContent(){
  }
 }
 function getCategoryNames(){
- const fromContent=[...new Set(data.filter(item=>item.type!=="Episode"&&item.type!=="Short").map(item=>String(item.genre||"").trim()).filter(name=>name&&name!=="Uncategorised"))];
+ const fromContent=[...new Set(data.filter(item=>item.type!=="Episode"&&item.type!=="Short").map(item=>String(item.genre||"").trim()).filter(name=>name&&name!=="Uncategorised"&&name.toLowerCase()!=="all"))];
  return catalogCategories.length?catalogCategories:fromContent.sort((a,b)=>a.localeCompare(b));
 }
 function renderCategoryButtons(hostId,selected,allLabel,onChoose){
@@ -76,7 +76,7 @@ async function loadPublicCategories(){
  try{
   const {data:rows,error}=await db.from("vh_categories").select("name").eq("is_active",true).order("name");
   if(error)throw error;
-  catalogCategories=[...new Set((rows||[]).map(row=>String(row.name||"").trim()).filter(Boolean))];
+  catalogCategories=[...new Set((rows||[]).map(row=>String(row.name||"").trim()).filter(name=>name&&name.toLowerCase()!=="all"))];
   render();
  }catch(error){console.debug("Public categories unavailable:",error.message);}
 }
