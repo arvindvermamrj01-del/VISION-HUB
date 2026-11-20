@@ -13,6 +13,7 @@ This single transaction adds:
 - UPI donation confirmations and admin verification
 - Series season/episode metadata
 - Community feedback, public roadmap and authenticated voting
+- Public popular-content ranking from real first-party detail-view events
 
 Do not paste any provider secrets into SQL or chat. Existing catalog and media rows are preserved.
 
