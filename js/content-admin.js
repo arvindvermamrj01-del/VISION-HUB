@@ -467,7 +467,7 @@
     if(hint)hint.textContent=choices.length<2?(choices.length?"Only the uploaded source is available. Add real renditions to offer more resolutions.":"No playable video is attached to this title."):"Choose an available uploaded resolution.";
     select.onchange=()=>{const asset=choices[Number(select.value)];if(asset)playAsset(item,asset);};
     const preferred=choices.findIndex(asset=>asset.is_primary);
-    select.value=String(preferred>=0?preferred:0);
+    select.value=choices.length?String(preferred>=0?preferred:0):"";
     ensurePlaybackExtras(controls,item);
     if(choices.length)playAsset(item,choices[Number(select.value)]);
   }
