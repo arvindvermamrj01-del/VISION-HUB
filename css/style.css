@@ -290,3 +290,12 @@ body.vh-modal-open{overflow:hidden}
 #page-admin .vh-bot-settings ul{display:flex;gap:8px;flex-wrap:wrap;padding-left:20px;color:var(--muted);font-size:.82rem}
 #page-admin .vh-bot-settings button{margin:8px 0}
 #page-admin .vh-bot-settings #telegramBotSetupStatus{overflow-wrap:anywhere;font-size:.82rem}
+
+/* AdSense live report table in admin analytics. */
+#page-admin .vh-adsense-report>button{margin:8px 0 14px;padding:10px 14px;border-radius:10px}
+.vh-adsense-summary{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px;margin:10px 0;border:1px solid var(--vh-line);border-radius:12px;background:var(--vh-glass)}
+.vh-adsense-summary span{font-weight:800;color:#53d6a0}
+.vh-adsense-table-wrap{max-width:100%;overflow:auto}
+.vh-adsense-table{width:100%;border-collapse:collapse;min-width:500px}
+.vh-adsense-table th,.vh-adsense-table td{padding:9px;border-bottom:1px solid var(--vh-line);text-align:left;font-size:.78rem;white-space:nowrap}
+.vh-adsense-table th{color:var(--muted);background:var(--vh-glass)}
