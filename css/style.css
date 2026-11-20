@@ -283,3 +283,10 @@ body.vh-modal-open{overflow:hidden}
 .vh-ad-section ins.adsbygoogle{display:block;min-height:90px}
 .vh-ad-footer{margin-top:36px;margin-bottom:10px}
 @media(max-width:520px){.vh-ad-section{width:calc(100% - 24px);margin:18px auto}.vh-ad-section:not([hidden]){padding:6px}}
+
+/* Telegram bot setup card in the admin settings area. */
+#page-admin .vh-bot-settings{border-color:rgba(34,158,217,.3);background:linear-gradient(145deg,rgba(10,69,105,.22),rgba(17,28,46,.96))}
+#page-admin .vh-bot-settings h3{margin:0 0 8px;color:var(--text)}
+#page-admin .vh-bot-settings ul{display:flex;gap:8px;flex-wrap:wrap;padding-left:20px;color:var(--muted);font-size:.82rem}
+#page-admin .vh-bot-settings button{margin:8px 0}
+#page-admin .vh-bot-settings #telegramBotSetupStatus{overflow-wrap:anywhere;font-size:.82rem}
