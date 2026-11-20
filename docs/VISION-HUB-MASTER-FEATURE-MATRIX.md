@@ -28,6 +28,7 @@ This is the working completion ledger. “Implemented” means code/schema is pr
 | AdSense earnings | Server-side OAuth report endpoint; 7/30 days and current/previous month | OAuth client, read-only refresh token and account resource |
 | Telegram bot | Webhook, commands, request alerts, publish announcements and admin setup control | Bot token, webhook secret, admin chat ID; channel chat ID for announcements |
 | Community | Suggestions/bugs/complaints, moderated public roadmap and one-vote-per-user RPC | Run SQL bundle; final RLS and voting tests |
+| Legal / Compliance | Privacy, Terms and Copyright information pages added | Site owner must review the notices and publish a designated legal contact; configure a certified CMP where required |
 | SEO / Performance | Metadata, WebSite JSON-LD, robots, sitemap, CDN preconnect and lazy poster images | Final Lighthouse/performance and crawl checks |
 | Security | Server-side provider secrets, role-checked APIs, RLS and signed private media | Final security review and authorization tests |
 
