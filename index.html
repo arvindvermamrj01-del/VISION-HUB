@@ -632,9 +632,9 @@
                 <small style="color:var(--text-muted)">Or upload a video file below. Only content you own or are licensed to publish.</small>
                 <label for="addStorageProvider">Upload / Link Storage</label>
                 <select id="addStorageProvider">
-                  <option value="supabase">Supabase (Default)</option>
+                  <option value="backblaze_b2">Backblaze B2 (Default — private cloud upload)</option>
                   <option value="cloudflare_r2">Cloudflare R2 (direct cloud upload — server setup required)</option>
-                   <option value="backblaze_b2">Backblaze B2 (private cloud upload)</option>
+                  <option value="supabase">Supabase (legacy / existing uploads)</option>
                   <option value="terabox">TeraBox (authorised URL only — API connector pending)</option>
                   <option value="mega">MEGA (authorised URL only — API connector pending)</option>
                   <option value="degoo">Degoo (authorised URL only — API connector pending)</option>
@@ -807,9 +807,9 @@
               <div class="form-group">
                 <label for="defaultStorageProvider">Default Storage Provider</label>
                 <select id="defaultStorageProvider">
-                  <option value="supabase">Supabase (recommended)</option>
+                  <option value="backblaze_b2">Backblaze B2 (recommended default)</option>
                   <option value="cloudflare_r2">Cloudflare R2 (direct cloud upload — server setup required)</option>
-                   <option value="backblaze_b2">Backblaze B2 (private cloud upload)</option>
+                  <option value="supabase">Supabase (legacy / existing uploads)</option>
                   <option value="terabox">TeraBox</option>
                   <option value="mega">MEGA</option>
                   <option value="degoo">Degoo</option>
@@ -828,7 +828,8 @@
             </form>
             <div class="admin-form" style="margin-top:22px;">
               <h3>Provider availability</h3>
-              <p><strong>Supabase:</strong> Existing upload provider (subject to bucket and RLS configuration).</p>
+              <p><strong>Backblaze B2:</strong> Primary private cloud upload provider for new Movie, Series and Short files.</p>
+              <p><strong>Supabase:</strong> Retained for database, authentication and legacy media; new uploads use B2 by default.</p>
               <p><strong>Google Drive, Box, pCloud, Koofr:</strong> Official API options exist; OAuth credentials and server-side upload integration are still required.</p>
               <p><strong>TeraBox:</strong> Official Open Platform exists; application approval and server-side OAuth credentials are required.</p>
               <p><strong>MEGA:</strong> Third-party SDK options exist; no website connector is configured.</p>
