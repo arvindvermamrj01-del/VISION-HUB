@@ -444,7 +444,7 @@ body.vh-modal-open{overflow:hidden}
 
 /* Let the public navigation scroll with the page instead of covering catalog content. */
 body{padding-top:0}
-.navbar{position:static;top:auto;left:auto;transform:none;margin:0;width:100%;z-index:50}
+.navbar{position:static!important;top:auto!important;left:auto!important;transform:none!important;margin:0;width:100%;z-index:50}
 
 
 /* HyperOS-inspired admin sign-in. Theme tokens keep it compatible with other appearances. */
