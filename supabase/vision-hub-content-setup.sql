@@ -77,6 +77,12 @@ alter table public.vh_content enable row level security;
 drop policy if exists "Public can read published content" on public.vh_content;
 create policy "Public can read published content" on public.vh_content
   for select using (published = true);
+revoke select on public.vh_content from anon;
+grant select (
+  id,title,content_type,video_url,poster_url,genre,language,release_year,rating,
+  description,"cast",duration,trailer_url,industry,published,created_at,storage_provider
+) on public.vh_content to anon;
+grant select on public.vh_content to authenticated;
 drop policy if exists "Admins can manage content" on public.vh_content;
 create policy "Admins can manage content" on public.vh_content
   for all to authenticated
