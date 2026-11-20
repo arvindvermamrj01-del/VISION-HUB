@@ -2,6 +2,31 @@
 (() => {
   "use strict";
   const mobileQuery=()=>window.matchMedia("(max-width:760px)").matches;
+  let autoSlideTimer=null,autoResumeTimer=null,autoDirection=1;
+  const reducedMotion=()=>window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function clearAutoSlide(){
+    if(autoSlideTimer){clearInterval(autoSlideTimer);autoSlideTimer=null;}
+    if(autoResumeTimer){clearTimeout(autoResumeTimer);autoResumeTimer=null;}
+  }
+  function slideToNextItem(){
+    const dock=document.querySelector(".vh-mobile-dock");if(!dock||!mobileQuery())return;
+    const buttons=[...dock.querySelectorAll(":scope > .vh-mobile-nav-item")];if(buttons.length<2)return;
+    const bounds=dock.getBoundingClientRect(),center=bounds.left+bounds.width/2;
+    let current=0,best=Infinity;
+    buttons.forEach((button,index)=>{const rect=button.getBoundingClientRect();const dist=Math.abs(rect.left+rect.width/2-center);if(dist<best){best=dist;current=index;}});
+    let next=current+autoDirection;
+    if(next>=buttons.length){autoDirection=-1;next=buttons.length-2;}
+    else if(next<0){autoDirection=1;next=1;}
+    const rect=buttons[next].getBoundingClientRect();
+    const delta=(rect.left+rect.width/2)-(bounds.left+bounds.width/2);
+    dock.scrollBy({left:delta,behavior:"smooth"});
+  }
+  function scheduleAutoSlide(delay=2600){
+    clearAutoSlide();if(!mobileQuery()||reducedMotion()||document.hidden)return;
+    autoResumeTimer=setTimeout(()=>{autoSlideTimer=setInterval(slideToNextItem,2600);},Math.max(0,delay));
+  }
+  function startAutoSlide(delay=2600){scheduleAutoSlide(delay);}
+  function pauseAutoSlide(resumeAfter=2400){clearAutoSlide();if(mobileQuery())scheduleAutoSlide(resumeAfter);}
   const items=[
     {page:"home",label:"Home",icon:"fa-house"},
     {page:"movies",label:"Movies",icon:"fa-clapperboard"},
@@ -58,9 +83,18 @@
   }
   function execute(button){
     const page=button.dataset.vhPage,action=button.dataset.vhAction;
+    const donationModal=document.getElementById("donationModal");
+    const donationOpen=!!donationModal?.classList.contains("open");
+    if(donationOpen){
+      window.closeDonationPanel?.();
+      if(action==="donate"){
+        if(mobileQuery())pauseAutoSlide(2400);
+        return;
+      }
+    }
     if(mobileQuery()){
       try{button.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});}catch(_){}
-      pauseAutoSlide(1400);
+      pauseAutoSlide(2200);
     }else if(button.classList.contains("vh-sidebar-button")){
       animateReorder(button.closest("[data-vh-nav-group]"),button);
     }
@@ -69,9 +103,6 @@
     if(page){
       if(document.getElementById("movieModal")?.classList.contains("open"))window.closeModalBtn?.();
       window.showPage?.(page);sync(page);
-      if(mobileQuery())startAutoSlide(1800);
-    }else if(mobileQuery()){
-      startAutoSlide(1800);
     }
   }
   function createDock(){
