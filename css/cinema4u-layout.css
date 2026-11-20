@@ -587,3 +587,46 @@ body.vh-movie-detail-open{overflow:hidden}
 .vh-storage-health-item.is-missing i{color:#ff8b8b}
 .vh-storage-health-note{margin:10px 0 0;color:#f4c57d;font-size:.7rem;line-height:1.55}
 @media(max-width:560px){.vh-storage-health-grid{grid-template-columns:1fr}.vh-storage-health-item{flex-wrap:wrap}}
+
+
+/* Admin workspace refinements: keep the global header compact and the account menu floating. */
+#userNav{position:relative!important;display:flex!important;flex:0 0 auto;align-items:center;min-height:42px}
+#userNav .user-avatar{appearance:none;-webkit-appearance:none;display:grid!important;place-items:center!important;padding:0!important;line-height:1;cursor:pointer}
+#userNav .dropdown-menu{
+ position:absolute!important;top:calc(100% + 10px)!important;right:0!important;left:auto!important;z-index:220!important;
+ display:none!important;width:max-content;min-width:196px;max-width:min(300px,calc(100vw - 24px));
+ max-height:min(70vh,440px);overflow:auto;gap:5px;transform:none!important
+}
+#userNav .dropdown-menu.open{display:grid!important}
+#userNav .dropdown-menu a{white-space:normal;line-height:1.35}
+.navbar{min-height:68px!important;align-items:center!important}
+
+/* Clear, always visible return path at the top of the Control Center. */
+#page-admin .admin-page-toolbar{width:min(1560px,calc(100% - 40px));min-height:44px;margin:14px auto 0;display:flex;align-items:center;gap:14px}
+#page-admin .admin-back-home{
+ min-height:38px;display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:8px 13px;
+ border:1px solid rgba(129,169,235,.25);border-radius:12px;background:linear-gradient(110deg,rgba(49,88,148,.28),rgba(91,76,162,.22));
+ color:#e6efff;font-size:.78rem;font-weight:800
+}
+#page-admin .admin-back-home:hover{background:linear-gradient(110deg,rgba(57,105,177,.36),rgba(106,87,184,.3))}
+#page-admin .admin-page-context{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:.75rem;font-weight:800;letter-spacing:.04em}
+
+/* Slightly compact admin navigation; keep all existing sections and functions. */
+@media(min-width:761px){
+ #page-admin .admin-layout{grid-template-columns:250px minmax(0,1fr);gap:20px;padding:20px}
+ #page-admin .admin-sidebar{padding:16px 11px}
+ #page-admin .admin-main{padding:clamp(16px,2.8vw,32px)}
+ #page-admin .admin-nav-btn{
+  min-height:42px!important;padding:9px 11px!important;font-size:.86rem!important;
+  transition:background .18s,border-color .18s,color .18s,box-shadow .18s!important
+ }
+ #page-admin .admin-nav-btn:hover{transform:none!important}
+ #page-admin .admin-nav-btn i{flex-basis:30px!important;width:30px!important;height:30px!important}
+}
+@media(max-width:1050px) and (min-width:761px){#page-admin .admin-layout{grid-template-columns:218px minmax(0,1fr);gap:14px;padding:14px}}
+@media(max-width:760px){
+ #page-admin .admin-page-toolbar{width:calc(100% - 28px);min-height:40px;margin:10px auto 0;gap:10px}
+ #page-admin .admin-back-home{min-height:36px;padding:7px 10px;font-size:.74rem}
+ #page-admin .admin-page-context{font-size:.7rem}
+ #userNav .dropdown-menu{top:calc(100% + 8px)!important}
+}
