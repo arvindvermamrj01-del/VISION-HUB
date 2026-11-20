@@ -55,7 +55,7 @@ const series=data.filter(x=>x.type==="Web Series"&&(seriesGenre==="All"||x.genre
 grid("allSeriesGrid",sortCatalog(series,seriesSort));
 grid("shortsGrid",data.filter(x=>x.type==="Short"));
 const genreHost=$("popularGenreLinks");
-if(genreHost){const counts=new Map();data.forEach(item=>{if(item.genre&&item.genre!=="Uncategorised")counts.set(item.genre,(counts.get(item.genre)||0)+1)});genreHost.innerHTML=[...counts].sort((a,b)=>b[1]-a[1]).slice(0,12).map(([name,count])=>'<button class="filter-btn" onclick="filterByGenre(\''+safe(name)+'\')">'+safe(name)+' · '+count+'</button>').join("")||'<p>Genres will appear as the catalog grows.</p>';}
+if(genreHost){const counts=new Map();data.filter(item=>item.type!=="Episode"&&item.type!=="Short").forEach(item=>{if(item.genre&&item.genre!=="Uncategorised")counts.set(item.genre,(counts.get(item.genre)||0)+1)});genreHost.innerHTML=[...counts].sort((a,b)=>b[1]-a[1]).slice(0,12).map(([name,count])=>'<button class="filter-btn" onclick="filterByGenre(\''+safe(name)+'\')">'+safe(name)+' · '+count+'</button>').join("")||'<p>Genres will appear as the catalog grows.</p>';}
 renderWatchlist();hero();
 }
 window.renderVisionHub=render;
