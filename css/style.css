@@ -351,3 +351,35 @@ body.vh-modal-open{overflow:hidden}
 
 .popular-period-label{color:var(--muted);font-size:.78rem;font-weight:600}
 :root[data-vh-theme="light"] .popular-period-label{color:#63728a}
+
+/* Light appearance also covers the full admin control centre. */
+:root[data-vh-theme="light"] #page-admin .admin-sidebar{background:linear-gradient(180deg,#fff,#eef3fb);border-color:#d7e0ee;box-shadow:0 18px 48px rgba(42,63,96,.1)}
+:root[data-vh-theme="light"] #page-admin .admin-logo{color:#172338;border-bottom-color:#dce4f0}
+:root[data-vh-theme="light"] #page-admin .admin-role-badge{background:#e8f0ff;border-color:#cbd9f1;color:#405a91}
+:root[data-vh-theme="light"] #page-admin .admin-nav-btn{color:#52627b}
+:root[data-vh-theme="light"] #page-admin .admin-nav-btn i{color:#71829c}
+:root[data-vh-theme="light"] #page-admin .admin-nav-btn:hover{background:#e8eef8;color:#20304a;border-color:#d1dced}
+:root[data-vh-theme="light"] #page-admin .admin-nav-btn.active{background:linear-gradient(100deg,#6b54d8,#496bd2);border-color:#5c55c9;color:#fff;box-shadow:inset 3px 0 #b9a9ff}
+:root[data-vh-theme="light"] #page-admin .admin-nav-btn.active i{color:#fff}
+:root[data-vh-theme="light"] #page-admin .admin-main{background:linear-gradient(145deg,#fff,#f4f7fc);border-color:#d7e0ee;box-shadow:0 18px 55px rgba(42,63,96,.08);color:#172338}
+:root[data-vh-theme="light"] #page-admin .admin-tab>h2{color:#172338;border-bottom-color:#dce4f0}
+:root[data-vh-theme="light"] #page-admin .admin-form{background:#fff;border-color:#d7e0ee;color:#172338}
+:root[data-vh-theme="light"] #page-admin .admin-tab h3,
+:root[data-vh-theme="light"] #page-admin .admin-recent h3,
+:root[data-vh-theme="light"] #page-admin .report-card h4,
+:root[data-vh-theme="light"] #page-admin .drive-import-box h3{color:#20304a}
+:root[data-vh-theme="light"] #page-admin .form-group label{color:#33445e}
+:root[data-vh-theme="light"] #page-admin .form-group input,
+:root[data-vh-theme="light"] #page-admin .form-group select,
+:root[data-vh-theme="light"] #page-admin .form-group textarea,
+:root[data-vh-theme="light"] #page-admin .admin-toolbar input{background:#f8faff;border-color:#d7e0ee;color:#172338}
+:root[data-vh-theme="light"] #page-admin .form-group input[type=file]{background:#eef3fb}
+:root[data-vh-theme="light"] #page-admin .form-group small,
+:root[data-vh-theme="light"] #page-admin p{color:#63728a}
+:root[data-vh-theme="light"] #page-admin .report-card,
+:root[data-vh-theme="light"] #page-admin .stat-card,
+:root[data-vh-theme="light"] #page-admin .admin-recent{background:#fff;border-color:#dce4f0;color:#20304a}
+:root[data-vh-theme="light"] #page-admin .admin-tab .request-item,
+:root[data-vh-theme="light"] #page-admin .manage-item{border-bottom-color:#e0e7f1;color:#20304a}
+:root[data-vh-theme="light"] #page-admin .drive-import-box{background:#fff;border-color:#d7e0ee;color:#20304a}
+:root[data-vh-theme="light"] #page-admin .drive-log{background:#f3f6fc;color:#33445e}
