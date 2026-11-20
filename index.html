@@ -602,6 +602,7 @@
             <button class="admin-nav-btn" onclick="adminTab('songs',this)">
               <i class="fas fa-music"></i> Song Management
             </button>
+            <button id="vhLoginActivityNav" class="admin-nav-btn" data-vh-roles="admin" onclick="adminTab('login-activity',this)"><i class="fas fa-history"></i> Login Activity</button>
             <button class="admin-nav-btn logout-btn" onclick="adminLogout()">
               <i class="fas fa-sign-out-alt"></i> Exit Admin
             </button>
@@ -611,6 +612,17 @@
         <!-- Admin Workspace Main Area -->
         <main class="admin-main">
           
+          <div id="tab-login-activity" class="admin-tab" data-vh-roles="admin">
+            <h2>Admin Login Activity</h2>
+            <p>Recent successful sign-ins. This list is restricted to the main administrator account.</p>
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead><tr><th>Time</th><th>Account</th><th>User ID</th></tr></thead>
+                <tbody id="vhLoginActivityRows"><tr><td colspan="3">Open this tab to load activity.</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
           <!-- TAB 1: Dashboard Overview -->
           <div id="tab-dashboard" class="admin-tab active">
             <h2>📊 Dashboard & Performance Overview</h2>
@@ -1579,6 +1591,7 @@
 <script src="js/storage-manager.js"></script>
 <script src="js/request-manager.js"></script>
 <script src="js/admin-tools.js"></script>
+<script src="js/login-activity.js"></script>
 <script src="js/maintenance-mode.js"></script>
 <script src="js/public-settings.js"></script>
 <script src="js/theme-manager.js"></script>

@@ -40,6 +40,7 @@ function showSignedOut() {
 window.VH_IS_ADMIN = false;
 window.VH_ROLE = "guest";
 window.VH_USER_ID = null;
+window.dispatchEvent(new Event("vh-auth-state-changed"));
 el("authNav")?.classList.remove("hidden");
 el("userNav")?.classList.add("hidden");
 el("adminNav")?.classList.add("hidden");
@@ -93,13 +94,14 @@ if (el("statJoined")) {
 window.VH_USER_ID = user.id;
 window.VH_ROLE = profile?.role || "user";
 window.VH_IS_ADMIN = ["admin", "sub_admin", "content_editor", "moderator"].includes(window.VH_ROLE);
+window.dispatchEvent(new Event("vh-auth-state-changed"));
 const roleBadge = el("adminRoleBadge");
 if (roleBadge) roleBadge.textContent = window.VH_ROLE.replaceAll("_", " ");
 
 if (window.VH_IS_ADMIN) {
   el("adminNav")?.classList.remove("hidden");
   el("adminNavLink")?.classList.remove("hidden");
-  const rootOnly = ["users-admin", "team-admin", "settings", "storage-manager", "categories", "songs", "reports", "dashboard"];
+  const rootOnly = ["users-admin", "team-admin", "settings", "storage-manager", "categories", "songs", "reports", "dashboard", "login-activity"];
   const allowed = window.VH_ROLE === "admin" ? null :
     window.VH_ROLE === "moderator" ? ["requests-admin"] :
     window.VH_ROLE === "content_editor" ? ["add-movie", "manage"] :
@@ -136,6 +138,8 @@ window.loginUser = async function (event) {
     const { data, error } = await db.auth.signInWithPassword({ email, password });
     if (error) throw error;
     await showSignedIn(data.user);
+  window.VHLoginActivity?.record(data.user);
+    window.VHLoginActivity?.record(data.user);
     showPage("home");
     msg("Welcome back to Vision Hub.");
   } catch (error) {
