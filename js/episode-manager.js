@@ -75,7 +75,7 @@
       if(file){
         uploaded=await uploadEpisodeFile(file,user,provider);storagePath=uploaded.path;videoUrl="private://"+storagePath;storageProvider=provider;
       }else{
-        videoUrl=validUrl(rawUrl);storagePath=videoUrl;storageProvider=provider;
+        videoUrl=validUrl(rawUrl);storagePath=videoUrl;storageProvider="direct";
       }
       const row={
         title,content_type:"Episode",parent_series_id:seriesId,season_number:season,episode_number:episode,
