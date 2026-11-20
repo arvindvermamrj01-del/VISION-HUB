@@ -136,3 +136,51 @@
  .cinema-top-actions button{font-size:.6rem;padding:6px 7px}
  .cinema-search-box input::placeholder{font-size:.73rem}
 }
+
+/* Cinema4U-style detail view and utility navigation. */
+.navbar{position:sticky!important}
+.navbar .nav-links{display:none;position:absolute;top:calc(100% + 10px);left:auto;right:0;z-index:150;width:min(620px,calc(100vw - 28px));max-width:calc(100vw - 28px);padding:13px;flex-wrap:wrap;justify-content:flex-start;gap:7px;border:1px solid var(--vh-glass-line);border-radius:22px;background:var(--vh-surface-strong);box-shadow:0 24px 70px rgba(0,0,0,.42);-webkit-backdrop-filter:blur(28px);backdrop-filter:blur(28px)}
+.navbar .nav-links.open{display:flex}
+.navbar .hamburger{display:block;width:42px;height:42px;border:1px solid var(--vh-glass-line);border-radius:50%;background:var(--vh-glass);color:var(--text)}
+.navbar .nav-link{padding:10px 12px;border:1px solid var(--vh-glass-line);border-radius:999px;background:var(--vh-glass);font-size:.76rem}
+#movieModal{align-items:flex-start;overflow:auto;padding:clamp(10px,3vw,28px)}
+#movieModal .modal-box{position:relative;width:min(1080px,100%);max-width:1080px;max-height:calc(100dvh - 28px);overflow:auto;border-radius:28px}
+#movieModal .modal-hero:empty{display:none}
+#movieModal .modal-body{display:grid;grid-template-columns:minmax(170px,260px) minmax(0,1fr);align-items:start;gap:clamp(18px,3vw,34px);padding:clamp(18px,3vw,34px)}
+#movieModal .modal-left{min-width:0}
+#movieModal .modal-poster{display:block;float:none;width:100%;height:auto;max-height:390px;aspect-ratio:2/3;object-fit:cover;margin:0;border:1px solid var(--vh-glass-line);border-radius:19px;box-shadow:0 18px 38px rgba(0,0,0,.24)}
+#movieModal .modal-right{min-width:0}
+#movieModal .modal-right h2{margin:0 42px 9px 0;font-size:clamp(1.6rem,3vw,2.5rem);font-weight:950;line-height:1.08;letter-spacing:-.05em}
+#movieModal .modal-meta{color:var(--muted);font-size:.82rem;font-weight:750;line-height:1.7}
+#movieModal .modal-desc{color:var(--text);font-size:.9rem;line-height:1.8}
+#movieModal .modal-detail-row,#movieModal .modal-cast{margin-top:10px;color:var(--muted);font-size:.82rem;line-height:1.65}
+#movieModal .modal-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+#movieModal .modal-actions button{min-height:42px;padding:10px 14px;border-radius:999px;font-size:.76rem;font-weight:850}
+#movieModal .modal-screenshots{margin-top:20px}
+#movieModal .modal-screenshots h3{margin:0 0 10px;font-size:.95rem}
+#movieModal .vh-screenshot-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+#movieModal .vh-screenshot-grid img{display:block;width:100%;height:90px;object-fit:cover;margin:0;border:1px solid var(--vh-glass-line);border-radius:11px}
+#movieModal .series-episodes-panel,#movieModal .trailer-section{margin:0 clamp(18px,3vw,34px) 20px;padding:18px;border:1px solid var(--vh-glass-line);border-radius:20px;background:var(--vh-glass)}
+#movieModal .modal-close{z-index:4;width:38px;height:38px;display:grid;place-items:center;right:15px;top:15px;border:1px solid var(--vh-glass-line);border-radius:50%;background:var(--vh-surface-strong);color:var(--text)}
+:root[data-vh-theme="light"] #movieModal .modal-desc{color:#24324a}
+@media(max-width:760px){
+ .navbar .nav-links{position:fixed;top:76px;left:12px;right:12px;width:auto;max-width:none;max-height:min(66vh,520px);overflow:auto}
+ .navbar .hamburger{width:38px;height:38px}
+ #movieModal{padding:7px}
+ #movieModal .modal-box{max-height:calc(100dvh - 14px);border-radius:22px}
+ #movieModal .modal-body{grid-template-columns:105px minmax(0,1fr);gap:14px;padding:17px 13px}
+ #movieModal .modal-poster{max-height:175px;border-radius:13px}
+ #movieModal .modal-right h2{font-size:1.35rem;margin-right:28px}
+ #movieModal .modal-desc{font-size:.8rem;line-height:1.65}
+ #movieModal .modal-actions{grid-column:1/-1;margin-top:14px}
+ #movieModal .modal-actions button{min-height:38px;padding:8px 10px;font-size:.68rem}
+ #movieModal .vh-screenshot-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #movieModal .vh-screenshot-grid img{height:76px}
+ #movieModal .series-episodes-panel,#movieModal .trailer-section{margin:0 13px 14px;padding:14px}
+}
+@media(max-width:420px){
+ #movieModal .modal-body{grid-template-columns:88px minmax(0,1fr);gap:11px}
+ #movieModal .modal-poster{max-height:142px}
+ #movieModal .modal-right h2{font-size:1.16rem}
+ #movieModal .modal-actions{gap:6px}
+}
