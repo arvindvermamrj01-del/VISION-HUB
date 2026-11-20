@@ -164,14 +164,16 @@
   window.addSong=async event=>{
     event?.preventDefault();const title=$("songTitle")?.value.trim(),artist=$("songArtist")?.value.trim(),audio=$("songFileUrl")?.value.trim(),poster=$("songPoster")?.value.trim()||null;
     if(!title||!audio)return toast("Song title and authorised audio URL are required.");
+    let audioUrl,posterUrl=null;
+    try{audioUrl=new URL(audio);if(audioUrl.protocol!=="https:")throw new Error();if(poster){posterUrl=new URL(poster);if(posterUrl.protocol!=="https:")throw new Error();}}catch(_){return toast("Use valid HTTPS audio and poster URLs.");}
     const button=event?.currentTarget?.querySelector('[type="submit"]');if(button)button.disabled=true;
-    try{const user=await requireAdmin();const {error}=await db.from("vh_songs").insert({title,artist,audio_url:audio,poster_url:poster,is_published:true,created_by:user.id});if(error)throw error;
-      event.currentTarget.reset();toast("Song added.");await loadSongs();}
+    try{const user=await requireAdmin();const {error}=await db.from("vh_songs").insert({title,artist,audio_url:audioUrl.href,poster_url:posterUrl?.href||null,is_published:true,created_by:user.id});if(error)throw error;
+      event.currentTarget.reset();toast("Song added.");await loadSongs();await window.refreshSongLibrary?.();}
     catch(e){toast(e.message||"Song could not be added.");}finally{if(button)button.disabled=false;}
   };
   window.deleteSong=async id=>{
     if(!window.confirm("Delete this song?"))return;
-    try{await requireAdmin();const {error}=await db.from("vh_songs").delete().eq("id",id);if(error)throw error;toast("Song deleted.");await loadSongs();}
+    try{await requireAdmin();const {error}=await db.from("vh_songs").delete().eq("id",id);if(error)throw error;toast("Song deleted.");await loadSongs();await window.refreshSongLibrary?.();}
     catch(e){toast(e.message||"Delete failed.");}
   };
 
