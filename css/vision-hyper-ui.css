@@ -325,6 +325,11 @@ body.vh-movie-detail-open #vhAppSidebar .vh-sidebar-button.active::before{left:0
  #app>.page,#app>.footer{width:calc(100% - 112px)!important;margin-left:96px!important;margin-right:16px!important}
  .vh-sidebar{left:8px;width:74px}
  .vh-sidebar:hover,.vh-sidebar:focus-within{width:210px}
+ .vh-sidebar-brand-copy,.vh-sidebar-section-label,.vh-sidebar-button span,.vh-sidebar-footer>span:last-child{opacity:0}
+ .vh-sidebar:hover .vh-sidebar-brand-copy,.vh-sidebar:focus-within .vh-sidebar-brand-copy,
+ .vh-sidebar:hover .vh-sidebar-section-label,.vh-sidebar:focus-within .vh-sidebar-section-label,
+ .vh-sidebar:hover .vh-sidebar-button span,.vh-sidebar:focus-within .vh-sidebar-button span,
+ .vh-sidebar:hover .vh-sidebar-footer>span:last-child,.vh-sidebar:focus-within .vh-sidebar-footer>span:last-child{opacity:1}
  .navbar .nav-links{max-width:55vw}
 }
 @media(max-width:760px){
