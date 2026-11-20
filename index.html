@@ -880,6 +880,12 @@
                 <h4>📅 Monthly Traffic Activity</h4>
                 <div id="monthlyChart" class="bar-chart"></div>
               </div>
+              <div class="report-card vh-adsense-report">
+                <h4>💰 AdSense Revenue (Live API)</h4>
+                <p>Real earnings from Google AdSense. No estimated or invented values are shown.</p>
+                <button type="button" class="btn-primary" onclick="loadAdSenseRevenue()">Refresh last 7 days</button>
+                <div id="adsenseRevenueList" role="status">Connect AdSense reporting credentials in Cloudflare Pages to load earnings.</div>
+              </div>
             </div>
           </div>
 
@@ -1064,6 +1070,7 @@
                 <button type="button" class="btn-primary" onclick="setupTelegramBotWebhook()">Connect / Refresh Bot Webhook</button>
                 <p id="telegramBotSetupStatus" role="status">Webhook not checked yet.</p>
                 <small>Commands: /start, /help, /latest, /request, /channel and admin-only /status.</small>
+                <p><strong>AdSense reporting secrets:</strong> ADSENSE_CLIENT_ID, ADSENSE_CLIENT_SECRET, ADSENSE_REFRESH_TOKEN, ADSENSE_ACCOUNT_ID. Use the read-only AdSense OAuth scope. Publisher ID for ads.txt: ADSENSE_PUBLISHER_ID.</p>
               </section>
               <div class="form-group">
                 <label>SEO Meta Description</label>
