@@ -139,13 +139,13 @@
     const sidebar=document.getElementById("vhAppSidebar");
     sidebar?.setAttribute("aria-expanded",expanded?"true":"false");
   }
-  function scheduleSidebarCollapse(delay=5000){
+  function scheduleSidebarCollapse(delay=3000){
     clearSidebarCollapse();
     if(mobileQuery()||document.hidden)return;
     sidebarCollapseTimer=setTimeout(()=>{
       const sidebar=document.getElementById("vhAppSidebar");
       if(sidebar?.contains(document.activeElement)){
-        scheduleSidebarCollapse(5000);
+        scheduleSidebarCollapse(3000);
         return;
       }
       setSidebarExpanded(false);
@@ -154,7 +154,7 @@
   function revealSidebar(){
     if(mobileQuery())return;
     setSidebarExpanded(true);
-    scheduleSidebarCollapse(5000);
+    scheduleSidebarCollapse(3000);
   }
   function bindDesktopSidebar(){
     const sidebar=document.getElementById("vhAppSidebar");if(!sidebar||sidebar.dataset.bound==="1")return;
@@ -163,17 +163,17 @@
     sidebar.addEventListener("pointerenter",revealSidebar,{passive:true});
     sidebar.addEventListener("pointermove",()=>{
       if(!document.body.classList.contains("vh-sidebar-expanded"))setSidebarExpanded(true);
-      scheduleSidebarCollapse(5000);
+      scheduleSidebarCollapse(3000);
     },{passive:true});
     sidebar.addEventListener("pointerdown",revealSidebar,{passive:true});
-    sidebar.addEventListener("pointerleave",()=>scheduleSidebarCollapse(5000),{passive:true});
+    sidebar.addEventListener("pointerleave",()=>scheduleSidebarCollapse(3000),{passive:true});
     sidebar.addEventListener("focusin",()=>{
       clearSidebarCollapse();
       setSidebarExpanded(true);
     });
     sidebar.addEventListener("focusout",()=>{
       requestAnimationFrame(()=>{
-        if(!sidebar.contains(document.activeElement))scheduleSidebarCollapse(5000);
+        if(!sidebar.contains(document.activeElement))scheduleSidebarCollapse(3000);
       });
     });
     sidebar.addEventListener("click",event=>{
@@ -182,15 +182,15 @@
     });
     document.addEventListener("visibilitychange",()=>{
       if(document.hidden)clearSidebarCollapse();
-      else if(!mobileQuery())scheduleSidebarCollapse(5000);
+      else if(!mobileQuery())scheduleSidebarCollapse(3000);
     });
     window.addEventListener("resize",()=>{
       if(mobileQuery()){clearSidebarCollapse();setSidebarExpanded(false);}
-      else scheduleSidebarCollapse(5000);
+      else scheduleSidebarCollapse(3000);
     },{passive:true});
     if(!mobileQuery()){
       setSidebarExpanded(true);
-      scheduleSidebarCollapse(5000);
+      scheduleSidebarCollapse(3000);
     }
   }
   function init(){
