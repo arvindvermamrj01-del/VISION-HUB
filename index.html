@@ -39,6 +39,7 @@
         <a href="#movies" class="nav-link" onclick="showPage('movies')">Movies</a>
         <a href="#series" class="nav-link" onclick="showPage('series')">Web Series</a>
         <a href="#shorts" class="nav-link" onclick="showPage('shorts')">Shorts</a>
+        <a href="#songs" class="nav-link" onclick="showPage('songs')">Songs</a>
         <a href="#watchlist" class="nav-link" onclick="showPage('watchlist')">Watchlist</a>
         <a href="#request" class="nav-link" onclick="showPage('request')">Request Movie</a>
         <a href="#community" class="nav-link" onclick="showPage('community')">Community</a>
@@ -290,6 +291,21 @@
       </div>
       <section class="section">
         <div class="movies-grid" id="shortsGrid"></div>
+      </section>
+    </div>
+
+    <!-- PUBLIC MUSIC LIBRARY -->
+    <div id="page-songs" class="page">
+      <div class="page-header-banner">
+        <h1>🎵 Songs & Music</h1>
+        <p>Listen to authorised music shared by the Vision Hub team</p>
+      </div>
+      <section class="section">
+        <div class="songs-toolbar">
+          <label for="songLibrarySearch">Search songs</label>
+          <input id="songLibrarySearch" type="search" placeholder="Search title or artist…" autocomplete="off"/>
+        </div>
+        <div class="songs-grid" id="songsLibraryGrid"><p>Loading music library…</p></div>
       </section>
     </div>
 
