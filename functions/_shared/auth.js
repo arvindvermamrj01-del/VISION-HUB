@@ -37,9 +37,38 @@ export async function requireUser(request, env) {
   return { user, profile: rows[0] || null, token };
 }
 
+
+export function clientIp(request) {
+  const value = request.headers.get("CF-Connecting-IP") || "unknown";
+  return value.slice(0, 80);
+}
+
+export async function recordSecurityEvent(request, env, eventType, identity = null, extra = {}) {
+  const db = env.VH_SECURITY_DB;
+  if (!db) return null;
+  const path = String(extra.pagePath || new URL(request.url).pathname).split("?")[0].slice(0, 300);
+  const userAgent = String(request.headers.get("user-agent") || "").slice(0, 512);
+  const sessionId = extra.sessionId ? String(extra.sessionId).slice(0, 80) : null;
+  const statement = extra.ignoreDuplicate ? "INSERT OR IGNORE" : "INSERT";
+  return db.prepare(statement + " INTO vh_security_events (event_type,user_id,account_email,user_role,ip_address,user_agent,page_path,session_id) VALUES (?,?,?,?,?,?,?,?)")
+    .bind(
+      String(eventType).slice(0, 64),
+      identity?.user?.id || identity?.id || null,
+      identity?.user?.email || identity?.email || null,
+      identity?.profile?.role || identity?.role || null,
+      clientIp(request),
+      userAgent,
+      path,
+      sessionId
+    ).run();
+}
+
 export async function requireRole(request, env, roles) {
   const identity = await requireUser(request, env);
   if (!identity.profile || !roles.includes(identity.profile.role)) {
+    await recordSecurityEvent(request, env, "unauthorized_admin_access", identity, {
+      pagePath: new URL(request.url).pathname
+    }).catch(() => null);
     throw new Error("You do not have permission to perform this action.");
   }
   return identity;
