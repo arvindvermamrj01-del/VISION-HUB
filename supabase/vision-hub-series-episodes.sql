@@ -41,4 +41,23 @@ create index if not exists vh_content_series_episode_order_idx
   on public.vh_content(parent_series_id,season_number,episode_number)
   where content_type='Episode';
 
+-- Episode uploads use the same private providers and may also use authorised external URLs.
+alter table public.vh_content
+  drop constraint if exists vh_content_storage_provider_check;
+alter table public.vh_content
+  add constraint vh_content_storage_provider_check
+  check (storage_provider in (
+    'supabase','cloudflare_r2','backblaze_b2','terabox','mega','degoo',
+    'google_drive','mediafire','pcloud','box','icedrive','koofr','internxt','telegram','direct'
+  ));
+
+alter table public.vh_media_assets
+  drop constraint if exists vh_media_assets_storage_provider_check;
+alter table public.vh_media_assets
+  add constraint vh_media_assets_storage_provider_check
+  check (storage_provider in (
+    'supabase','cloudflare_r2','backblaze_b2','terabox','mega','degoo',
+    'google_drive','mediafire','pcloud','box','icedrive','koofr','internxt','telegram','direct'
+  ));
+
 commit;
