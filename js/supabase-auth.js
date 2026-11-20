@@ -71,6 +71,7 @@ function showSignedOut() {
   try { sessionStorage.removeItem("vh-admin-secret-session"); } catch (_) {}
   window.VH_ADMIN_SECRET_SESSION_ACTIVE = false;
   window.VH_ADMIN_LOGIN_IN_PROGRESS = false;
+  window.VH_UNAUTHORISED_STAFF_SESSION = false;
 window.VH_IS_ADMIN = false;
 window.VH_ROLE = "guest";
 window.VH_USER_ID = null;
@@ -143,6 +144,7 @@ const secretAdminSession = window.VH_ADMIN_SECRET_SESSION_ACTIVE === true ||
   (() => { try { return sessionStorage.getItem("vh-admin-secret-session") === "1"; } catch (_) { return false; } })();
 if (window.VH_IS_ADMIN && !secretAdminSession) {
   window.VH_REJECTED_STAFF_ROLE = window.VH_ROLE;
+  window.VH_UNAUTHORISED_STAFF_SESSION = true;
   el("userNav")?.classList.add("hidden");
   el("adminNav")?.classList.add("hidden");
   window.dispatchEvent(new Event("vh-auth-state-changed"));
@@ -154,6 +156,7 @@ if (roleBadge) roleBadge.textContent = window.VH_ROLE.replaceAll("_", " ");
 
 if (window.VH_IS_ADMIN) {
   window.VH_REJECTED_STAFF_ROLE = null;
+  window.VH_UNAUTHORISED_STAFF_SESSION = false;
   // Staff accounts use the hidden Secure Admin panel; never display a public account avatar or menu.
   el("userNav")?.classList.add("hidden");
   el("adminNav")?.classList.remove("hidden");
@@ -201,7 +204,7 @@ window.loginUser = async function (event) {
     authSucceeded = true;
     const roleVerified = await showSignedIn(data.user);
     if (!roleVerified) {
-      const staffAccount = ["admin", "sub_admin", "content_editor", "moderator"].includes(window.VH_REJECTED_STAFF_ROLE);
+      const staffAccount = window.VH_UNAUTHORISED_STAFF_SESSION || ["admin", "sub_admin", "content_editor", "moderator"].includes(window.VH_REJECTED_STAFF_ROLE);
       await db.auth.signOut({ scope: "local" });
       showSignedOut();
       msg(staffAccount
