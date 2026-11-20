@@ -1370,110 +1370,83 @@
     </div>
 
     <!-- ===== FULL-PAGE MOVIE DETAIL EXPERIENCE ===== -->
-    <div class="modal-overlay vh-movie-detail-overlay" id="movieModal" onclick="closeModal(event)" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <div class="vh-movie-detail-page" onclick="event.stopPropagation()">
-        <nav class="vh-detail-site-nav" aria-label="Vision Hub navigation">
-          <button type="button" class="vh-detail-brand" onclick="navigateMovieDetail('home')" aria-label="Vision Hub Home">
-            <span class="vh-detail-brand-icon">▶</span><span>VISION <b>HUB</b></span>
-          </button>
-          <div class="vh-detail-navlinks">
-            <button type="button" class="active" onclick="navigateMovieDetail('home')">Home</button>
-            <button type="button" onclick="navigateMovieDetail('movies')">Movies</button>
-            <button type="button" onclick="navigateMovieDetail('series')">Web Series</button>
-            <button type="button" onclick="navigateMovieDetail('series')">TV Shows</button>
-            <button type="button" onclick="navigateMovieDetail('songs')">Songs</button>
-            <button type="button" onclick="navigateMovieDetail('shorts')">Shorts</button>
-            <button type="button" onclick="navigateMovieDetail('request')">Request</button>
+    <div class="modal-overlay" id="movieModal" onclick="closeModal(event)">
+      <div class="modal-box">
+        <button class="modal-close" onclick="closeModalBtn()" aria-label="Close dialog"><i class="fas fa-times"></i></button>
+        <div class="modal-hero" id="modalHero"></div>
+        <div class="modal-body">
+          <div class="modal-left">
+            <img id="modalPoster" src="" alt="Movie Poster" class="modal-poster"/>
           </div>
-          <div class="vh-detail-nav-actions">
-            <button type="button" class="vh-detail-search" onclick="navigateMovieDetail('home');toggleSearch()" aria-label="Search"><i class="fas fa-search"></i></button>
-            <a class="vh-detail-telegram telegram-target-link" href="https://t.me/visionhub_official" target="_blank" rel="noopener" aria-label="Telegram"><i class="fab fa-telegram-plane"></i></a>
-            <button type="button" class="vh-detail-watchlist" onclick="navigateMovieDetail('watchlist')"><i class="fas fa-heart"></i><span>Watchlist</span></button>
-            <button type="button" class="vh-detail-profile" onclick="navigateMovieDetail('profile')" aria-label="Profile"><i class="fas fa-user"></i></button>
+          <div class="modal-right">
+            <h2 id="modalTitle">Movie Title</h2>
+            <div class="modal-meta" id="modalMeta"></div>
+            <div class="cinema-modal-badges" id="cinemaMovieBadges" aria-label="Movie quality and audio details"></div>
+            <p id="modalDesc" class="modal-desc"></p>
+            <div class="modal-detail-row" id="modalDirector"></div>
+            <div class="modal-screenshots" id="modalScreenshots" aria-label="Movie screenshots"></div>
+            <div class="modal-cast" id="modalCast"></div>
+            <div class="modal-actions">
+              <button class="btn-play" id="modalPlayBtn" onclick="playMovie()">
+                <i class="fas fa-play"></i> Watch Now
+              </button>
+              <button class="btn-download" onclick="downloadMovie()">
+                <i class="fas fa-download"></i> Download Options
+              </button>
+              <button class="btn-telegram" onclick="openTelegram()">
+                <i class="fab fa-telegram-plane"></i> Telegram
+              </button>
+              <button class="btn-add-list" id="modalWatchBtn" onclick="toggleWatchlist()">
+                <i class="fas fa-heart"></i> Watchlist
+              </button>
+            </div>
           </div>
-        </nav>
-
-        <main class="vh-detail-page-content">
-          <section class="vh-detail-hero" aria-label="Movie overview">
-            <div class="vh-detail-backdrop" id="vhDetailBackdrop" aria-hidden="true"></div>
-            <div class="vh-detail-hero-shade" aria-hidden="true"></div>
-            <div class="vh-detail-hero-inner">
-              <div class="vh-detail-hero-toolbar">
-                <button type="button" class="vh-detail-back" onclick="closeModalBtn()"><i class="fas fa-arrow-left"></i><span>Back</span></button>
-                <button type="button" class="vh-detail-lights" id="movieLightsToggle" onclick="toggleMovieLights()" aria-pressed="false"><i class="fas fa-lightbulb"></i><span>Lights Off</span></button>
-              </div>
-              <div class="vh-detail-hero-grid">
-                <div class="vh-detail-poster-column">
-                  <button type="button" class="vh-detail-poster-button" onclick="jumpMovieDetail('detailPlaybackPanel')" aria-label="Go to movie player">
-                    <img id="modalPoster" src="" alt="Movie poster" class="modal-poster"/>
-                    <span class="vh-detail-poster-play"><i class="fas fa-play"></i></span>
-                  </button>
-                  <span class="vh-detail-poster-caption"><i class="fas fa-shield-alt"></i> Vision Hub · Published title</span>
-                </div>
-                <div class="vh-detail-overview">
-                  <span class="vh-detail-eyebrow"><i class="fas fa-film"></i> MOVIE DETAILS</span>
-                  <h1 id="modalTitle">Movie Title</h1>
-                  <div class="modal-meta" id="modalMeta"></div>
-                  <div class="cinema-modal-badges" id="cinemaMovieBadges" aria-label="Quality, language and genre"></div>
-                  <p id="modalDesc" class="modal-desc"></p>
-                  <div class="vh-detail-credits">
-                    <div class="modal-cast" id="modalCast"></div>
-                    <div class="modal-detail-row" id="modalDirector"></div>
-                  </div>
-                  <div class="modal-actions vh-detail-actions">
-                    <button class="btn-play" id="modalPlayBtn" onclick="playMovie()"><i class="fas fa-play"></i> Watch Now</button>
-                    <button class="btn-add-list" id="modalWatchBtn" onclick="toggleWatchlist()"><i class="fas fa-heart"></i> Add to Watchlist</button>
-                    <button class="btn-telegram" id="modalShareBtn" type="button" onclick="shareCurrentMovie()"><i class="fas fa-share-alt"></i> Share</button>
-                  </div>
-                </div>
-              </div>
+        </div>
+        <section class="detail-playback-panel" id="detailPlaybackPanel" aria-label="Movie video player">
+          <div class="detail-player-heading">
+            <div><span class="detail-player-kicker">VISION HUB PLAYER</span><h3><i class="fas fa-play-circle"></i> Watch this title</h3></div>
+            <span class="detail-player-status" id="detailPlayerStatus">Choose an available source</span>
+          </div>
+          <div class="detail-player-stage">
+            <video id="detailVideo" controls playsinline preload="metadata" controlsList="nodownload"
+              disablePictureInPicture poster="" aria-label="Movie video player">
+              Your browser does not support HTML video playback.
+            </video>
+            <iframe id="detailPlayerIframe" class="hidden" src="" title="Authorised media preview"
+              allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen
+              referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            <div class="detail-player-empty hidden" id="detailPlayerEmpty" role="status">
+              No verified video source has been published for this title yet.
             </div>
-          </section>
-
-          <section class="vh-detail-content-grid" aria-label="Movie media and options">
-            <div class="vh-detail-main-column">
-              <section class="modal-screenshots vh-detail-screenshots" id="modalScreenshots" aria-label="Movie screenshots"></section>
-              <section class="detail-playback-panel vh-detail-player-panel" id="detailPlaybackPanel" aria-label="Movie video player">
-                <div class="detail-player-heading">
-                  <div><span class="detail-player-kicker">VISION HUB PLAYER</span><h3><i class="fas fa-play-circle"></i> Video Player</h3></div>
-                  <span class="detail-player-status" id="detailPlayerStatus">Choose an available source</span>
-                </div>
-                <div class="detail-player-stage">
-                  <video id="detailVideo" controls playsinline preload="metadata" controlsList="nodownload" disablePictureInPicture poster="" aria-label="Movie video player">Your browser does not support HTML video playback.</video>
-                  <iframe id="detailPlayerIframe" class="hidden" src="" title="Authorised media preview" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
-                  <div class="detail-player-empty hidden" id="detailPlayerEmpty" role="status">No verified video source has been published for this title yet.</div>
-                </div>
-                <div class="detail-player-toolbar">
-                  <label class="detail-quality-control"><span><i class="fas fa-sliders-h"></i> Video quality</span><select id="detailQualitySelect" aria-label="Choose video quality" disabled><option>No verified source</option></select></label>
-                  <label class="detail-subtitle-control hidden" id="detailSubtitleWrap"><span>Subtitles</span><select id="detailPlayerSubtitle" aria-label="Choose subtitles" disabled><option value="-1">Off</option></select></label>
-                  <label class="detail-speed-control" id="detailSpeedWrap"><span>Speed</span><select id="detailPlayerSpeed" aria-label="Playback speed"><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label>
-                  <span class="detail-player-source-note"><i class="fas fa-shield-alt"></i> Verified published sources only</span>
-                </div>
-              </section>
-              <section class="series-episodes-panel hidden" id="seriesEpisodesPanel"><h3>Seasons & Episodes</h3><div id="seriesEpisodesList"></div></section>
-              <div class="trailer-section" id="trailerSection"><h3><i class="fas fa-film"></i> Official Trailer</h3><div class="trailer-embed" id="trailerEmbed"></div></div>
-            </div>
-
-            <aside class="vh-detail-sidebar" aria-label="Movie options">
-              <section class="vh-detail-side-panel vh-detail-download-panel">
-                <div class="vh-detail-side-heading"><h2><i class="fas fa-download"></i> Download Options</h2><span>Verified</span></div>
-                <p class="vh-detail-panel-note">Only the actual video qualities published by Vision Hub are shown.</p>
-                <div class="vh-detail-quick-options" id="vhDetailQuickOptions"><p>Loading available qualities…</p></div>
-                <button type="button" class="vh-detail-all-downloads" id="vhDetailAllDownloads" onclick="downloadMovie()"><i class="fas fa-cloud-download-alt"></i> View all download options</button>
-              </section>
-
-              <section class="vh-detail-side-panel">
-                <div class="vh-detail-side-heading"><h2><i class="fas fa-circle-info"></i> Movie Info</h2></div>
-                <dl class="vh-detail-info-list" id="vhDetailMovieInfo"></dl>
-              </section>
-
-              <section class="vh-detail-related-panel">
-                <div class="vh-detail-side-heading"><h2><i class="fas fa-star"></i> Related Movies</h2><button type="button" onclick="navigateMovieDetail('movies')">View All <i class="fas fa-arrow-right"></i></button></div>
-                <div class="vh-detail-related-grid" id="vhRelatedMoviesGrid"><p>More titles will appear here as they are published.</p></div>
-              </section>
-            </aside>
-          </section>
-        </main>
+          </div>
+          <div class="detail-player-toolbar">
+            <label class="detail-quality-control"><span><i class="fas fa-sliders-h"></i> Video quality</span>
+              <select id="detailQualitySelect" aria-label="Choose video quality" disabled>
+                <option>No verified source</option>
+              </select>
+            </label>
+            <label class="detail-subtitle-control hidden" id="detailSubtitleWrap"><span>Subtitles</span>
+              <select id="detailPlayerSubtitle" aria-label="Choose subtitles" disabled><option value="-1">Off</option></select>
+            </label>
+            <label class="detail-speed-control" id="detailSpeedWrap"><span>Speed</span>
+              <select id="detailPlayerSpeed" aria-label="Playback speed">
+                <option value="0.5">0.5×</option><option value="0.75">0.75×</option>
+                <option value="1" selected>1×</option><option value="1.25">1.25×</option>
+                <option value="1.5">1.5×</option><option value="2">2×</option>
+              </select>
+            </label>
+            <span class="detail-player-source-note"><i class="fas fa-shield-alt"></i> Verified published sources only</span>
+          </div>
+        </section>
+        <section class="series-episodes-panel hidden" id="seriesEpisodesPanel">
+          <h3>Seasons & Episodes</h3>
+          <div id="seriesEpisodesList"></div>
+        </section>
+        <!-- Embedded Trailer -->
+        <div class="trailer-section" id="trailerSection">
+          <h3>🎞️ Official Trailer</h3>
+          <div class="trailer-embed" id="trailerEmbed"></div>
+        </div>
       </div>
     </div>
 
