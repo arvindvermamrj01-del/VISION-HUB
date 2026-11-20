@@ -96,8 +96,8 @@ export async function onRequestPost({ request, env }) {
     return json({ recorded: true });
   } catch (error) {
     const message = error.message || "Activity could not be recorded.";
-    const status = /Authentication|required|session is invalid/i.test(message) ? 401 :
-      /permission/i.test(message) ? 403 : 503;
+    const status = error.status || (/Authentication|required|session is invalid/i.test(message) ? 401 :
+      /permission/i.test(message) ? 403 : 503);
     return json({ error: message }, status);
   }
 }
