@@ -68,7 +68,7 @@
     modal.classList.add("open");modal.setAttribute("aria-hidden","false");
     requestAnimationFrame(()=>{modal.scrollTop=0;if(panel)panel.scrollTop=0;});
     loadDonationHistory();
-    setTimeout(()=>{panel?.scrollTo({top:0,behavior:"instant"});$("donorName")?.focus({preventScroll:true});},30);
+    setTimeout(()=>{if(panel)panel.scrollTop=0;$("donorName")?.focus({preventScroll:true});},30);
   };
   window.closeDonationPanel=event=>{
     if(event&&event.target!==$("donationModal"))return;
