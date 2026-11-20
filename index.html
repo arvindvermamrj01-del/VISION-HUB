@@ -1149,8 +1149,16 @@
                   </div>
                 </div>
                 <div class="form-group">
-                  <label>Authorised Audio URL * <small style="color:var(--text-muted)">(Direct HTTPS MP3 / OGG / WAV link)</small></label>
-                  <input type="url" id="songFileUrl" placeholder="https://cdn.example.com/song.mp3" required autocomplete="off"/>
+                  <label for="songAudioFile">Upload Audio File (B2 / R2 · up to 1 GB)</label>
+                  <input type="file" id="songAudioFile" accept="audio/*"/>
+                </div>
+                <div class="form-group">
+                  <label for="songStorageProvider">Audio Storage Provider</label>
+                  <select id="songStorageProvider"><option value="backblaze_b2">Backblaze B2 (recommended)</option><option value="cloudflare_r2">Cloudflare R2</option></select>
+                </div>
+                <div class="form-group">
+                  <label for="songFileUrl">Or use a direct authorised audio URL (HTTPS)</label>
+                  <input type="url" id="songFileUrl" placeholder="https://cdn.example.com/song.mp3" autocomplete="off"/>
                 </div>
                 <div class="form-group">
                   <label>Poster / Album Art URL <small style="color:var(--text-muted)">(Optional · HTTPS)</small></label>
