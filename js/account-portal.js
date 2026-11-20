@@ -14,7 +14,7 @@
 
   async function saveProfile(event) {
     event.preventDefault();
-    const button = event.currentTarget.querySelector('[type="submit"]');
+    const button = form.querySelector('[type="submit"]');
     const name = $("userProfileName")?.value.trim();
     if (!name) return toast("Display name is required.");
     if (button) button.disabled = true;
@@ -34,6 +34,7 @@
   }
 
   async function changePassword(event) {
+    const form=event.currentTarget;
     event.preventDefault();
     const current = $("userCurrentPassword")?.value || "";
     const next = $("userNewPassword")?.value || "";
@@ -49,7 +50,7 @@
       if (verifyError) throw new Error("Current password is incorrect.");
       const { error } = await db.auth.updateUser({ password: next });
       if (error) throw error;
-      event.currentTarget.reset();
+      form.reset();
       toast("Password changed successfully.");
     } catch (error) {
       toast(error.message || "Password could not be changed.");
