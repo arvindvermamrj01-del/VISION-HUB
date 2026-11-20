@@ -29,7 +29,7 @@ alter table public.vh_feedback enable row level security;
 alter table public.vh_feedback_votes enable row level security;
 revoke all on public.vh_feedback from anon,authenticated;
 revoke all on public.vh_feedback_votes from anon,authenticated;
-grant select,insert,update on public.vh_feedback to authenticated;
+grant select on public.vh_feedback to anon;\ngrant select,insert,update on public.vh_feedback to authenticated;
 grant select,insert on public.vh_feedback_votes to authenticated;
 grant usage,select on sequence public.vh_feedback_id_seq,public.vh_feedback_votes_id_seq to authenticated;
 
