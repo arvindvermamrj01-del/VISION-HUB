@@ -55,6 +55,13 @@
       host.innerHTML=(data||[]).length?(data||[]).map(item=>'<article class="manage-item"><div><strong>S'+String(item.season_number).padStart(2,"0")+' · E'+String(item.episode_number).padStart(2,"0")+' — '+esc(item.title)+'</strong><small>'+esc(item.duration||"Duration not set")+'</small></div><div class="manage-actions"><button type="button" class="btn-primary" onclick="playEpisode('+Number(item.id)+')">Watch</button><button type="button" class="btn-delete" onclick="deleteEpisode('+Number(item.id)+','+Number(seriesId)+')">Delete</button></div></article>').join(""):"<p>No episodes have been published for this series yet.</p>";
     }catch(error){host.textContent=error.message||"Episode list could not be loaded.";}
   }
+  async function notifyTelegramPublish(contentId){
+    try{
+      const {data:{session}}=await db.auth.getSession();if(!session?.access_token)return;
+      const response=await fetch("/api/telegram/notify-publish",{method:"POST",headers:{"Authorization":"Bearer "+session.access_token,"Content-Type":"application/json"},body:JSON.stringify({contentId})});
+      if(!response.ok)console.debug("Telegram episode announcement skipped:",response.status);
+    }catch(error){console.debug("Telegram episode announcement skipped:",error.message);}
+  }
   window.publishEpisode=async event=>{
     event?.preventDefault();
     const form=event?.currentTarget,button=form?.querySelector('[type="submit"]'),status=$("episodePublishStatus");
@@ -93,6 +100,7 @@
         storage_provider:storageProvider,resolution:null,is_primary:true,language:series.language||""
       });
       if(assetError)throw assetError;
+      await notifyTelegramPublish(created.id);
       form?.reset();$("episodeSeasonNumber").value="1";
       if(status)status.textContent="Episode published successfully.";
       toast("Episode published successfully.");
