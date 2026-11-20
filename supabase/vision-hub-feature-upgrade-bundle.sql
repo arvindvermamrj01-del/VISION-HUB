@@ -107,19 +107,10 @@ alter table public.vh_content
   add column if not exists season_number integer,
   add column if not exists episode_number integer;
 
-do $$
-declare c record;
-begin
-  for c in
-    select conname
-    from pg_constraint
-    where conrelid='public.vh_content'::regclass
-      and contype='c'
-      and pg_get_constraintdef(oid) ilike '%content_type%'
-  loop
-    execute format('alter table public.vh_content drop constraint %I',c.conname);
-  end loop;
-end $$;
+-- Replace only the original content-type allow-list constraint.
+-- Do not remove unrelated/custom CHECK constraints that happen to reference content_type.
+alter table public.vh_content
+  drop constraint if exists vh_content_content_type_check;
 
 alter table public.vh_content
   add constraint vh_content_content_type_check
@@ -354,7 +345,7 @@ create index if not exists vh_songs_storage_lookup_idx
 
 -- ===== Align video resolution values with the upload/player options =====
 -- Safely align the media resolution constraint with the Admin upload options.
--- Existing rows and media objects are preserved.
+-- Existing rows and media objects are preserved. The new CHECK is NOT VALID so legacy values do not block deployment; all new/updated rows must use supported values.
 ALTER TABLE public.vh_media_assets
   DROP CONSTRAINT IF EXISTS vh_media_assets_resolution_check;
 
@@ -375,7 +366,7 @@ ALTER TABLE public.vh_media_assets
         '8k'::text
       ]
     )
-  );
+  ) NOT VALID;
 
 
 commit;
