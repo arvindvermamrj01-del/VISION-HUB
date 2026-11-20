@@ -13,6 +13,7 @@
   const apply=value=>{
     const selected=themes[value]?value:"hyperos";
     root.dataset.vhTheme=selected;
+    root.dataset.theme=selected==="light"?"light":"dark";
     root.style.colorScheme=selected==="light"?"light":"dark";
     try{localStorage.setItem(key,selected);}catch(_){}
     document.querySelectorAll("[data-theme-choice]").forEach(button=>{
