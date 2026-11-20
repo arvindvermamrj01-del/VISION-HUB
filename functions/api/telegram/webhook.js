@@ -27,7 +27,7 @@ export async function onRequestPost({ request, env }) {
       await sendMessage(env, chatId,
         "Welcome to Vision Hub.\n\n/start or /help — commands\n/latest — latest published titles\n/search title — search the published catalog\n/genres — browse categories\n/request — submit a title request\n/channel — official community\n/status — admin status\n\nWebsite: " + site);
     } else if (command === "/search") {
-      const query = String(message.text || "").replace(/^\/search(?:@\w+)?/i, "").trim().replace(/[,*%()]/g, " ").slice(0, 80);
+      const query = String(message.text || "").replace(/^\/search(?:@\w+)?/i, "").trim().replace(/[,*%()\\"]/g, " ").slice(0, 80);
       if (query.length < 2) {
         await sendMessage(env, chatId, "Usage: /search movie name");
       } else {
