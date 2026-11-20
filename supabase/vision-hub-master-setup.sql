@@ -197,12 +197,19 @@ create table if not exists public.vh_songs (
   title text not null,
   artist text,
   audio_url text not null,
+  storage_provider text not null default 'direct' check (storage_provider in ('direct','supabase','cloudflare_r2','backblaze_b2')),
+  storage_path text,
   poster_url text,
   is_published boolean not null default false,
   created_at timestamptz not null default now(),
   created_by uuid references auth.users(id) on delete set null
 );
 alter table public.vh_songs add column if not exists poster_url text;
+alter table public.vh_songs add column if not exists storage_provider text not null default 'direct';
+alter table public.vh_songs add column if not exists storage_path text;
+alter table public.vh_songs drop constraint if exists vh_songs_storage_provider_check;
+alter table public.vh_songs add constraint vh_songs_storage_provider_check
+  check (storage_provider in ('direct','supabase','cloudflare_r2','backblaze_b2'));
 alter table public.vh_songs enable row level security;
 drop policy if exists "vh_songs_public_read" on public.vh_songs;
 drop policy if exists "vh_songs_admin_all" on public.vh_songs;
