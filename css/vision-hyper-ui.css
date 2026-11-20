@@ -929,3 +929,178 @@ body.vh-sidebar-expanded #vhAppSidebar .vh-sidebar-toggle{opacity:1}
 .vh-sidebar-button[data-vh-nav="community"] i,.vh-mobile-nav-item[data-vh-page="community"] i{background-image:linear-gradient(145deg,#d0f5aa 0%,#69cb91 48%,#348d88 100%)!important}
 .vh-sidebar-button[data-vh-action="settings"] i,.vh-mobile-nav-item[data-vh-action="settings"] i{background-image:linear-gradient(145deg,#d4d5ff 0%,#918df5 48%,#5d66bd 100%)!important}
 .vh-mobile-nav-item[data-vh-label="Shows"] i{background-image:linear-gradient(145deg,#fff0b3 0%,#f5b45f 48%,#ce765c 100%)!important}
+
+/* Desktop side rail: keep the full navigation aligned within the viewport,
+   with Settings as the final pinned navigation item. */
+@media (min-width:761px) {
+  #vhAppSidebar {
+    bottom:12px;
+    gap:6px;
+    padding:10px 8px 10px;
+  }
+  #vhAppSidebar .vh-sidebar-brand {
+    min-height:43px;
+    padding-top:1px;
+    padding-bottom:5px;
+  }
+  #vhAppSidebar .vh-sidebar-scroll {
+    min-height:0;
+    flex:1 1 auto;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior-y:contain;
+    scrollbar-gutter:stable;
+  }
+  #vhAppSidebar .vh-sidebar-group {
+    display:flex;
+    flex-direction:column;
+    gap:clamp(1px, .35vh, 4px);
+  }
+  #vhAppSidebar .vh-sidebar-button {
+    min-height:clamp(31px, 4.1vh, 40px);
+    flex:0 0 auto;
+  }
+  #vhAppSidebar .vh-sidebar-divider {
+    margin:4px 2px;
+  }
+  #vhAppSidebar .vh-sidebar-group[data-vh-nav-group="personalise"] {
+    position:sticky;
+    bottom:0;
+    z-index:4;
+    margin-top:auto;
+    padding-top:5px;
+    background:linear-gradient(180deg,rgba(8,13,27,.72),rgba(8,13,27,.98) 35%);
+  }
+  #vhAppSidebar>.vh-sidebar-footer {
+    display:none!important;
+  }
+}
+
+/* Mobile login and registration: use the available phone width and safe
+   vertical spacing, while allowing the longer sign-up form to scroll. */
+@media (max-width:760px) {
+  #page-login.active,
+  #page-register.active {
+    min-height:0!important;
+    padding:8px 0 16px;
+    overflow:visible;
+  }
+  #page-login .auth-container,
+  #page-register .auth-container {
+    width:calc(100% - 18px);
+    max-width:460px;
+    min-width:0;
+    margin:8px auto 14px;
+    padding:clamp(14px, 4vw, 20px);
+    border-radius:20px;
+  }
+  #page-login .auth-box,
+  #page-register .auth-box {
+    width:100%;
+    min-width:0;
+  }
+  #page-login .auth-brand,
+  #page-register .auth-brand {
+    margin:0 0 8px;
+    font-size:1rem;
+    line-height:1.3;
+  }
+  #page-login .auth-container h1,
+  #page-register .auth-container h1 {
+    margin:8px 0;
+    font-size:clamp(1.35rem, 5vw, 1.65rem);
+    line-height:1.2;
+    overflow-wrap:anywhere;
+  }
+  #page-login .auth-sub,
+  #page-register .auth-sub {
+    margin:8px 0;
+    font-size:clamp(.75rem, 2.9vw, .84rem);
+    line-height:1.45;
+    overflow-wrap:anywhere;
+  }
+  #page-login .auth-container form,
+  #page-register .auth-container form {
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    gap:7px;
+    width:100%;
+    margin:10px 0;
+  }
+  #page-login .auth-container .form-group,
+  #page-register .auth-container .form-group {
+    width:100%;
+    min-width:0;
+    gap:5px;
+    margin:0 0 7px;
+  }
+  #page-login .auth-container .form-group label,
+  #page-register .auth-container .form-group label {
+    font-size:.78rem;
+    line-height:1.3;
+  }
+  #page-login .auth-container .form-group input,
+  #page-register .auth-container .form-group input {
+    width:100%;
+    min-width:0;
+    min-height:44px;
+    padding:10px 12px;
+    border-radius:11px;
+    font-size:16px;
+  }
+  #page-login .auth-container .form-group small,
+  #page-register .auth-container .form-group small {
+    font-size:.72rem;
+    line-height:1.35;
+  }
+  #page-login .auth-container .btn-primary,
+  #page-register .auth-container .btn-primary,
+  #page-login .auth-container .btn-download {
+    width:100%;
+    min-height:44px;
+    padding:10px 13px;
+    font-size:.84rem;
+  }
+}
+
+@media (max-width:380px) {
+  #page-login .auth-container,
+  #page-register .auth-container {
+    width:calc(100% - 14px);
+    padding:13px 12px;
+    border-radius:18px;
+  }
+  #page-login .auth-container form,
+  #page-register .auth-container form {
+    gap:5px;
+  }
+  #page-login .auth-container .form-group,
+  #page-register .auth-container .form-group {
+    margin-bottom:5px;
+  }
+}
+
+@media (max-width:760px) and (max-height:720px) {
+  #page-login .auth-container,
+  #page-register .auth-container {
+    margin-top:5px;
+    padding-top:12px;
+    padding-bottom:12px;
+  }
+  #page-login .auth-container h1,
+  #page-register .auth-container h1 {
+    margin:6px 0;
+    font-size:1.3rem;
+  }
+  #page-login .auth-sub,
+  #page-register .auth-sub {
+    margin:6px 0;
+    line-height:1.35;
+  }
+  #page-login .auth-container form,
+  #page-register .auth-container form {
+    margin:7px 0;
+    gap:5px;
+  }
+}
+
