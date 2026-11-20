@@ -28,6 +28,8 @@
     document.addEventListener("click",event=>{
       const play=event.target.closest("#modalPlayBtn,#heroPlayBtn,.btn-play");
       if(play)track("play_click",window.VH_CURRENT_CONTENT_ID||null);
+      const download=event.target.closest("[data-vh-download]");
+      if(download)track("download_click",window.VH_CURRENT_CONTENT_ID||null);
     });
   });
   const originalOpen=window.openMovie;
