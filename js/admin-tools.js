@@ -193,6 +193,14 @@
         adsense_slot_home:$("settingAdsSlotHome")?.value.trim()||"",
         adsense_slot_footer:$("settingAdsSlotFooter")?.value.trim()||""
       };
+      const vpa=settings.donation_upi_id;
+      if(vpa&&!/^[A-Za-z0-9._-]{2,128}@[A-Za-z0-9.-]{2,64}$/.test(vpa))throw new Error("Enter a valid UPI ID (example: name@upi).");
+      if(settings.donation_qr_url){let qr;try{qr=new URL(settings.donation_qr_url);}catch(_){throw new Error("Donation QR must be a valid HTTPS image URL.");}if(qr.protocol!=="https:"||qr.username||qr.password)throw new Error("Donation QR must use a public HTTPS URL.");}
+      const publisher=settings.adsense_publisher_id;
+      const homeSlot=settings.adsense_slot_home,footerSlot=settings.adsense_slot_footer;
+      if(publisher&&!/^ca-pub-\\d{10,20}$/.test(publisher))throw new Error("AdSense Publisher ID must look like ca-pub-1234567890123456.");
+      if((homeSlot&&!/^\\d{6,20}$/.test(homeSlot))||(footerSlot&&!/^\\d{6,20}$/.test(footerSlot)))throw new Error("AdSense ad slot IDs must be numeric.");
+      if(settings.ads_enabled==="on"&&(!/^ca-pub-\\d{10,20}$/.test(publisher)||(!homeSlot&&!footerSlot)))throw new Error("To enable ads, enter a valid publisher ID and at least one ad slot ID.");
       const rows=Object.entries(settings).map(([setting_key,setting_value])=>({setting_key,setting_value,updated_by:user.id,updated_at:new Date().toISOString()}));
       const {error}=await db.from("vh_site_settings").upsert(rows,{onConflict:"setting_key"});if(error)throw error;
       window.dispatchEvent(new CustomEvent("vh:site-settings-updated", {detail:settings}));
