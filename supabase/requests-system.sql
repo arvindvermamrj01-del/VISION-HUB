@@ -13,17 +13,27 @@ create table if not exists public.vh_requests (
     check (status in ('pending','approved','declined')),
   created_at timestamptz not null default now(),
   reviewed_at timestamptz,
-  reviewed_by uuid references auth.users(id) on delete set null
+  reviewed_by uuid references auth.users(id) on delete set null,
+  requester_id uuid references auth.users(id) on delete set null
 );
+alter table public.vh_requests
+  add column if not exists requester_id uuid references auth.users(id) on delete set null;
 alter table public.vh_requests enable row level security;
 revoke all on public.vh_requests from anon, authenticated;
 grant insert on public.vh_requests to anon, authenticated;
 grant select, update, delete on public.vh_requests to authenticated;
 grant usage, select on sequence public.vh_requests_id_seq to anon, authenticated;
 drop policy if exists "Visitors can submit pending requests" on public.vh_requests;
-create policy "Visitors can submit pending requests"
-  on public.vh_requests for insert to anon, authenticated
-  with check (status = 'pending' and reviewed_at is null and reviewed_by is null);
+drop policy if exists "vh_requests_public_insert" on public.vh_requests;
+drop policy if exists "Users can submit requests for themselves" on public.vh_requests;
+create policy "vh_requests_public_insert" on public.vh_requests
+  for insert to anon, authenticated
+  with check (
+    status = 'pending'
+    and reviewed_at is null
+    and reviewed_by is null
+    and (requester_id is null or requester_id = (select auth.uid()))
+  );
 drop policy if exists "Admins can view requests" on public.vh_requests;
 create policy "Admins can view requests"
   on public.vh_requests for select to authenticated
