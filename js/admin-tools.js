@@ -146,12 +146,12 @@
     if(!name)return toast("Category name is required.");
     const button=event?.currentTarget?.querySelector('[type="submit"]');if(button)button.disabled=true;
     try{const user=await requireAdmin();const {error}=await db.from("vh_categories").insert({name,description});if(error)throw error;
-      form?.reset();toast("Category saved.");await loadCategories();}
+      form?.reset();toast("Category saved.");await loadCategories();document.dispatchEvent(new Event("visionhub:categories-updated"));}
     catch(e){toast(e.message||"Category could not be saved.");}finally{if(button)button.disabled=false;}
   };
   window.deleteCategory=async id=>{
     if(!window.confirm("Delete this category?"))return;
-    try{await requireAdmin();const {error}=await db.from("vh_categories").delete().eq("id",id);if(error)throw error;toast("Category deleted.");await loadCategories();}
+    try{await requireAdmin();const {error}=await db.from("vh_categories").delete().eq("id",id);if(error)throw error;toast("Category deleted.");await loadCategories();document.dispatchEvent(new Event("visionhub:categories-updated"));}
     catch(e){toast(e.message||"Delete failed.");}
   };
 
