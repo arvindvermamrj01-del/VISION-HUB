@@ -187,7 +187,11 @@
         maintenance_mode:$("settingMaintenance")?.value||"off",
         donation_upi_id:$("settingDonationUpi")?.value.trim()||"",
         donation_display_name:$("settingDonationName")?.value.trim()||"Vision Hub",
-        donation_qr_url:$("settingDonationQr")?.value.trim()||""
+        donation_qr_url:$("settingDonationQr")?.value.trim()||"",
+        ads_enabled:$("settingAdsEnabled")?.value||"off",
+        adsense_publisher_id:$("settingAdsPublisher")?.value.trim()||"",
+        adsense_slot_home:$("settingAdsSlotHome")?.value.trim()||"",
+        adsense_slot_footer:$("settingAdsSlotFooter")?.value.trim()||""
       };
       const rows=Object.entries(settings).map(([setting_key,setting_value])=>({setting_key,setting_value,updated_by:user.id,updated_at:new Date().toISOString()}));
       const {error}=await db.from("vh_site_settings").upsert(rows,{onConflict:"setting_key"});if(error)throw error;
@@ -205,6 +209,10 @@
       if($("settingDonationUpi"))$("settingDonationUpi").value=map.donation_upi_id||"";
       if($("settingDonationName"))$("settingDonationName").value=map.donation_display_name||"Vision Hub";
       if($("settingDonationQr"))$("settingDonationQr").value=map.donation_qr_url||"";
+      if($("settingAdsEnabled"))$("settingAdsEnabled").value=map.ads_enabled||"off";
+      if($("settingAdsPublisher"))$("settingAdsPublisher").value=map.adsense_publisher_id||"";
+      if($("settingAdsSlotHome"))$("settingAdsSlotHome").value=map.adsense_slot_home||"";
+      if($("settingAdsSlotFooter"))$("settingAdsSlotFooter").value=map.adsense_slot_footer||"";
     }catch(e){console.warn("Site settings not loaded:",e.message);}
   }
 
