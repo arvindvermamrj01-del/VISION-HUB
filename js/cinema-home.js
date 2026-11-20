@@ -252,6 +252,12 @@
       searchTerm = safeText(event.target.value).toLowerCase();
       renderCatalog();
     });
+    document.addEventListener("keydown", event => {
+      if (event.key === "/" && !/^(INPUT|TEXTAREA|SELECT)$/.test(event.target?.tagName || "")) {
+        event.preventDefault();
+        $("cinemaQuickSearch")?.focus();
+      }
+    });
     document.querySelectorAll("[data-cinema-category]").forEach(button => {
       button.addEventListener("click", () => setCategory(button.dataset.cinemaCategory));
     });
