@@ -31,8 +31,38 @@ alter table public.vh_content
   add constraint vh_content_episode_metadata_check
   check (
     content_type <> 'Episode'
-    or (parent_series_id is not null and season_number >= 1 and episode_number >= 1)
+    or (
+      parent_series_id is not null
+      and season_number is not null and season_number >= 1
+      and episode_number is not null and episode_number >= 1
+    )
   );
+
+create or replace function public.vh_validate_episode_parent()
+returns trigger
+language plpgsql
+set search_path = ''
+as $
+declare
+  v_parent_type text;
+begin
+  if new.content_type = 'Episode' then
+    select content_type into v_parent_type
+    from public.vh_content
+    where id = new.parent_series_id;
+    if v_parent_type is distinct from 'Web Series' then
+      raise exception 'Episode parent must be an existing Web Series.';
+    end if;
+  end if;
+  return new;
+end;
+$;
+
+drop trigger if exists vh_validate_episode_parent_trigger on public.vh_content;
+create trigger vh_validate_episode_parent_trigger
+before insert or update of content_type,parent_series_id
+on public.vh_content
+for each row execute function public.vh_validate_episode_parent();
 
 create unique index if not exists vh_content_series_episode_unique
   on public.vh_content(parent_series_id,season_number,episode_number)
