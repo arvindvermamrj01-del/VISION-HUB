@@ -820,11 +820,14 @@
     const playButton=$("modalPlayBtn");
     if(playButton){
       playButton.onclick=()=>{
-        $("detailVideo")?.pause();
-        $("movieModal")?.classList.remove("open");
-        $("playerTitle").textContent="▶ "+item.title;
-        $("playerOverlay")?.classList.add("open");
-        ensurePlayerQualityControl(item);
+        const panel=$("detailPlaybackPanel");
+        panel?.scrollIntoView({behavior:"smooth",block:"start"});
+        if(activeVideo&&typeof activeVideo.play==="function"){
+          const playback=activeVideo.play();
+          playback?.catch(()=>{});
+        }else if(!((item.media_assets||[]).some(asset=>asset?.url&&(!asset.asset_type||asset.asset_type==="video"))||item.video_url)){
+          toast("No verified video source has been published for this title yet.");
+        }
       };
     }
     const downloadButton=document.querySelector("#movieModal .btn-download");
