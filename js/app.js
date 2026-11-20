@@ -13,7 +13,7 @@ const progressStorageKey=(id,userId=window.VH_USER_ID)=>window.VH_ACCOUNT_DATA?.
 function toast(msg){const el=$("toast");if(!el)return;el.textContent=msg;el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("show"),2800)}
 function card(m){
 const poster=m.poster?'<img loading="lazy" src="'+safe(m.poster)+'" alt="'+safe(m.title)+' poster" onerror="this.replaceWith(Object.assign(document.createElement(\'div\'),{className:\'poster-empty\',textContent:\'Poster unavailable\'}))">':'<div class="poster-empty">Poster unavailable</div>';
-const meta=[m.year,m.genre,m.rating?'★ '+m.rating:''].filter(Boolean).join(' · ');
+const meta=[m.year,m.genre,m.rating?'★ '+m.rating:'',m.view_count?'🔥 '+Number(m.view_count).toLocaleString('en-IN')+' views':''].filter(Boolean).join(' · ');
 return '<article class="movie-card"><button class="poster-button" onclick="openMovie(&quot;'+safe(m.id)+'&quot;)" aria-label="View '+safe(m.title)+'">'+poster+'<span class="poster-play"><i class="fas fa-play"></i></span></button><div class="movie-info"><h3>'+safe(m.title)+'</h3><p>'+safe(meta)+'</p><div class="card-actions"><button onclick="openMovie(&quot;'+safe(m.id)+'&quot;)">Details</button><button onclick="toggleItem(&quot;'+safe(m.id)+'&quot;)" aria-label="Add to watchlist">♡</button></div></div></article>';
 }
 function grid(id,items){const el=$(id);if(el)el.innerHTML=items.length?items.map(card).join(""):'<div class="empty-state"><h3>No titles found</h3><p>Try another filter or search.</p></div>'}
@@ -45,7 +45,7 @@ async function loadPopularContent(){
  try{
   const {data:ranked,error}=await db.rpc("vh_get_popular_content",{p_limit:6});
   if(error)throw error;
-  const items=(ranked||[]).map(row=>data.find(item=>item.isSupabaseContent&&Number(item.id)===Number(row.content_id))).filter(Boolean);
+  const items=(ranked||[]).map(row=>{const item=data.find(item=>item.isSupabaseContent&&Number(item.id)===Number(row.content_id));return item?{...item,view_count:Number(row.view_count)||0}:null;}).filter(Boolean);
   if(!items.length){section.classList.add("hidden");return;}
   grid("popularGrid",items);
   section.classList.remove("hidden");
