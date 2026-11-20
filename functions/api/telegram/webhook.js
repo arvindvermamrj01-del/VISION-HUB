@@ -25,7 +25,7 @@ export async function onRequestPost({ request, env }) {
     const site = "https://vision-hub-bat.pages.dev";
     if (command === "/start" || command === "/help") {
       await sendMessage(env, chatId,
-        "Welcome to Vision Hub.\n\n/start or /help — commands\n/latest — latest published titles\n/request — submit a title request\n/channel — official community\n\nWebsite: " + site);
+        "Welcome to Vision Hub.\n\n/start or /help — commands\n/latest — latest published titles\n/search title — search the published catalog\n/genres — browse categories\n/request — submit a title request\n/channel — official community\n/status — admin status\n\nWebsite: " + site);
     } else if (command === "/search") {
       const query = String(message.text || "").replace(/^\\/search(?:@\\w+)?/i, "").trim().replace(/[,*%()]/g, " ").slice(0, 80);
       if (query.length < 2) {
@@ -37,8 +37,8 @@ export async function onRequestPost({ request, env }) {
         const response = await fetch(url, { headers: supabaseAdminHeaders(env) });
         if (!response.ok) throw new Error("Catalog search is temporarily unavailable.");
         const rows = await response.json();
-        const list = rows.length ? rows.map((item, index) => (index + 1) + ". " + item.title + " (" + item.content_type + (item.release_year ? ", " + item.release_year : "") + ")").join("\\n") : "No matching published titles found.";
-        await sendMessage(env, chatId, "Search results for: " + query + "\\n" + list + "\\n\\n" + site);
+        const list = rows.length ? rows.map((item, index) => (index + 1) + ". " + item.title + " (" + item.content_type + (item.release_year ? ", " + item.release_year : "") + ")").join("\n") : "No matching published titles found.";
+        await sendMessage(env, chatId, "Search results for: " + query + "\n" + list + "\n\n" + site);
       }
     } else if (command === "/genres") {
       if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) throw new Error("Catalog service is not configured.");
@@ -47,7 +47,7 @@ export async function onRequestPost({ request, env }) {
       const response = await fetch(url, { headers: supabaseAdminHeaders(env) });
       if (!response.ok) throw new Error("Categories could not be loaded.");
       const rows = await response.json();
-      await sendMessage(env, chatId, rows.length ? "Browse genres and categories:\\n" + rows.map(item => "• " + item.name).join("\\n") + "\\n\\n" + site : "No categories are published yet.");
+      await sendMessage(env, chatId, rows.length ? "Browse genres and categories:\n" + rows.map(item => "• " + item.name).join("\n") + "\n\n" + site : "No categories are published yet.");
     } else if (command === "/request") {
       await sendMessage(env, chatId, "Submit a movie or series request here: " + site + "/#request");
     } else if (command === "/channel") {
