@@ -22,7 +22,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link rel="stylesheet" href="css/style.css?v=20261120-5"/>
-  <link rel="stylesheet" href="css/vision-hyper-ui.css?v=20261120-10"/>
+  <link rel="stylesheet" href="css/vision-hyper-ui.css?v=20261120-11"/>
   <link rel="stylesheet" href="css/cinema4u-layout.css?v=20261120-6"/>
 </head>
 <body>
@@ -102,26 +102,31 @@
       <div class="vh-sidebar-brand">
         <span class="vh-sidebar-brand-icon" aria-hidden="true"><i class="fas fa-play"></i></span>
         <span class="vh-sidebar-brand-copy"><strong>VISION HUB</strong><small>DISCOVER MORE</small></span>
-        
       </div>
       <div class="vh-sidebar-scroll">
-        <div class="vh-sidebar-section-label">EXPLORE</div>
-        <button type="button" class="vh-sidebar-button active" data-vh-nav="home" title="Home" aria-label="Home"><i class="fas fa-house"></i><span>Home</span></button>
-        <button type="button" class="vh-sidebar-button" data-vh-nav="movies" title="Movies" aria-label="Movies"><i class="fas fa-clapperboard"></i><span>Movies</span></button>
-        <button type="button" class="vh-sidebar-button" data-vh-nav="series" title="Web Series" aria-label="Web Series"><i class="fas fa-tv"></i><span>Web Series</span></button>
-        <button type="button" class="vh-sidebar-button" data-vh-nav="series" data-vh-label="Shows" title="Shows" aria-label="Shows"><i class="fas fa-star"></i><span>Shows</span></button>
-        <button type="button" class="vh-sidebar-button" data-vh-nav="songs" title="Songs" aria-label="Songs"><i class="fas fa-music"></i><span>Songs</span></button>
-        <button type="button" class="vh-sidebar-button" data-vh-nav="shorts" title="Shorts" aria-label="Shorts"><i class="fas fa-bolt"></i><span>Shorts</span></button>
-        <button type="button" class="vh-sidebar-button" data-vh-nav="watchlist" title="Watchlist" aria-label="Watchlist"><i class="fas fa-bookmark"></i><span>Watchlist</span></button>
+        <div class="vh-sidebar-group" data-vh-nav-group="explore">
+          <div class="vh-sidebar-section-label">EXPLORE</div>
+          <button type="button" class="vh-sidebar-button active" data-vh-nav="home" title="Home" aria-label="Home"><i class="fas fa-house"></i><span>Home</span></button>
+          <button type="button" class="vh-sidebar-button" data-vh-nav="movies" title="Movies" aria-label="Movies"><i class="fas fa-clapperboard"></i><span>Movies</span></button>
+          <button type="button" class="vh-sidebar-button" data-vh-nav="series" title="Web Series" aria-label="Web Series"><i class="fas fa-tv"></i><span>Web Series</span></button>
+          <button type="button" class="vh-sidebar-button" data-vh-nav="series" data-vh-label="Shows" title="Shows" aria-label="Shows"><i class="fas fa-star"></i><span>Shows</span></button>
+          <button type="button" class="vh-sidebar-button" data-vh-nav="songs" title="Songs" aria-label="Songs"><i class="fas fa-music"></i><span>Songs</span></button>
+          <button type="button" class="vh-sidebar-button" data-vh-nav="shorts" title="Shorts" aria-label="Shorts"><i class="fas fa-bolt"></i><span>Shorts</span></button>
+          <button type="button" class="vh-sidebar-button" data-vh-nav="watchlist" title="Watchlist" aria-label="Watchlist"><i class="fas fa-bookmark"></i><span>Watchlist</span></button>
+        </div>
         <div class="vh-sidebar-divider"></div>
-        <div class="vh-sidebar-section-label">COMMUNITY</div>
-        <button type="button" class="vh-sidebar-button" data-vh-nav="request" title="Request" aria-label="Request"><i class="fas fa-paper-plane"></i><span>Request</span></button>
-        <button type="button" class="vh-sidebar-button vh-sidebar-donate" data-vh-action="donate" title="Donate" aria-label="Donate"><i class="fas fa-heart"></i><span>Donate</span></button>
-        <button type="button" class="vh-sidebar-button" data-vh-nav="feedback" title="Feedback" aria-label="Feedback"><i class="fas fa-comment-dots"></i><span>Feedback</span></button>
-        <button type="button" class="vh-sidebar-button" data-vh-nav="community" title="Community" aria-label="Community"><i class="fas fa-users"></i><span>Community</span></button>
+        <div class="vh-sidebar-group" data-vh-nav-group="community">
+          <div class="vh-sidebar-section-label">COMMUNITY</div>
+          <button type="button" class="vh-sidebar-button" data-vh-nav="request" title="Request Content" aria-label="Request Content"><i class="fas fa-paper-plane"></i><span>Request Content</span></button>
+          <button type="button" class="vh-sidebar-button vh-sidebar-donate" data-vh-action="donate" title="Donation" aria-label="Donation"><i class="fas fa-heart"></i><span>Donation</span></button>
+          <button type="button" class="vh-sidebar-button" data-vh-nav="feedback" title="Feedback &amp; Support" aria-label="Feedback and Support"><i class="fas fa-comment-dots"></i><span>Feedback &amp; Support</span></button>
+          <button type="button" class="vh-sidebar-button" data-vh-nav="community" title="Vision Hub Community" aria-label="Vision Hub Community"><i class="fas fa-users"></i><span>Vision Hub Community</span></button>
+        </div>
         <div class="vh-sidebar-divider"></div>
-        <div class="vh-sidebar-section-label">PERSONALISE</div>
-        <button type="button" class="vh-sidebar-button" data-vh-action="settings" title="Settings & Themes" aria-label="Settings and themes"><i class="fas fa-gear"></i><span>Settings</span></button>
+        <div class="vh-sidebar-group" data-vh-nav-group="personalise">
+          <div class="vh-sidebar-section-label">PERSONALISE</div>
+          <button type="button" class="vh-sidebar-button" data-vh-action="settings" title="Settings" aria-label="Settings"><i class="fas fa-gear"></i><span>Settings</span></button>
+        </div>
       </div>
       <div class="vh-sidebar-footer"><span class="vh-sidebar-status-dot"></span><span>YOUR ENTERTAINMENT SPACE</span></div>
     </nav>
@@ -1373,8 +1378,11 @@
     <!-- ===== FULL-PAGE MOVIE DETAIL EXPERIENCE ===== -->
     <div class="modal-overlay" id="movieModal" onclick="closeModal(event)">
       <div class="modal-box">
+        <button type="button" id="vhMovieDetailsToggle" class="vh-movie-details-toggle" aria-expanded="true" aria-label="Minimise movie details" title="Minimise movie details" onclick="toggleMovieDetails()"><i class="fas fa-compress-alt"></i></button>
+
         <button class="modal-close" onclick="closeModalBtn()" aria-label="Close dialog"><i class="fas fa-times"></i></button>
         <div class="modal-hero" id="modalHero"></div>
+        <div class="vh-movie-compact-head" id="vhMovieCompactHead"><span class="vh-movie-compact-poster" id="vhMovieCompactPoster"></span><strong id="vhMovieCompactTitle">Movie details</strong><span class="vh-movie-compact-hint">Details minimised</span></div>
         <div class="modal-body">
           <div class="modal-left">
             <img id="modalPoster" src="" alt="Movie Poster" class="modal-poster"/>
@@ -1639,9 +1647,9 @@
 <script src="js/supabase-auth.js?v=20261120-2"></script>
 <script src="js/account-data.js"></script>
 <script src="js/account-portal.js"></script>
-<script src="js/app.js?v=20261120-7"></script>
+<script src="js/app.js?v=20261120-8"></script>
 <script src="js/analytics.js"></script>
-<script src="js/content-admin.js?v=20261120-9"></script>
+<script src="js/content-admin.js?v=20261120-10"></script>
 <script src="js/storage-manager.js?v=20261120-2"></script>
 <script src="js/request-manager.js"></script>
 <script src="js/admin-tools.js"></script>
@@ -1654,7 +1662,7 @@
 <script src="js/episode-manager.js"></script>
 <script src="js/song-library.js"></script>
 <script src="js/community.js"></script>
-<script src="js/experience-ui.js?v=20261120-6"></script>
+<script src="js/experience-ui.js?v=20261120-7"></script>
 <script src="js/cinema-home.js?v=20261120-3"></script>
 </body>
 </html>
