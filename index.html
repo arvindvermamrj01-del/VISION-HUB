@@ -961,7 +961,7 @@
                 <h4>💰 AdSense Revenue (Live API)</h4>
                 <p>Real earnings from Google AdSense. No estimated or invented values are shown.</p>
                 <button type="button" class="btn-primary" onclick="loadAdSenseRevenue()">Refresh last 7 days</button>
-                <div id="adsenseRevenueList" role="status">Connect AdSense reporting credentials in Cloudflare Pages to load earnings.</div>
+                <div id="adsenseRevenueList" role="status">For earnings reports, set ADSENSE_CLIENT_ID, ADSENSE_CLIENT_SECRET, ADSENSE_REFRESH_TOKEN and ADSENSE_ACCOUNT_ID (accounts/pub-...) in Cloudflare Pages. Enable the AdSense Management API in Google Cloud.</div>
               </div>
             </div>
           </div>
@@ -1170,7 +1170,7 @@
               <div class="form-group">
                 <label>Google AdSense</label>
                 <select id="settingAdsEnabled"><option value="off">Ads disabled</option><option value="on">Enable ads after approval</option></select>
-                <small>Enable only after AdSense approves the site, you have valid ad unit slots, and all published media is owned or licensed. Never click your own ads. Also set ADSENSE_PUBLISHER_ID in Cloudflare Pages so /ads.txt can be generated.</small>
+                <small>Enable only after Google approves the site, you have valid ad unit slots, and all published media is owned or licensed. Never click your own ads. The /ads.txt route reads the publisher ID saved below.</small>
                 <p><a href="https://www.google.com/adsense/" target="_blank" rel="noopener noreferrer">Open Google AdSense account and earnings reports</a></p>
               </div>
               <div class="form-group">
