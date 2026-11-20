@@ -60,6 +60,7 @@
     const page=button.dataset.vhPage,action=button.dataset.vhAction;
     if(mobileQuery()){
       try{button.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});}catch(_){}
+      pauseAutoSlide(1400);
     }else if(button.classList.contains("vh-sidebar-button")){
       animateReorder(button.closest("[data-vh-nav-group]"),button);
     }
@@ -68,16 +69,26 @@
     if(page){
       if(document.getElementById("movieModal")?.classList.contains("open"))window.closeModalBtn?.();
       window.showPage?.(page);sync(page);
+      if(mobileQuery())startAutoSlide(1800);
+    }else if(mobileQuery()){
+      startAutoSlide(1800);
     }
   }
   function createDock(){
     if(document.querySelector(".vh-mobile-dock"))return;
     const dock=document.createElement("nav");dock.className="vh-mobile-dock";dock.setAttribute("aria-label","All Vision Hub sections");
     items.forEach(item=>dock.appendChild(makeButton(item)));
+    dock.addEventListener("pointerdown",()=>pauseAutoSlide(5200),{passive:true});
+    dock.addEventListener("wheel",()=>pauseAutoSlide(5200),{passive:true});
+    dock.addEventListener("focusin",()=>pauseAutoSlide(5200));
+    dock.addEventListener("mouseenter",()=>pauseAutoSlide(5200));
+    dock.addEventListener("mouseleave",()=>startAutoSlide(1800));
     dock.addEventListener("click",event=>{
       const button=event.target.closest("button[data-vh-page],button[data-vh-action]");
       if(button)execute(button);
     });
+    document.addEventListener("visibilitychange",()=>{if(document.hidden)clearAutoSlide();else startAutoSlide(1800);});
+    window.addEventListener("resize",()=>{if(mobileQuery())startAutoSlide(1800);else clearAutoSlide();});
     document.body.appendChild(dock);
   }
   function bindDesktopSidebar(){
@@ -113,6 +124,7 @@
   }
   function init(){
     createDock();bindDesktopSidebar();
+    if(mobileQuery())startAutoSlide(3200);
     document.addEventListener("visionhub:page-changed",event=>sync(event.detail?.name||"home"));
     window.addEventListener("hashchange",()=>sync(location.hash.replace(/^#/,"")||"home"));
     const hash=location.hash.replace(/^#/,"");sync(hash.startsWith("movie-")?"home":(hash||"home"));
