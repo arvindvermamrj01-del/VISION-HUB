@@ -306,6 +306,18 @@
     }catch(error){console.error("Content delete failed:",error);toast(error.message||"Could not delete content.");}
   };
 
+  async function notifyTelegramPublish(contentId) {
+    try {
+      const {data:{session}}=await db.auth.getSession();
+      if(!session?.access_token)return;
+      const response=await fetch("/api/telegram/notify-publish",{
+        method:"POST",headers:{"Authorization":"Bearer "+session.access_token,"Content-Type":"application/json"},
+        body:JSON.stringify({contentId})
+      });
+      if(!response.ok)console.debug("Telegram publish announcement skipped:",(await response.json().catch(()=>({}))).error||response.status);
+    }catch(error){console.debug("Telegram publish announcement skipped:",error.message);}
+  }
+
   async function publish(form,type) {
     const user=await requireAdmin();
     const isShort=type==="Short";
@@ -367,6 +379,7 @@
           throw new Error("Media details save nahi hue: "+assetError.message+". Supabase migration check karein.");
         }
       }
+      await notifyTelegramPublish(created.id);
       form?.reset();
       toast(type+" successfully publish ho gaya.");
       await loadPublished();
