@@ -48,6 +48,17 @@
         </a>
 
         <button class="btn-search-toggle" onclick="toggleSearch()" title="Search Movies (Hotkey: /)"><i class="fas fa-search"></i></button>
+        <button class="btn-theme-toggle" id="themeToggle" type="button" onclick="toggleThemePanel()" aria-label="Choose appearance" aria-controls="themePanel" aria-expanded="false" title="Appearance"><i class="fas fa-palette"></i></button>
+        <div class="theme-panel" id="themePanel" role="dialog" aria-label="Choose appearance" aria-hidden="true">
+          <div class="theme-panel-head"><div><strong>Appearance</strong><small>Personalise your Vision Hub</small></div><button type="button" onclick="toggleThemePanel()" aria-label="Close appearance panel">×</button></div>
+          <p class="theme-current">Current style: <strong id="themeCurrentLabel">HyperOS Aurora</strong></p>
+          <div class="theme-options">
+            <button type="button" data-theme-choice="hyperos" aria-pressed="true"><span class="theme-swatch theme-swatch-hyper"></span><span><strong>HyperOS Aurora</strong><small>Soft glass · Aurora glow</small></span><i class="fas fa-check"></i></button>
+            <button type="button" data-theme-choice="coloros" aria-pressed="false"><span class="theme-swatch theme-swatch-color"></span><span><strong>ColorOS Ocean</strong><small>Ocean blue · Smooth surfaces</small></span><i class="fas fa-check"></i></button>
+            <button type="button" data-theme-choice="amoled" aria-pressed="false"><span class="theme-swatch theme-swatch-amoled"></span><span><strong>AMOLED Black</strong><small>Deep black · High contrast</small></span><i class="fas fa-check"></i></button>
+            <button type="button" data-theme-choice="light" aria-pressed="false"><span class="theme-swatch theme-swatch-light"></span><span><strong>Light Glass</strong><small>Bright · Clean · Minimal</small></span><i class="fas fa-check"></i></button>
+          </div>
+        </div>
         
         <!-- Authenticated User Menu (Only for regular users) -->
         <div id="userNav" class="user-nav hidden">
@@ -1289,5 +1300,6 @@
 <script src="js/admin-tools.js"></script>
 <script src="js/maintenance-mode.js"></script>
 <script src="js/public-settings.js"></script>
+<script src="js/theme-manager.js"></script>
 </body>
 </html>
