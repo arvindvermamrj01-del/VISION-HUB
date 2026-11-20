@@ -36,6 +36,7 @@ function populateCatalogFilters(){
 function sortCatalog(items,sort){
  const list=[...items];
  if(sort==="rating")return list.sort((a,b)=>Number(b.rating||0)-Number(a.rating||0)||String(a.title).localeCompare(String(b.title)));
+ if(sort==="popular")return list.sort((a,b)=>Number(b.view_count||0)-Number(a.view_count||0)||Number(b.rating||0)-Number(a.rating||0));
  if(sort==="title")return list.sort((a,b)=>String(a.title).localeCompare(String(b.title)));
  return list.sort((a,b)=>(new Date(b.created_at||0).getTime()-new Date(a.created_at||0).getTime())||Number(b.year||0)-Number(a.year||0)||String(a.title).localeCompare(String(b.title)));
 }
@@ -45,7 +46,7 @@ async function loadPopularContent(){
  try{
   const {data:ranked,error}=await db.rpc("vh_get_popular_content",{p_limit:6});
   if(error)throw error;
-  const items=(ranked||[]).map(row=>{const item=data.find(item=>item.isSupabaseContent&&Number(item.id)===Number(row.content_id));return item?{...item,view_count:Number(row.view_count)||0}:null;}).filter(Boolean);
+  const items=(ranked||[]).map(row=>{const item=data.find(item=>item.isSupabaseContent&&Number(item.id)===Number(row.content_id));if(item)item.view_count=Number(row.view_count)||0;return item||null;}).filter(Boolean);
   if(!items.length){section.classList.add("hidden");return;}
   grid("popularGrid",items);
   section.classList.remove("hidden");
