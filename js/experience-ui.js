@@ -62,7 +62,7 @@
         button.animate([
           {transform:`translate(${dx}px,${dy}px) rotate(${direction*7}deg) scale(.94)`},
           {transform:"translate(0,0) rotate(0deg) scale(1)"}
-        ],{duration:440,easing:"cubic-bezier(.2,.82,.25,1)",fill:"both"});
+        ],{duration:440,easing:"cubic-bezier(.2,.82,.25,1)"});
       }catch(_){}
     });
     reordered.forEach((button,index)=>button.style.setProperty("--vh-orbit-index",String(index)));
