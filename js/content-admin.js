@@ -298,9 +298,10 @@
   window.deletePublishedContent=async id=>{
     if(id==null||!window.confirm("Delete this published item permanently?"))return;
     try{
-      await requireAdmin();
-      const {data:target,error:targetError}=await db.from("vh_content").select("id,content_type").eq("id",id).maybeSingle();
+      const actor=await requireAdmin();
+      const {data:target,error:targetError}=await db.from("vh_content").select("id,content_type,created_by").eq("id",id).maybeSingle();
       if(targetError)throw targetError;if(!target)throw new Error("Content record not found.");
+      if(window.VH_ROLE==="content_editor"&&target.created_by!==actor.id)throw new Error("Content Editors can delete only titles they created.");
       const contentIds=[id];
       if(target.content_type==="Web Series"){
         const {data:episodes,error:episodesError}=await db.from("vh_content").select("id").eq("parent_series_id",id).eq("content_type","Episode");
