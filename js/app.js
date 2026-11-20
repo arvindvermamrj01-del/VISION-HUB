@@ -26,7 +26,7 @@ function fillCatalogSelect(id,values,allLabel){
 }
 function populateCatalogFilters(){
  const items=data.filter(item=>item.type!=="Episode"&&item.type!=="Short");
- const years=[...new Set(items.map(item=>String(item.year||"").trim()).filter(value=>/^\\d{4}$/.test(value)))].sort((a,b)=>Number(b)-Number(a));
+ const years=[...new Set(items.map(item=>String(item.year||"").trim()).filter(value=>/^\d{4}$/.test(value)))].sort((a,b)=>Number(b)-Number(a));
  const languages=[...new Set(items.flatMap(item=>String(item.language||"").split(/[,/]+/).map(value=>value.trim()).filter(Boolean)))].sort((a,b)=>a.localeCompare(b));
  fillCatalogSelect("movieYearFilter",years,"All years");
  fillCatalogSelect("seriesYearFilter",years,"All years");
