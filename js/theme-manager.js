@@ -16,7 +16,7 @@
   const panel=()=>document.getElementById("themePanel");
   const apply=value=>{
     const selected=themes[value]?value:"coloros";
-    root.dataset.vhTheme=selected;
+    root.dataset.vhTheme=themes[selected].theme||selected;
     root.dataset.theme=selected==="light"?"light":"dark";
     root.style.colorScheme=selected==="light"?"light":"dark";
     try{localStorage.setItem(key,selected);}catch(_){}
@@ -28,7 +28,8 @@
     const label=document.getElementById("themeCurrentLabel");
     if(label)label.textContent=themes[selected].label;
     const meta=document.querySelector('meta[name="theme-color"]');
-    if(meta)meta.content=selected==="light"?"#eef3fb":selected==="amoled"?"#000000":selected==="coloros"?"#071b2a":"#0b1020";
+    const themeColors={light:"#eef3fb",amoled:"#000000",coloros:"#071b2a",hyperos:"#0b1020",miuiOneUi:"#141e33",oneui:"#111827",oxygenos:"#10151d",hydrogenos:"#101820"};
+    if(meta)meta.content=themeColors[selected]||"#0b1020";
   };
   window.setVHTheme=apply;
   const isMobile=()=>window.matchMedia?.("(max-width:760px)")?.matches===true;
