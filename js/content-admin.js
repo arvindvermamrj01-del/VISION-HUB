@@ -150,7 +150,7 @@
   window.refreshVisionHubCatalog=loadPublished;
 
   async function loadPublished() {
-    const {data:rows,error}=await db.from("vh_content").select("*").eq("published",true).order("created_at",{ascending:false});
+    const {data:rows,error}=await db.from("vh_content").select("id,title,content_type,video_url,poster_url,genre,language,release_year,rating,description,cast,duration,trailer_url,industry,published,created_at,storage_provider,telegram_url,is_featured,subtitle_tracks,director,screenshots,parent_series_id,season_number,episode_number").eq("published",true).order("created_at",{ascending:false});
     if(error){console.error("Published content load failed:",error);toast("Catalog load failed: "+error.message);return;}
     const ids=(rows||[]).map(row=>row.id).filter(id=>id!=null);
     let assetRows=[];
