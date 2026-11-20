@@ -31,15 +31,49 @@
     if(!valid)setStatus("Configure a valid UPI ID in Admin → Platform Settings before accepting contributions.",true);
     else setStatus("After paying in your UPI app, submit the transaction reference. It will remain pending until manually verified.");
   }
+  let donationScrollY=0;
+  let previousBodyStyles=null;
+  function lockDonationBackground(){
+    const body=document.body;
+    if(previousBodyStyles)return;
+    donationScrollY=window.scrollY||window.pageYOffset||0;
+    previousBodyStyles={
+      position:body.style.position,top:body.style.top,left:body.style.left,right:body.style.right,
+      width:body.style.width,overflow:body.style.overflow,paddingRight:body.style.paddingRight
+    };
+    const scrollbarGap=Math.max(0,window.innerWidth-document.documentElement.clientWidth);
+    body.classList.add("vh-modal-open");
+    body.style.position="fixed";
+    body.style.top="-"+donationScrollY+"px";
+    body.style.left="0";
+    body.style.right="0";
+    body.style.width="100%";
+    body.style.overflow="hidden";
+    if(scrollbarGap)body.style.paddingRight=scrollbarGap+"px";
+  }
+  function unlockDonationBackground(){
+    const body=document.body;
+    body.classList.remove("vh-modal-open");
+    if(!previousBodyStyles)return;
+    Object.entries(previousBodyStyles).forEach(([property,value])=>{body.style[property]=value;});
+    previousBodyStyles=null;
+    window.scrollTo(0,donationScrollY);
+  }
   window.openDonationPanel=()=>{
     const modal=$("donationModal");if(!modal)return;
-    modal.classList.add("open");modal.setAttribute("aria-hidden","false");document.body.classList.add("vh-modal-open");
+    lockDonationBackground();
+    modal.scrollTop=0;
+    const panel=modal.querySelector(".donation-panel");
+    if(panel)panel.scrollTop=0;
+    modal.classList.add("open");modal.setAttribute("aria-hidden","false");
+    requestAnimationFrame(()=>{modal.scrollTop=0;if(panel)panel.scrollTop=0;});
     loadDonationHistory();
-    setTimeout(()=>$("donorName")?.focus(),30);
+    setTimeout(()=>{panel?.scrollTo({top:0,behavior:"instant"});$("donorName")?.focus({preventScroll:true});},30);
   };
   window.closeDonationPanel=event=>{
     if(event&&event.target!==$("donationModal"))return;
-    const modal=$("donationModal");modal?.classList.remove("open");modal?.setAttribute("aria-hidden","true");document.body.classList.remove("vh-modal-open");
+    const modal=$("donationModal");modal?.classList.remove("open");modal?.setAttribute("aria-hidden","true");
+    unlockDonationBackground();
   };
   async function loadSettings(){
     if(!db)return;
