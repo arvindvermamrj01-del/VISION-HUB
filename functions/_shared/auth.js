@@ -63,6 +63,87 @@ export async function recordSecurityEvent(request, env, eventType, identity = nu
     ).run();
 }
 
+
+function base64UrlToBytes(value) {
+  const normalized = String(value || "").replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized + "=".repeat((4 - normalized.length % 4) % 4);
+  const binary = atob(padded);
+  return Uint8Array.from(binary, character => character.charCodeAt(0));
+}
+
+function readCookie(request, name) {
+  const header = request.headers.get("Cookie") || "";
+  for (const item of header.split(";")) {
+    const index = item.indexOf("=");
+    if (index < 0) continue;
+    if (item.slice(0, index).trim() === name) return item.slice(index + 1).trim();
+  }
+  return "";
+}
+
+export async function createAdminSessionCookie(identity, env) {
+  const secret = env.VH_ADMIN_SESSION_SECRET;
+  if (!secret) throw new Error("Secure Admin session signing key is not configured.");
+  const issuedAt = Math.floor(Date.now() / 1000);
+  const claims = {
+    sub: identity.user.id,
+    role: identity.profile.role,
+    iat: issuedAt,
+    exp: issuedAt + 3600,
+    jti: crypto.randomUUID()
+  };
+  const payload = btoa(unescape(encodeURIComponent(JSON.stringify(claims))))
+    .replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
+  const bytes = new Uint8Array(signature);
+  let binary = "";
+  bytes.forEach(byte => { binary += String.fromCharCode(byte); });
+  const value = payload + "." + btoa(binary).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+  return "VH_ADMIN_SESSION=" + value + "; Path=/api; HttpOnly; Secure; SameSite=Strict; Max-Age=3600";
+}
+
+export function clearAdminSessionCookie() {
+  return "VH_ADMIN_SESSION=; Path=/api; HttpOnly; Secure; SameSite=Strict; Max-Age=0";
+}
+
+async function hasValidAdminSession(request, env, identity) {
+  try {
+    if (!env.VH_ADMIN_SESSION_SECRET) return false;
+    const token = readCookie(request, "VH_ADMIN_SESSION");
+    const parts = token.split(".");
+    if (parts.length !== 2) return false;
+    const payload = parts[0];
+    const claims = JSON.parse(new TextDecoder().decode(base64UrlToBytes(payload)));
+    const now = Math.floor(Date.now() / 1000);
+    if (!claims?.sub || claims.sub !== identity.user.id ||
+        claims.role !== identity.profile?.role ||
+        !Number.isFinite(claims.exp) || claims.exp <= now ||
+        !Number.isFinite(claims.iat) || claims.iat > now + 30) return false;
+    const key = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(env.VH_ADMIN_SESSION_SECRET),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["verify"]
+    );
+    return await crypto.subtle.verify(
+      "HMAC",
+      key,
+      base64UrlToBytes(parts[1]),
+      new TextEncoder().encode(payload)
+    );
+  } catch (_) {
+    return false;
+  }
+}
+
 const STAFF_PROTECTED_ROLES = ["admin", "sub_admin", "content_editor", "moderator"];
 
 async function countRecentSecurityFailures(request, env) {
@@ -93,7 +174,9 @@ export async function requireRole(request, env, roles) {
     const failures = await countRecentSecurityFailures(request, env).catch(() => ({ attempts: 0, latest: 0 }));
     if (failures.attempts >= 5 && failures.latest + 1800 > Math.floor(Date.now() / 1000)) {
       await recordSecurityEvent(request, env, "admin_login_blocked", null).catch(() => null);
-      throw new Error("Admin access is temporarily blocked for this IP after repeated failed or unauthorised attempts.");
+      const error = new Error("Admin access is temporarily blocked for this IP after repeated failed or unauthorised attempts.");
+      error.status = 429;
+      throw error;
     }
   }
 
@@ -112,6 +195,12 @@ export async function requireRole(request, env, roles) {
       await recordSecurityEvent(request, env, "unauthorized_admin_access", identity).catch(() => null);
     }
     throw new Error("You do not have permission to perform this action.");
+  }
+  if (protectsStaff && !(await hasValidAdminSession(request, env, identity))) {
+    await recordDeniedStaffAccess(request, env, identity);
+    const error = new Error("Secure Admin panel verification required for this protected action.");
+    error.status = 401;
+    throw error;
   }
   return identity;
 }
