@@ -57,14 +57,29 @@
       const response=await fetch("/api/media/status",{cache:"no-store"});
       const status=await response.json().catch(()=>({}));
       if(!response.ok)throw new Error(status.error||"Storage status unavailable.");
+
+      let b2Verification=null;
+      const {data:{session},error:sessionError}=await db.auth.getSession();
+      if(!sessionError&&session?.access_token){
+        const verifyResponse=await fetch("/api/media/verify-b2",{
+          method:"POST",
+          headers:{"Authorization":"Bearer "+session.access_token},
+          cache:"no-store"
+        });
+        b2Verification=await verifyResponse.json().catch(()=>({}));
+        if(!verifyResponse.ok)b2Verification.verified=false;
+      }
+
       const entries=[
-        ["Backblaze B2",status.backblazeB2?.configured],
-        ["Cloudflare R2",status.cloudflareR2?.configured],
-        ["PixelDrain",status.pixelDrain?.configured]
+        ["Backblaze B2",!!b2Verification?.verified,b2Verification?.verified?"Verified":(b2Verification?.stage==="configuration"?"Not configured":"Not verified")],
+        ["Cloudflare R2",status.cloudflareR2?.configured,status.cloudflareR2?.configured?"Credentials configured":"Not configured"],
+        ["PixelDrain",status.pixelDrain?.configured,status.pixelDrain?.configured?"API key configured":"Not configured"]
       ];
-      const lines=entries.map(([label,ready])=>'<span class="vh-storage-health-item '+(ready?"is-ready":"is-missing")+'"><i class="fas '+(ready?"fa-circle-check":"fa-circle-xmark")+'"></i><b>'+label+'</b><em>'+(ready?"Connected":"Not configured")+'</em></span>').join("");
+      const lines=entries.map(([label,ready,state])=>'<span class="vh-storage-health-item '+(ready?"is-ready":"is-missing")+'"><i class="fas '+(ready?"fa-circle-check":"fa-circle-xmark")+'"></i><b>'+label+'</b><em>'+state+'</em></span>').join("");
       const service=status.supabase?.serviceRoleConfigured;
+      const b2Note=b2Verification?.message||b2Verification?.error||"B2 live access was not verified. Sign in to the Admin panel and reload this section.";
       host.innerHTML='<div class="vh-storage-health-grid">'+lines+'</div><p class="vh-storage-health-note">'+
+        (b2Note?b2Note+" ":"")+
         (service?"Private media signing is configured.":"Supabase service-role key is missing. Private video playback, deletion and signed downloads cannot work until it is set as a Cloudflare Pages secret.")+
         '</p>';
     }catch(error){
