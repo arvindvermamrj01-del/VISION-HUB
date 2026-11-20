@@ -136,6 +136,8 @@ window.loginUser = async function (event) {
     const { data, error } = await db.auth.signInWithPassword({ email, password });
     if (error) throw error;
     await showSignedIn(data.user);
+  window.VHLoginActivity?.record(data.user);
+    window.VHLoginActivity?.record(data.user);
     showPage("home");
     msg("Welcome back to Vision Hub.");
   } catch (error) {
