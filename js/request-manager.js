@@ -50,8 +50,21 @@
     const button = event?.submitter || event?.currentTarget?.querySelector('[type="submit"]');
     if (button) button.disabled = true;
     try {
-      const { error } = await db.from("vh_requests").insert(request);
+      const { data: createdRequest, error } = await db.from("vh_requests").insert(request).select("id").single();
       if (error) throw error;
+      // Notify the admin chat only for authenticated requests; notification failure never blocks submission.
+      if (request.requester_id && createdRequest?.id) {
+        try {
+          const {data:{session}} = await db.auth.getSession();
+          if (session?.access_token) await fetch("/api/telegram/notify-request", {
+            method:"POST",
+            headers:{"Authorization":"Bearer "+session.access_token,"Content-Type":"application/json"},
+            body:JSON.stringify({requestId:createdRequest.id})
+          });
+        } catch (notificationError) {
+          console.debug("Telegram request notification skipped:",notificationError.message);
+        }
+      }
       // Analytics is best-effort: a tracking failure must never undo a successful request.
       db.from("vh_analytics_events").insert({ event_type: "request_submit" })
         .then(({ error: analyticsError }) => {
