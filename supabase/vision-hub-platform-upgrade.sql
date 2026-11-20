@@ -121,7 +121,7 @@ alter table public.vh_media_assets add constraint vh_media_assets_asset_type_che
 alter table public.vh_media_assets drop constraint if exists vh_media_assets_storage_provider_check;
 alter table public.vh_media_assets add constraint vh_media_assets_storage_provider_check
   check (storage_provider in (
-    'supabase','cloudflare_r2','terabox','mega','degoo','google_drive',
+    'supabase','cloudflare_r2','backblaze_b2','terabox','mega','degoo','google_drive',
     'mediafire','pcloud','box','icedrive','koofr','internxt','telegram','direct'
   ));
 
@@ -152,7 +152,7 @@ alter table public.vh_categories
 alter table public.vh_storage_settings drop constraint if exists vh_storage_settings_default_provider_check;
 alter table public.vh_storage_settings add constraint vh_storage_settings_default_provider_check
   check (default_provider in (
-    'supabase','cloudflare_r2','terabox','mega','degoo','google_drive',
+    'supabase','cloudflare_r2','backblaze_b2','terabox','mega','degoo','google_drive',
     'mediafire','pcloud','box','icedrive','koofr','internxt','telegram'
   ));
 
