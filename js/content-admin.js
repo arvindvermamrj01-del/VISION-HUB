@@ -15,6 +15,7 @@
   const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const slug = value => String(value || "media").normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g,"-").replace(/^-+|-+$/g,"").slice(-100) || "media";
   const qualityOrder = ["180p","240p","360p","420p","480p","720p","1080p","2k","4k","8k"];
+  const resolutionLabel=value=>String(value||"Original").replace(/^(\\d)k$/i,"$1K");
   const staffRoles = ["admin","sub_admin","content_editor"];
   const googleDriveFileId = value => {
     const raw=String(value||"").trim();
@@ -445,7 +446,7 @@
     const select=$("vhPlayerQuality");
     const assets=(item.media_assets||[]).filter(asset=>asset.url&&(!asset.asset_type||asset.asset_type==="video"));
     const choices=assets.length?assets:[{resolution:"Original",url:item.video_url,is_primary:true,asset_type:"video"}].filter(x=>x.url);
-    select.innerHTML=choices.map((asset,index)=>'<option value="'+index+'">'+esc(asset.resolution||"Original")+(asset.language?" · "+esc(asset.language):"")+'</option>').join("");
+    select.innerHTML=choices.map((asset,index)=>'<option value="'+index+'">'+esc(resolutionLabel(asset.resolution))+(asset.language?" · "+esc(asset.language):"")+'</option>').join("");
     select.onchange=()=>playAsset(item,choices[Number(select.value)]);
     const preferred=choices.findIndex(asset=>asset.is_primary);
     select.value=String(preferred>=0?preferred:0);
@@ -600,7 +601,7 @@
     if(video.src!==asset.url){video.pause();video.src=asset.url;video.load();}
     activeVideo.play().catch(()=>{});
     const status=$("playerOverlay")?.querySelector(".player-controls span:nth-child(2)");
-    if(status)status.textContent=(asset.resolution||"Original")+(asset.language?" · "+asset.language:"")+" · supplied source";
+    if(status)status.textContent=resolutionLabel(asset.resolution)+(asset.language?" · "+asset.language:"")+" · supplied source";
   }
 
   window.openMovie=function(id){
@@ -643,7 +644,7 @@
     const screenshotHost=$("dlScreenshotSlider"),dots=$("dlSliderDots"),screens=Array.isArray(activeItem.screenshots)?activeItem.screenshots:[];
     if(screenshotHost)screenshotHost.innerHTML=screens.length?screens.map((url,index)=>'<img loading="lazy" src="'+esc(url)+'" alt="'+esc(activeItem.title)+' preview '+(index+1)+'">').join(""):"";
     if(dots)dots.textContent=screens.length?screens.length+" preview image(s)":"";
-    host.innerHTML=choices.length?choices.map((asset,index)=>'<div class="res-card"><div class="res-info"><span class="res-tag">'+esc(asset.resolution||"Original")+'</span><div class="res-meta"><span>'+esc(asset.language||"Language not specified")+'</span><small>Verified source link · actual supplied quality</small></div></div><div class="res-actions"><button class="btn-dl-server" type="button" data-vh-download-index="'+index+'"><i class="fas fa-download"></i> Download file</button></div></div>').join(""):"<p>No verified video resolution links have been added for this title.</p>";
+    host.innerHTML=choices.length?choices.map((asset,index)=>'<div class="res-card"><div class="res-info"><span class="res-tag">'+esc(resolutionLabel(asset.resolution)) +'</span><div class="res-meta"><span>'+esc(asset.language||"Language not specified")+'</span><small>Verified source link · actual supplied quality</small></div></div><div class="res-actions"><button class="btn-dl-server" type="button" data-vh-download-index="'+index+'"><i class="fas fa-download"></i> Download file</button></div></div>').join(""):"<p>No verified video resolution links have been added for this title.</p>";
     host.querySelectorAll("[data-vh-download-index]").forEach(button=>button.addEventListener("click",async()=>{
       const asset=choices[Number(button.dataset.vhDownloadIndex)];if(!asset)return;
       const popup=window.open("about:blank","_blank");if(popup)popup.opener=null;
