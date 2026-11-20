@@ -21,7 +21,7 @@ $$;
 create or replace function public.vh_can_manage_content_item(p_content_id bigint)
 returns boolean language sql stable security definer
 set search_path = ''
-as $$
+as $
   select exists (
     select 1
     from public.profiles p
@@ -29,10 +29,14 @@ as $$
     where p.id = (select auth.uid())
       and (
         p.role in ('admin','sub_admin')
-        or (p.role = 'content_editor' and c.content_type <> 'Short')
+        or (
+          p.role = 'content_editor'
+          and c.content_type <> 'Short'
+          and c.created_by = (select auth.uid())
+        )
       )
   );
-$$;
+$;
 
 revoke all on function public.vh_can_manage_content_item(bigint) from public;
 grant execute on function public.vh_can_manage_content_item(bigint) to authenticated;
@@ -58,23 +62,64 @@ insert into storage.buckets (id, name, public)
 values ('vh-private-media','vh-private-media',false)
 on conflict (id) do update set public = false;
 
+-- Editors may access only objects stored under their own UUID prefix.
+create or replace function public.vh_can_manage_private_media_object(p_object_name text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $
+  select exists (
+    select 1
+    from public.profiles p
+    where p.id = (select auth.uid())
+      and (
+        p.role in ('admin','sub_admin')
+        or (
+          p.role = 'content_editor'
+          and p_object_name like ((select auth.uid())::text || '/%')
+        )
+      )
+  );
+$;
+revoke all on function public.vh_can_manage_private_media_object(text) from public;
+grant execute on function public.vh_can_manage_private_media_object(text) to authenticated;
+
 drop policy if exists "vh_private_media_staff_insert" on storage.objects;
 drop policy if exists "vh_private_media_staff_update" on storage.objects;
 drop policy if exists "vh_private_media_staff_delete" on storage.objects;
 drop policy if exists "vh_private_media_admin_read" on storage.objects;
+
 create policy "vh_private_media_staff_insert" on storage.objects
   for insert to authenticated
-  with check (bucket_id = 'vh-private-media' and public.vh_can_manage_content());
+  with check (
+    bucket_id = 'vh-private-media'
+    and public.vh_can_manage_private_media_object(name)
+  );
 create policy "vh_private_media_staff_update" on storage.objects
   for update to authenticated
-  using (bucket_id = 'vh-private-media' and public.vh_can_manage_content())
-  with check (bucket_id = 'vh-private-media' and public.vh_can_manage_content());
+  using (
+    bucket_id = 'vh-private-media'
+    and public.vh_can_manage_private_media_object(name)
+  )
+  with check (
+    bucket_id = 'vh-private-media'
+    and public.vh_can_manage_private_media_object(name)
+  );
 create policy "vh_private_media_staff_delete" on storage.objects
   for delete to authenticated
-  using (bucket_id = 'vh-private-media' and public.vh_can_manage_content());
+  using (
+    bucket_id = 'vh-private-media'
+    and public.vh_can_manage_private_media_object(name)
+  );
 create policy "vh_private_media_admin_read" on storage.objects
   for select to authenticated
-  using (bucket_id = 'vh-private-media' and public.vh_can_manage_content());
+  using (
+    bucket_id = 'vh-private-media'
+    and public.vh_can_manage_private_media_object(name)
+  );
+
 
 -- Content metadata used by the advanced player.
 alter table public.vh_content
@@ -167,7 +212,11 @@ create policy "vh_content_staff_all" on public.vh_content
       where p.id = (select auth.uid())
         and (
           p.role in ('admin','sub_admin')
-          or (p.role = 'content_editor' and vh_content.content_type <> 'Short')
+          or (
+            p.role = 'content_editor'
+            and vh_content.content_type <> 'Short'
+            and vh_content.created_by = (select auth.uid())
+          )
         )
     )
   )
@@ -177,7 +226,11 @@ create policy "vh_content_staff_all" on public.vh_content
       where p.id = (select auth.uid())
         and (
           p.role in ('admin','sub_admin')
-          or (p.role = 'content_editor' and vh_content.content_type <> 'Short')
+          or (
+            p.role = 'content_editor'
+            and vh_content.content_type <> 'Short'
+            and vh_content.created_by = (select auth.uid())
+          )
         )
     )
   );
