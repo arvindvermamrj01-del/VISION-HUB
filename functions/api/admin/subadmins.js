@@ -5,12 +5,17 @@ const allowedRoles = ["sub_admin", "content_editor", "moderator"];
 export async function onRequestGet({ request, env }) {
   try {
     await requireRole(request, env, ["admin"]);
-    const url = new URL(supabaseBase(env) + "/rest/v1/profiles");
-    url.search = new URLSearchParams({ role: "in.(" + allowedRoles.join(",") + ")", select: "id,fullname,role,created_at", order: "created_at.desc" }).toString();
-    const response = await fetch(url, { headers: supabaseAdminHeaders(env) });
+    const base = supabaseBase(env) + "/rest/v1/profiles";
+    const readTeam = async nameField => {
+      const url = new URL(base);
+      url.search = new URLSearchParams({ role: "in.(" + allowedRoles.join(",") + ")", select: "id," + nameField + ",role,created_at", order: "created_at.desc" }).toString();
+      return fetch(url, { headers: supabaseAdminHeaders(env) });
+    };
+    let response = await readTeam("fullname");
+    if (!response.ok) response = await readTeam("full_name");
     const data = await response.json().catch(() => []);
     if (!response.ok) return json({ error: "Team list could not be loaded." }, 502);
-    return json({ team: data });
+    return json({ team: (data || []).map(profile => ({ ...profile, fullname: profile.fullname || profile.full_name || "" })) });
   } catch (error) {
     return json({ error: error.message || "Admin permission required." }, 403);
   }
@@ -46,11 +51,26 @@ export async function onRequestPost({ request, env }) {
       return json({ error: created.msg || created.message || created.error_description || "Supabase could not create the staff account." }, 502);
     }
     createdUserId = created.id;
-    const profileResponse = await fetch(base + "/rest/v1/profiles?on_conflict=id", {
+    const profileUrl = base + "/rest/v1/profiles?on_conflict=id";
+    const profileHeaders = { ...headers, Prefer: "resolution=merge-duplicates,return=representation" };
+    let profileResponse = await fetch(profileUrl, {
       method: "POST",
-      headers: { ...headers, Prefer: "resolution=merge-duplicates,return=representation" },
+      headers: profileHeaders,
       body: JSON.stringify({ id: createdUserId, fullname: name, role })
     });
+    if (!profileResponse.ok) {
+      const firstError = await profileResponse.text();
+      if (/fullname|PGRST204|42703/i.test(firstError)) {
+        profileResponse = await fetch(profileUrl, {
+          method: "POST",
+          headers: profileHeaders,
+          body: JSON.stringify({ id: createdUserId, full_name: name, role })
+        });
+      } else {
+        // Preserve the provider error below without attempting a second insert.
+        profileResponse = new Response(firstError, { status: 502 });
+      }
+    }
     if (!profileResponse.ok) {
       await fetch(base + "/auth/v1/admin/users/" + createdUserId, { method: "DELETE", headers });
       const detail = await profileResponse.text();
