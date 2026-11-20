@@ -240,11 +240,11 @@ button:active{transform:scale(.975)}
 /* ColorOS Ocean: very soft multi-colour movement, never a flashing or fast animation. */
 :root[data-vh-theme="coloros"] body{
   background-image:
-    radial-gradient(ellipse at 8% -12%,rgba(37,147,193,.19),transparent 38%),
-    radial-gradient(ellipse at 100% 18%,rgba(67,207,177,.11),transparent 32%),
-    radial-gradient(ellipse at 48% 92%,rgba(150,130,220,.065),transparent 42%),
+    radial-gradient(ellipse at 8% -12%,rgba(37,147,193,.23),transparent 38%),
+    radial-gradient(ellipse at 100% 18%,rgba(67,207,177,.15),transparent 32%),
+    radial-gradient(ellipse at 48% 92%,rgba(150,130,220,.10),transparent 42%),
     linear-gradient(145deg,#081824,#0a1b27);
-  background-size:140% 140%,140% 140%,130% 130%,100% 100%;
+  background-size:175% 175%,165% 165%,160% 160%,100% 100%;
   background-position:0% 0%,100% 18%,50% 100%,center;
   background-attachment:fixed;
   animation:vh-ocean-colour-breathe 28s ease-in-out infinite alternate;
