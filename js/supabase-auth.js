@@ -23,6 +23,19 @@ alert(message);
 }
 }
 
+function authErrorMessage(error, flow) {
+  const code = String(error?.code || "").toLowerCase();
+  const raw = String(error?.message || "");
+  if (code === "email_not_confirmed") return "Email verify nahi hua hai. Inbox mein Vision Hub ka confirmation email kholkar pehle email confirm karein.";
+  if (code === "email_address_not_authorized" || code === "over_email_send_rate_limit") return "Public signup email send nahi ho pa raha. Supabase mein custom SMTP configure karna hoga; default mail service aam users ko email bhejne ke liye restricted hai.";
+  if (code === "email_provider_disabled") return "Supabase mein Email provider disabled hai. Auth > Providers mein Email enable karein.";
+  if (code === "email_exists") return "Is email se account pehle se bana hua hai. Sign In ya Forgot Password use karein.";
+  if (code === "weak_password") return "Password Supabase ki security requirements ko meet nahi karta.";
+  if (code === "redirect_to_not_allowed" || /redirect.*not allowed|not allowed.*redirect/i.test(raw)) return "Supabase Auth URL Configuration mein https://vision-hub-bat.pages.dev/** ko Redirect URLs mein add karein.";
+  if (code === "invalid_credentials" && flow === "login") return "Email ya password galat hai, ya account email abhi confirm nahi hua hai.";
+  return raw || (flow === "signup" ? "Account create nahi ho paya." : "Sign-in nahi ho paya.");
+}
+
 function showPage(id) {
   // Use the site's own page router so .active and .hidden never conflict.
   const pageName = String(id || "").replace(/^page-/, "");
@@ -69,6 +82,12 @@ if (el("profileEmail")) {
   el("profileEmail").textContent = user.email || "";
 }
 
+// A valid Auth session should remain usable even if the profile read is temporarily unavailable.
+window.VH_USER_ID = user.id;
+window.VH_ROLE = "user";
+window.VH_IS_ADMIN = false;
+window.dispatchEvent(new Event("vh-auth-state-changed"));
+
 const { data: profile, error } = await db
   .from("profiles")
   .select("id, role, fullname, created_at")
@@ -76,8 +95,7 @@ const { data: profile, error } = await db
   .maybeSingle();
 
 if (error) {
-  console.error("Profile lookup failed:", error.message);
-  msg("Profile check failed. Please refresh and try again.");
+  console.warn("Profile lookup unavailable; keeping a least-privilege user session:", error.message);
   return;
 }
 
@@ -143,7 +161,7 @@ window.loginUser = async function (event) {
     showPage("home");
     msg("Welcome back to Vision Hub.");
   } catch (error) {
-    msg(error.message || "Sign-in failed.");
+    msg(authErrorMessage(error, "login"));
   } finally { if (button) button.disabled = false; }
 };
 
@@ -161,7 +179,7 @@ window.registerUser = async function (event) {
   if (button) button.disabled = true;
   try {
     const { data, error } = await db.auth.signUp({
-      email, password, options: { data: { full_name: name } }
+      email, password, options: { data: { full_name: name }, emailRedirectTo: location.origin + location.pathname }
     });
     if (error) throw error;
     form?.reset();
@@ -174,7 +192,7 @@ window.registerUser = async function (event) {
       showPage("login");
     }
   } catch (error) {
-    msg(error.message || "Account creation failed.");
+    msg(authErrorMessage(error, "signup"));
   } finally { if (button) button.disabled = false; }
 };
 
@@ -185,7 +203,7 @@ window.resetUserPassword = async function () {
     const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname + "#reset-password" });
     if (error) throw error;
     msg("Password reset email sent. Check your inbox.");
-  } catch (error) { msg(error.message || "Password reset could not be sent."); }
+  } catch (error) { msg(authErrorMessage(error, "reset")); }
 };
 
 window.adminLogin = async function (e) {
