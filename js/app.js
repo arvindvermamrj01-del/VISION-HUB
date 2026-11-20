@@ -2,7 +2,7 @@
 (()=>{
 "use strict";
 const $=id=>document.getElementById(id), data=window.VISION_HUB_DATA||[];
-let industry="All",genre="All",movieGenre="All",heroIndex=0,current=null;
+let industry="All",genre="All",movieGenre="All",movieYear="All",movieLanguage="All",movieSort="newest",seriesGenre="All",seriesYear="All",seriesLanguage="All",seriesSort="newest",heroIndex=0,current=null;
 const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const getList=k=>{try{return JSON.parse(localStorage.getItem(k)||"[]")}catch{return []}};
 const setList=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
@@ -18,6 +18,27 @@ return '<article class="movie-card"><button class="poster-button" onclick="openM
 }
 function grid(id,items){const el=$(id);if(el)el.innerHTML=items.length?items.map(card).join(""):'<div class="empty-state"><h3>No titles found</h3><p>Try another filter or search.</p></div>'}
 function hero(){const featured=data.filter(item=>item.is_featured&&item.type!=="Short"&&item.type!=="Episode"),catalog=data.filter(item=>item.type!=="Episode"),pool=featured.length?featured:catalog;const m=pool[heroIndex%pool.length];if(!m)return;current=m;if($("heroBg"))$("heroBg").style.backgroundImage=(m.backdrop||m.poster)?`url("${m.backdrop||m.poster}")`:"none";if($("heroTitle"))$("heroTitle").textContent=m.title;if($("heroDesc"))$("heroDesc").textContent=m.description;if($("heroMeta"))$("heroMeta").textContent=`${m.year} · ${m.duration} · ★ ${m.rating}`;if($("heroPlayBtn"))$("heroPlayBtn").onclick=()=>openMovie(m.id);if($("heroListBtn"))$("heroListBtn").onclick=()=>toggleItem(m.id)}
+function fillCatalogSelect(id,values,allLabel){
+ const select=$(id);if(!select)return;
+ const current=select.value||"All";
+ select.innerHTML='<option value="All">'+safe(allLabel)+'</option>'+values.map(value=>'<option value="'+safe(value)+'">'+safe(value)+'</option>').join("");
+ select.value=values.includes(current)?current:"All";
+}
+function populateCatalogFilters(){
+ const items=data.filter(item=>item.type!=="Episode"&&item.type!=="Short");
+ const years=[...new Set(items.map(item=>String(item.year||"").trim()).filter(value=>/^\\d{4}$/.test(value)))].sort((a,b)=>Number(b)-Number(a));
+ const languages=[...new Set(items.flatMap(item=>String(item.language||"").split(/[,/]+/).map(value=>value.trim()).filter(Boolean)))].sort((a,b)=>a.localeCompare(b));
+ fillCatalogSelect("movieYearFilter",years,"All years");
+ fillCatalogSelect("seriesYearFilter",years,"All years");
+ fillCatalogSelect("movieLanguageFilter",languages,"All languages");
+ fillCatalogSelect("seriesLanguageFilter",languages,"All languages");
+}
+function sortCatalog(items,sort){
+ const list=[...items];
+ if(sort==="rating")return list.sort((a,b)=>Number(b.rating||0)-Number(a.rating||0)||String(a.title).localeCompare(String(b.title)));
+ if(sort==="title")return list.sort((a,b)=>String(a.title).localeCompare(String(b.title)));
+ return list.sort((a,b)=>Number(b.year||0)-Number(a.year||0)||String(a.title).localeCompare(String(b.title)));
+}
 function render(){
 const f=data.filter(m=>(industry==="All"||m.industry===industry)&&(genre==="All"||m.genre===genre));
 grid("trendingGrid",f.filter(x=>x.type==="Movie").slice(0,6));
@@ -27,8 +48,11 @@ grid("topRatedGrid",[...data].filter(x=>x.type!=="Episode"&&x.rating!==""&&x.rat
 let progressItems=[];try{progressItems=data.filter(item=>Number(localStorage.getItem(progressStorageKey(item.id))||0)>5).sort((a,b)=>Number(localStorage.getItem(progressStorageKey(b.id))||0)-Number(localStorage.getItem(progressStorageKey(a.id))||0)).slice(0,6);}catch(_){}
 grid("continueWatchingGrid",progressItems);$("continueWatchingSection")?.classList.toggle("hidden",!progressItems.length);
 grid("homeShortsGrid",data.filter(x=>x.type==="Short"&&x.is_featured===true).slice(0,6));
-grid("allMoviesGrid",data.filter(x=>x.type==="Movie"&&(movieGenre==="All"||x.genre===movieGenre)));
-grid("allSeriesGrid",data.filter(x=>x.type==="Web Series"));
+populateCatalogFilters();
+const movies=data.filter(x=>x.type==="Movie"&&(movieGenre==="All"||x.genre===movieGenre)&&(movieYear==="All"||String(x.year)===movieYear)&&(movieLanguage==="All"||String(x.language||"").toLowerCase().split(/[,/]+/).map(v=>v.trim()).includes(movieLanguage.toLowerCase())));
+grid("allMoviesGrid",sortCatalog(movies,movieSort));
+const series=data.filter(x=>x.type==="Web Series"&&(seriesGenre==="All"||x.genre===seriesGenre)&&(seriesYear==="All"||String(x.year)===seriesYear)&&(seriesLanguage==="All"||String(x.language||"").toLowerCase().split(/[,/]+/).map(v=>v.trim()).includes(seriesLanguage.toLowerCase())));
+grid("allSeriesGrid",sortCatalog(series,seriesSort));
 grid("shortsGrid",data.filter(x=>x.type==="Short"));
 const genreHost=$("popularGenreLinks");
 if(genreHost){const counts=new Map();data.forEach(item=>{if(item.genre&&item.genre!=="Uncategorised")counts.set(item.genre,(counts.get(item.genre)||0)+1)});genreHost.innerHTML=[...counts].sort((a,b)=>b[1]-a[1]).slice(0,12).map(([name,count])=>'<button class="filter-btn" onclick="filterByGenre(\''+safe(name)+'\')">'+safe(name)+' · '+count+'</button>').join("")||'<p>Genres will appear as the catalog grows.</p>';}
@@ -60,6 +84,13 @@ if(location.hash==="#control-center"||location.pathname.replace(/\/+$/,"")==="/c
 window.filterByIndustry=(v,el)=>{industry=v;el?.parentElement?.querySelectorAll(".filter-btn").forEach(b=>b.classList.toggle("active",b===el));render()};
 window.filterByGenre=(v,el)=>{genre=v;el?.parentElement?.querySelectorAll(".filter-btn").forEach(b=>b.classList.toggle("active",b===el));render()};
 window.filterMoviesPage=(v,el)=>{movieGenre=v;el?.parentElement?.querySelectorAll(".filter-btn").forEach(b=>b.classList.toggle("active",b===el));render()};
+window.filterMovieYear=value=>{movieYear=value||"All";render()};
+window.filterMovieLanguage=value=>{movieLanguage=value||"All";render()};
+window.sortMoviesPage=value=>{movieSort=value||"newest";render()};
+window.filterSeriesGenre=(value,el)=>{seriesGenre=value||"All";el?.parentElement?.querySelectorAll(".filter-btn").forEach(b=>b.classList.toggle("active",b===el));render()};
+window.filterSeriesYear=value=>{seriesYear=value||"All";render()};
+window.filterSeriesLanguage=value=>{seriesLanguage=value||"All";render()};
+window.sortSeriesPage=value=>{seriesSort=value||"newest";render()};
 window.toggleItem=async id=>{
   const db=window.VH_SUPABASE;
   let user=null;
