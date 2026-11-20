@@ -33,7 +33,7 @@
     document.getElementById("themeToggle")?.setAttribute("aria-expanded",String(open));
   };
   document.addEventListener("DOMContentLoaded",()=>{
-    let saved="hyperos";try{saved=localStorage.getItem(key)||"hyperos";}catch(_){}
+    let saved="hyperos";try{saved=localStorage.getItem(key)||(localStorage.getItem("vh_theme")==="light"?"light":"hyperos");}catch(_){}
     apply(saved);
     document.querySelectorAll("[data-theme-choice]").forEach(button=>{
       button.addEventListener("click",()=>{apply(button.dataset.themeChoice);panel()?.classList.remove("open");panel()?.setAttribute("aria-hidden","true");document.getElementById("themeToggle")?.setAttribute("aria-expanded","false");});
