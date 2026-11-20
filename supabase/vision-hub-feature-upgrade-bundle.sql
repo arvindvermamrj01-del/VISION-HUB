@@ -374,6 +374,7 @@ ALTER TABLE public.vh_media_assets
 -- ===== Request ownership and guest submission security =====
 alter table public.vh_requests
   add column if not exists requester_id uuid references auth.users(id) on delete set null;
+drop policy if exists "Visitors can submit pending requests" on public.vh_requests;
 drop policy if exists "vh_requests_public_insert" on public.vh_requests;
 drop policy if exists "Users can submit requests for themselves" on public.vh_requests;
 create policy "vh_requests_public_insert" on public.vh_requests
