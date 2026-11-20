@@ -948,5 +948,5 @@
     ensureQualityFields();
     loadPublished();
   });
-  db.auth.onAuthStateChange((_event,session)=>{if(session?.user)loadPublished();});
+  db.auth.onAuthStateChange((_event,session)=>{if(session?.user){loadPublished();refreshStorageHealth();}});
 })();
