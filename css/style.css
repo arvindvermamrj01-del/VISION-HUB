@@ -446,3 +446,36 @@ body.vh-modal-open{overflow:hidden}
 body{padding-top:92px}
 .navbar{position:fixed!important;top:8px;left:50%;transform:translateX(-50%);margin:0;width:min(96%,1500px);z-index:1000}
 @media(max-width:760px){body{padding-top:84px}.navbar{width:calc(100% - 18px)}}
+
+
+/* HyperOS-inspired admin sign-in. Theme tokens keep it compatible with other appearances. */
+.admin-login-shell{width:min(1040px,calc(100% - 32px));margin:clamp(24px,7vh,72px) auto;padding:clamp(18px,3vw,34px);display:grid;grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr);gap:clamp(22px,4vw,48px);align-items:stretch;border:1px solid var(--vh-line);border-radius:30px;background:radial-gradient(ellipse at 12% 5%,rgba(125,110,255,.18),transparent 42%),radial-gradient(ellipse at 90% 92%,rgba(34,211,238,.11),transparent 40%),var(--vh-glass);box-shadow:0 28px 90px rgba(0,0,0,.28);backdrop-filter:blur(28px) saturate(145%)}
+.admin-login-aside{padding:clamp(18px,3vw,34px);display:flex;flex-direction:column;justify-content:center}
+.admin-login-kicker{display:inline-flex;align-items:center;gap:8px;color:var(--accent2);font-size:.72rem;font-weight:850;letter-spacing:.12em}
+.admin-login-aside h1{margin:24px 0 12px;font-size:clamp(2rem,4vw,3.4rem);line-height:1.04;letter-spacing:-.045em}
+.admin-login-aside h1 span{color:var(--accent2)}
+.admin-login-aside>p,.admin-auth-box>.auth-sub{color:var(--muted);line-height:1.65}
+.admin-login-highlights{display:grid;gap:11px;margin:24px 0}
+.admin-login-highlights>div{display:flex;align-items:center;gap:13px;padding:13px 14px;border:1px solid var(--vh-line);border-radius:16px;background:rgba(255,255,255,.035)}
+.admin-login-highlights>div>i{width:40px;height:40px;display:grid;place-items:center;border-radius:13px;background:rgba(139,92,246,.17);color:var(--accent2)}
+.admin-login-highlights strong,.admin-login-highlights small{display:block}
+.admin-login-highlights small{margin-top:3px;color:var(--muted);font-size:.78rem}
+.admin-login-secure,.admin-auth-foot{display:flex;align-items:flex-start;gap:9px;color:var(--muted);font-size:.78rem;line-height:1.5}
+.admin-auth-box{align-self:center;padding:clamp(22px,4vw,38px);border:1px solid var(--vh-line);border-radius:24px;background:linear-gradient(145deg,rgba(17,26,44,.94),rgba(10,16,29,.94));box-shadow:0 18px 50px rgba(0,0,0,.2)}
+.admin-auth-heading{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+.admin-auth-heading h2{margin:5px 0 0;font-size:clamp(1.45rem,3vw,2rem)}
+.admin-auth-icon{width:54px;height:54px;display:grid;place-items:center;border:1px solid var(--vh-line);border-radius:18px;background:linear-gradient(145deg,rgba(139,92,246,.24),rgba(34,211,238,.13));color:#c9c4ff;font-size:1.25rem}
+.admin-auth-box form{display:grid;gap:7px;margin-top:25px}
+.admin-auth-box .form-group{margin-bottom:10px}
+.admin-auth-box .form-group label{color:var(--text);font-weight:650}
+.admin-auth-box input{min-height:48px;border-radius:13px;background:rgba(3,9,20,.58)}
+.admin-auth-box .input-group button{border:1px solid var(--vh-line);border-left:0;border-radius:0 13px 13px 0;background:rgba(255,255,255,.06);color:var(--text)}
+.admin-auth-box .btn-admin-login{min-height:50px;border:0;border-radius:14px;background:linear-gradient(100deg,#7654e8,#2f88d9);color:#fff;font-weight:800;box-shadow:0 10px 24px rgba(83,95,221,.26)}
+.admin-auth-foot{margin-top:20px;padding-top:15px;border-top:1px solid var(--vh-line)}
+.vh-player-quality{align-items:flex-start;flex-direction:column;gap:5px}
+.vh-player-quality small{max-width:270px;color:var(--muted);font-size:.7rem;line-height:1.35}
+.vh-player-quality select:disabled{opacity:.7;cursor:not-allowed}
+:root[data-vh-theme="light"] .admin-auth-box{background:rgba(255,255,255,.88)}
+:root[data-vh-theme="amoled"] .admin-login-shell{background:radial-gradient(ellipse at 12% 5%,rgba(125,110,255,.16),transparent 42%),#080808}
+@media(max-width:760px){.admin-login-shell{width:calc(100% - 20px);margin:18px auto;padding:12px;grid-template-columns:1fr;gap:12px;border-radius:24px}.admin-login-aside{padding:15px 12px 8px}.admin-login-aside h1{margin:12px 0 8px;font-size:2rem}.admin-login-highlights{grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}.admin-login-highlights>div{padding:10px;align-items:flex-start}.admin-login-highlights>div>i{width:32px;height:32px;flex:0 0 32px}.admin-login-highlights small{font-size:.7rem}.admin-login-secure{padding:0 3px}.admin-auth-box{padding:22px 18px}}
+@media(max-width:420px){.admin-login-highlights{grid-template-columns:1fr}.admin-login-shell{margin:12px auto}}
