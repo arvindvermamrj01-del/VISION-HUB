@@ -72,18 +72,31 @@
       const seriesId=Number($("episodeSeriesId")?.value),season=Number($("episodeSeasonNumber")?.value),episode=Number($("episodeNumber")?.value);
       const title=$("episodeTitle")?.value.trim()||"",provider=$("episodeStorageProvider")?.value||"backblaze_b2";
       const file=$("episodeVideoFile")?.files?.[0]||null,rawUrl=$("episodeVideoUrl")?.value.trim()||"";
+      const primaryResolution=$("episodeResolution")?.value||null;
+      const language=$("episodeLanguage")?.value.trim()||"";
       const series=(window.VISION_HUB_DATA||[]).find(item=>String(item.id)===String(seriesId)&&item.type==="Web Series");
       if(!seriesId||!series)throw new Error("Select a published Web Series.");
       if(!Number.isInteger(season)||season<1||season>100||!Number.isInteger(episode)||episode<1||episode>500)throw new Error("Season and episode numbers must be valid.");
       if(!title)throw new Error("Episode title is required.");
-      if(!file&&!rawUrl)throw new Error("Upload an episode video or enter an authorised video URL.");
-      if(file&&rawUrl)throw new Error("Choose either a video file or a URL, not both.");
-      let videoUrl,storageProvider=provider,storagePath;
+      if(file&&rawUrl)throw new Error("Choose either an uploaded primary video or a primary URL, not both.");
+      const extraDefinitions=[["4K","episode4kUrl"],["1080p","episode1080Url"],["720p","episode720Url"],["480p","episode480Url"]];
+      const extraAssets=extraDefinitions.map(([resolution,id])=>({resolution,url:$(id)?.value.trim()||""})).filter(item=>item.url).map(item=>({resolution:item.resolution,url:validUrl(item.url),storage_path:validUrl(item.url),storage_provider:"direct",asset_type:"video",language:language||series.language||"",is_primary:false}));
+      if(file&&primaryResolution&&extraAssets.some(asset=>asset.resolution===primaryResolution))throw new Error("The primary quality is also listed as an alternate link.");
+      let primaryAsset=null;
       if(file){
-        uploaded=await uploadEpisodeFile(file,user,provider);storagePath=uploaded.path;videoUrl="private://"+storagePath;storageProvider=provider;
+        uploaded=await uploadEpisodeFile(file,user,provider);
+        primaryAsset={resolution:primaryResolution,asset_url:"private://"+uploaded.path,storage_path:uploaded.path,storage_provider:provider,asset_type:"video",language:language||series.language||"",is_primary:true};
+      }else if(rawUrl){
+        const url=validUrl(rawUrl);
+        primaryAsset={resolution:primaryResolution,asset_url:url,storage_path:url,storage_provider:"direct",asset_type:"video",language:language||series.language||"",is_primary:true};
+      }else if(extraAssets.length){
+        primaryAsset=extraAssets.shift();primaryAsset.is_primary=true;
       }else{
-        videoUrl=validUrl(rawUrl);storagePath=videoUrl;storageProvider="direct";
+        throw new Error("Upload a primary video or provide at least one authorised quality URL.");
       }
+      if(primaryAsset.resolution&&extraAssets.some(asset=>asset.resolution===primaryAsset.resolution))throw new Error("Duplicate video quality selected.");
+      const allAssets=[primaryAsset,...extraAssets];
+      const videoUrl=primaryAsset.asset_url,storageProvider=primaryAsset.storage_provider;
       const row={
         title,content_type:"Episode",parent_series_id:seriesId,season_number:season,episode_number:episode,
         video_url:videoUrl,storage_provider:storageProvider,published:true,created_by:user.id,
@@ -91,14 +104,12 @@
         duration:$("episodeDuration")?.value.trim()||"",
         description:$("episodeDescription")?.value.trim()||"",
         poster_url:validUrl($("episodePoster")?.value.trim()||"")||series.poster||null,
-        genre:series.genre||"Drama",language:series.language||"",industry:series.industry||"All"
+        genre:series.genre||"Drama",language:language||series.language||"",industry:series.industry||"All"
       };
       const {data:created,error}=await db.from("vh_content").insert(row).select("id").single();
       if(error)throw error;createdId=created.id;
-      const {error:assetError}=await db.from("vh_media_assets").insert({
-        content_id:created.id,asset_type:"video",asset_url:videoUrl,storage_path:storagePath,
-        storage_provider:storageProvider,resolution:null,is_primary:true,language:series.language||""
-      });
+      const assetRows=allAssets.map(asset=>({content_id:created.id,asset_type:"video",asset_url:asset.asset_url||asset.url,storage_path:asset.storage_path||asset.url,storage_provider:asset.storage_provider||"direct",resolution:asset.resolution||null,is_primary:!!asset.is_primary,language:asset.language||""}));
+      const {error:assetError}=await db.from("vh_media_assets").insert(assetRows);
       if(assetError)throw assetError;
       await notifyTelegramPublish(created.id);
       form?.reset();$("episodeSeasonNumber").value="1";
