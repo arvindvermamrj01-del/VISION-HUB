@@ -17,7 +17,7 @@ export async function onRequestPost({ request, env }) {
     if (!Number.isFinite(fileSize) || fileSize <= 0 || fileSize > maxSize) {
       return json({ error: kind === "audio" ? "Audio file must be between 1 byte and 1 GB." : "Video file must be between 1 byte and 5 GB. Larger files need multipart upload." }, 400);
     }
-    const safeName = fileName.normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(-100) || kind;
+    const safeName = fileName.normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/\.{2,}/g, ".").replace(/^-+|-+$/g, "").slice(-100) || kind;
     const key = user.id + "/" + (kind === "audio" ? "audio/" : "") + crypto.randomUUID() + "-" + safeName;
     const provider = String(body.provider || "backblaze_b2").toLowerCase();
     const uploadExpiry = kind === "audio" ? 3600 : 900;
