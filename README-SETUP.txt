@@ -56,6 +56,8 @@ This bundle includes:
 - Privacy-safe 30-day popular-content aggregation.
 - Content-editor ownership enforcement for catalog records, media assets and
   private Supabase Storage objects. Admins and sub-admins retain full access.
+- Guest request identity protection and anonymous column-level privacy grants
+  for the public catalog, songs and community board.
 
 If the feature bundle was already applied before the security-hardening
 updates, run these additive migrations once for the existing database:
