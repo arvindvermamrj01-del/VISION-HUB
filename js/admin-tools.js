@@ -194,7 +194,12 @@
         uploaded={provider:storageProvider,path:signed.key};
         storagePath=signed.key;audioUrl="private://"+signed.key;
       }
-      const {error}=await db.from("vh_songs").insert({title,artist,audio_url:audioUrl,poster_url:posterUrl?.href||null,storage_provider:storageProvider,storage_path:storagePath,is_published:true,created_by:user.id});
+      const songRow={title,artist,audio_url:audioUrl,poster_url:posterUrl?.href||null,storage_provider:storageProvider,storage_path:storagePath,is_published:true,created_by:user.id};
+      let {error}=await db.from("vh_songs").insert(songRow);
+      if(error&&!file&&/storage_provider|storage_path|column/i.test(error.message||"")){
+        const legacy={title,artist,audio_url:audioUrl,poster_url:posterUrl?.href||null,is_published:true,created_by:user.id};
+        const retry=await db.from("vh_songs").insert(legacy);error=retry.error;
+      }
       if(error)throw error;
       form?.reset();toast(file?"Song uploaded to private cloud storage.":"Song added.");
       await loadSongs();await window.refreshSongLibrary?.();
