@@ -1057,6 +1057,14 @@
                 <input type="url" id="settingTelegram" value="https://t.me/visionhub_official" placeholder="https://t.me/your_channel_name" autocomplete="off"/>
                 <small style="color: var(--text-muted);">This link will be used in all Telegram buttons, banners, and download callouts.</small>
               </div>
+              <section class="admin-form vh-bot-settings" style="margin:18px 0;">
+                <h3><i class="fab fa-telegram-plane"></i> Telegram Bot Integration</h3>
+                <p>Bot secrets must be stored in Cloudflare Pages → Settings → Variables and Secrets. Never paste a bot token into this dashboard.</p>
+                <ul><li>TELEGRAM_BOT_TOKEN</li><li>TELEGRAM_WEBHOOK_SECRET</li><li>TELEGRAM_ADMIN_CHAT_ID</li></ul>
+                <button type="button" class="btn-primary" onclick="setupTelegramBotWebhook()">Connect / Refresh Bot Webhook</button>
+                <p id="telegramBotSetupStatus" role="status">Webhook not checked yet.</p>
+                <small>Commands: /start, /help, /latest, /request, /channel and admin-only /status.</small>
+              </section>
               <div class="form-group">
                 <label>SEO Meta Description</label>
                 <textarea id="settingSeo" rows="2">Vision Hub - Stream and Download the best Bollywood, Hollywood, and South Indian Movies & Web Series online in HD.</textarea>
