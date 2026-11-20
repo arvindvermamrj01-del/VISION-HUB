@@ -78,9 +78,17 @@
       const lines=entries.map(([label,ready,state])=>'<span class="vh-storage-health-item '+(ready?"is-ready":"is-missing")+'"><i class="fas '+(ready?"fa-circle-check":"fa-circle-xmark")+'"></i><b>'+label+'</b><em>'+state+'</em></span>').join("");
       const service=status.supabase?.serviceRoleConfigured;
       const b2Note=b2Verification?.message||b2Verification?.error||"B2 live access was not verified. Sign in to the Admin panel and reload this section.";
+      const safe=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+      const providerDetails=b2Verification&&!b2Verification.verified?[
+        b2Verification.httpStatus?"HTTP status: "+b2Verification.httpStatus:"",
+        b2Verification.providerCode?"Provider code: "+b2Verification.providerCode:"",
+        b2Verification.providerMessage?"Provider message: "+b2Verification.providerMessage:"",
+        b2Verification.requestId?"Request ID: "+b2Verification.requestId:""
+      ].filter(Boolean):[];
       host.innerHTML='<div class="vh-storage-health-grid">'+lines+'</div><p class="vh-storage-health-note">'+
-        (b2Note?b2Note+" ":"")+
+        safe(b2Note)+" "+
         (service?"Private media signing is configured.":"Supabase service-role key is missing. Private video playback, deletion and signed downloads cannot work until it is set as a Cloudflare Pages secret.")+
+        (providerDetails.length?'<br><b>B2 provider diagnostics:</b><br>'+providerDetails.map(safe).join("<br>"):"")+
         '</p>';
     }catch(error){
       host.textContent="Storage status could not be checked: "+(error.message||"Unknown error");
