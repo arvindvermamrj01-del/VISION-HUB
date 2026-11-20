@@ -442,10 +442,9 @@ body.vh-modal-open{overflow:hidden}
 .episode-extra-quality[open] summary{margin-bottom:12px}
 
 
-/* Keep the public navigation visible while scrolling the long catalog pages. */
-body{padding-top:92px}
-.navbar{position:fixed!important;top:8px;left:50%;transform:translateX(-50%);margin:0;width:min(96%,1500px);z-index:1000}
-@media(max-width:760px){body{padding-top:84px}.navbar{width:calc(100% - 18px)}}
+/* Let the public navigation scroll with the page instead of covering catalog content. */
+body{padding-top:0}
+.navbar{position:static;top:auto;left:auto;transform:none;margin:0;width:100%;z-index:50}
 
 
 /* HyperOS-inspired admin sign-in. Theme tokens keep it compatible with other appearances. */
