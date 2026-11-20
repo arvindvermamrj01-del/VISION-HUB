@@ -23,7 +23,10 @@
     if(pay){pay.classList.toggle("hidden",!valid);pay.href=valid?"#":"#";updatePayLink();}
     const qrUrl=String(settings.donation_qr_url||"").trim();
     let validQr=false;try{const u=new URL(qrUrl);validQr=u.protocol==="https:"&&!u.username&&!u.password;}catch(_){}
-    if(qr&&fallback){qr.classList.toggle("hidden",!validQr);fallback.classList.toggle("hidden",validQr);if(validQr)qr.src=qrUrl;else qr.removeAttribute("src");}
+    if(qr&&fallback){
+      qr.classList.toggle("hidden",!validQr);fallback.classList.toggle("hidden",validQr);
+      if(validQr)qr.src=qrUrl;else{qr.removeAttribute("src");fallback.querySelector("span")?.replaceChildren(document.createTextNode(valid?"QR image is not configured. Use the UPI app button below.":"UPI payment details will appear here when configured."));}
+    }
     if(submit)submit.disabled=!valid;
     if(!valid)setStatus("Configure a valid UPI ID in Admin → Platform Settings before accepting contributions.",true);
     else setStatus("After paying in your UPI app, submit the transaction reference. It will remain pending until manually verified.");
