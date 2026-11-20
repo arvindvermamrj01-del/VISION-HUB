@@ -136,7 +136,7 @@ renderWatchlist();hero();
 window.renderVisionHub=render;
 window.showPage=name=>{
 if(name==="profile"&&!window.VH_USER_ID){name="login";}
-10692if(name==="admin"&&!window.VH_IS_ADMIN)name="admin-login";
+if(name==="admin"&&!window.VH_IS_ADMIN)name="admin-login";
 document.body.classList.toggle("vh-sidebar-hidden",["login","register","reset-password","admin-login","admin"].includes(name));
 document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
 $("page-"+name)?.classList.add("active");
