@@ -803,7 +803,10 @@
         if(popup)popup.location.href=destination;else window.location.href=destination;
       }catch(error){popup?.close();toast(error.message||"Download could not be prepared.");}
     }));
-    const tg=$("dlModalTelegramBtn");if(tg)tg.classList.toggle("hidden",!activeItem.telegram_url);
+    const telegramUrl=String(activeItem.telegram_url||"").trim();
+    const tg=$("dlModalTelegramBtn"),tgCallout=$("dlTelegramCallout");
+    if(tg){tg.classList.toggle("hidden",!telegramUrl);if(telegramUrl)tg.href=telegramUrl;}
+    if(tgCallout)tgCallout.classList.toggle("hidden",!telegramUrl);
     modal.classList.add("open");
   };
 
