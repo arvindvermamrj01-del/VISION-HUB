@@ -41,17 +41,22 @@
   async function loadDashboard() {
     try {
       await requireAdmin();
-      const [contentRes,profileRes,eventRes,requestRes]=await Promise.all([
+      const [contentRes,profileRes,eventRes,requestRes,songRes,donationRes]=await Promise.all([
         db.from("vh_content").select("id,content_type,title,created_at").eq("published",true),
         db.from("profiles").select("id,role"),
         db.from("vh_analytics_events").select("id",{count:"exact",head:true}),
-        db.from("vh_requests").select("id",{count:"exact",head:true})
+        db.from("vh_requests").select("id",{count:"exact",head:true}),
+        db.from("vh_songs").select("id",{count:"exact",head:true}).eq("is_published",true),
+        db.from("vh_donations").select("id",{count:"exact",head:true}).eq("status","pending")
       ]);
       if(contentRes.error)throw contentRes.error;
       if(profileRes.error)throw profileRes.error;
       const items=contentRes.data||[],people=profileRes.data||[];
       if($("totalMovies"))$("totalMovies").textContent=items.filter(x=>x.content_type==="Movie").length;
       if($("totalSeries"))$("totalSeries").textContent=items.filter(x=>x.content_type==="Web Series").length;
+      if($("totalShorts"))$("totalShorts").textContent=items.filter(x=>x.content_type==="Short").length;
+      if($("totalSongs"))$("totalSongs").textContent=songRes.error?"—":(songRes.count??0);
+      if($("pendingDonations"))$("pendingDonations").textContent=donationRes.error?"—":(donationRes.count??0);
       if($("totalUsers"))$("totalUsers").textContent=people.filter(x=>x.role==="user").length;
       if($("totalViews"))$("totalViews").textContent=eventRes.error?"—":(eventRes.count??0);
       const recent=$("recentMoviesAdmin");
