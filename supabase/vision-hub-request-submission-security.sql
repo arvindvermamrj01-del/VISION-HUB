@@ -17,4 +17,9 @@ create policy "vh_requests_public_insert" on public.vh_requests
     and (requester_id is null or requester_id = (select auth.uid()))
   );
 
+drop policy if exists "Users can view their own requests" on public.vh_requests;
+create policy "Users can view their own requests" on public.vh_requests
+  for select to authenticated
+  using (requester_id = (select auth.uid()));
+
 commit;
