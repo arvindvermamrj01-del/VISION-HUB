@@ -79,7 +79,7 @@ const pageTitles={home:"Vision Hub | Movies, Web Series & Shorts",movies:"All Mo
 if(name==="watchlist")renderWatchlist();
 };
 window.openHiddenAdminLogin=()=>window.showPage("admin-login");
-const publicPageHashes=new Set(["home","movies","series","shorts","watchlist","request","profile","login","register","reset-password","admin-login","admin"]);
+const publicPageHashes=new Set(["home","movies","series","shorts","watchlist","request","community","profile","login","register","reset-password","admin-login","admin"]);
 window.addEventListener("hashchange",()=>{
   const target=location.hash.replace(/^#/,"");
   if(target==="control-center")window.openHiddenAdminLogin();
