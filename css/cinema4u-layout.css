@@ -630,3 +630,34 @@ body.vh-movie-detail-open{overflow:hidden}
  #page-admin .admin-page-context{font-size:.7rem}
  #userNav .dropdown-menu{top:calc(100% + 8px)!important}
 }
+
+
+/* Main-admin-only security activity table and filters. */
+#page-admin .vh-activity-toolbar{
+ display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin:14px 0 16px;
+ padding:12px;border:1px solid rgba(133,162,218,.18);border-radius:15px;
+ background:linear-gradient(115deg,rgba(35,54,88,.5),rgba(23,39,63,.5));
+}
+#page-admin .vh-activity-toolbar select,
+#page-admin .vh-activity-toolbar input{
+ min-height:40px;padding:9px 12px;border:1px solid rgba(139,167,220,.22);
+ border-radius:10px;background:#0b1423;color:#eef4ff;font-size:.78rem;
+}
+#page-admin .vh-activity-toolbar select{min-width:180px}
+#page-admin .vh-activity-toolbar input{flex:1 1 260px;min-width:180px;max-width:380px}
+#page-admin .vh-activity-toolbar button{
+ min-height:40px;padding:9px 13px;border:1px solid rgba(124,163,238,.28);
+ border-radius:10px;background:linear-gradient(110deg,#315b9b,#514b9c);
+ color:#fff;font-size:.77rem;font-weight:800;
+}
+#page-admin .vh-activity-toolbar span,
+#page-admin .vh-activity-toolbar small{color:#aebbd1;font-size:.73rem}
+#page-admin #tab-login-activity .table-responsive{max-width:100%;overflow:auto}
+#page-admin #tab-login-activity .admin-table{min-width:1160px}
+#page-admin #tab-login-activity .admin-table td{vertical-align:top;line-height:1.45}
+#page-admin #tab-login-activity .admin-table code{white-space:nowrap;font-size:.75rem}
+@media(max-width:760px){
+ #page-admin .vh-activity-toolbar{align-items:stretch;padding:10px}
+ #page-admin .vh-activity-toolbar select,#page-admin .vh-activity-toolbar input{width:100%;max-width:none}
+ #page-admin #tab-login-activity .admin-table{min-width:1040px}
+}
