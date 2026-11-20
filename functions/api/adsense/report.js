@@ -28,7 +28,7 @@ export async function onRequestGet({ request, env }) {
     const dateRange = allowedRanges.includes(requestedRange) ? requestedRange : "LAST_7_DAYS";
     reportUrl.searchParams.set("dateRange", dateRange);
     reportUrl.searchParams.set("currencyCode", "INR");
-    reportUrl.searchParams.set("limit", "7");
+    reportUrl.searchParams.set("limit", "100");
     reportUrl.searchParams.set("orderBy", "-DATE");
     for (const dimension of ["DATE"]) reportUrl.searchParams.append("dimensions", dimension);
     for (const metric of ["ESTIMATED_EARNINGS", "IMPRESSIONS", "CLICKS", "PAGE_VIEWS", "PAGE_VIEWS_RPM"]) reportUrl.searchParams.append("metrics", metric);
