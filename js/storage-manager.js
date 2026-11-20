@@ -16,10 +16,18 @@
   async function loadSettings() {
     if (!document.getElementById("page-admin")?.classList.contains("active")) return;
     try {
-      await isAdmin();
+      const user = await isAdmin();
       const { data, error } = await db.from("vh_storage_settings").select("default_provider").eq("id", 1).maybeSingle();
       if (error) throw error;
-      const provider = providers.includes(data?.default_provider) ? data.default_provider : "supabase";
+      // Supabase remains supported for legacy assets, but new uploads default to B2.
+      let provider = providers.includes(data?.default_provider) ? data.default_provider : "backblaze_b2";
+      if (provider === "supabase") {
+        provider = "backblaze_b2";
+        const { error: migrateError } = await db.from("vh_storage_settings").upsert({
+          id: 1, default_provider: provider, updated_by: user.id, updated_at: new Date().toISOString()
+        }, { onConflict: "id" });
+        if (migrateError) throw migrateError;
+      }
       window.VH_STORAGE_DEFAULT = provider;
       const defaultSelect = $("defaultStorageProvider");
       if (defaultSelect) defaultSelect.value = provider;
@@ -42,7 +50,7 @@
     if (button) button.disabled = true;
     try {
       const user = await isAdmin();
-      const provider = $("defaultStorageProvider")?.value || "supabase";
+      const provider = $("defaultStorageProvider")?.value || "backblaze_b2";
       if (!providers.includes(provider)) throw new Error("Invalid storage provider.");
       const { error } = await db.from("vh_storage_settings").upsert({
         id: 1, default_provider: provider, updated_by: user.id, updated_at: new Date().toISOString()
