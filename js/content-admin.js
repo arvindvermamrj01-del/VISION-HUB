@@ -153,7 +153,7 @@
     const coreColumns="id,title,content_type,video_url,poster_url,genre,language,release_year,rating,description,cast,duration,trailer_url,industry,published,created_at,storage_provider";
     const platformColumns=coreColumns+",telegram_url,is_featured,subtitle_tracks,director,screenshots";
     const episodeColumns=platformColumns+",parent_series_id,season_number,episode_number";
-    const optionalColumnError=error=>error&&(/42703|42501|PGRST204/.test(String(error.code||""))||/column .* does not exist|permission denied for column|could not find the .* column/i.test(error.message||""));
+    const optionalColumnError=error=>error&&(/42703|42501|PGRST204/.test(String(error.code||""))||/column .* does not exist|permission denied for (?:column|table)|could not find the .* column/i.test(error.message||""));
     const queryColumns=columns=>db.from("vh_content").select(columns).eq("published",true).order("created_at",{ascending:false});
     let result=await queryColumns(episodeColumns);
     if(optionalColumnError(result.error)){
