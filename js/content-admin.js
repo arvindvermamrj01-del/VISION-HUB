@@ -510,6 +510,7 @@
       const previousVideo=fallback?.querySelector("video");
       if(previousVideo){previousVideo.pause();previousVideo.removeAttribute("src");previousVideo.load();}
       activeVideo=null;
+      $("vhPlayerExtras")?.classList.add("hidden");
       fallback?.classList.remove("active");
       iframe.src="https://drive.google.com/file/d/"+encodeURIComponent(id)+"/preview";
       iframe.classList.remove("hidden");
@@ -520,6 +521,7 @@
       toast("Ye external provider link hai; playback provider ke page par khulega.");
       return;
     }
+    $("vhPlayerExtras")?.classList.remove("hidden");
     activeVideo=$("playerFallback")?.querySelector("video");
     if(!activeVideo)return;
     activeVideo.crossOrigin="anonymous";
