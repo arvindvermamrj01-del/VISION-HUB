@@ -28,6 +28,7 @@
   };
   async function submitFeedback(event){
     event.preventDefault();
+    const form=event.currentTarget;
     const status=$("communitySubmitStatus"),button=event.currentTarget.querySelector('[type="submit"]');
     if(button)button.disabled=true;if(status)status.textContent="Submitting…";
     try{
@@ -39,7 +40,7 @@
       if(!["suggestion","bug","complaint"].includes(category)||title.length<4||title.length>120||description.length<10||description.length>3000)throw new Error("Check the feedback type, title and details.");
       const {error}=await db.from("vh_feedback").insert({user_id:user.id,category,title,description,status:"pending",upvotes:0});
       if(error)throw error;
-      event.currentTarget.reset();
+      form?.reset();
       if(status)status.textContent="Submitted. Your feedback is waiting for admin review.";
     }catch(error){if(status)status.textContent=error.message||"Feedback submission failed.";}
     finally{if(button)button.disabled=false;}
