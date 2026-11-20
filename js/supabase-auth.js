@@ -69,7 +69,7 @@ function showPage(id) {
 
 function showSignedOut() {
   try { sessionStorage.removeItem("vh-admin-secret-session"); } catch (_) {}
-  window.VH_ADMIN_SECRET_SESSION_ACTIVE = false;
+  window.VH_ADMIN_SECRET_SESSION_ACTIVE = 0;
   window.VH_ADMIN_LOGIN_IN_PROGRESS = false;
   window.VH_UNAUTHORISED_STAFF_SESSION = false;
 window.VH_IS_ADMIN = false;
@@ -139,9 +139,9 @@ if (el("statJoined")) {
 window.VH_USER_ID = user.id;
 window.VH_ROLE = profile?.role || "user";
 window.VH_IS_ADMIN = ["admin", "sub_admin", "content_editor", "moderator"].includes(window.VH_ROLE);
-const secretAdminSession = window.VH_ADMIN_SECRET_SESSION_ACTIVE === true ||
+const secretAdminSession = Number(window.VH_ADMIN_SECRET_SESSION_ACTIVE || 0) > Date.now() ||
   window.VH_ADMIN_LOGIN_IN_PROGRESS === true ||
-  (() => { try { return sessionStorage.getItem("vh-admin-secret-session") === "1"; } catch (_) { return false; } })();
+  (() => { try { return Number(sessionStorage.getItem("vh-admin-secret-session") || 0) > Date.now(); } catch (_) { return false; } })();
 if (window.VH_IS_ADMIN && !secretAdminSession) {
   window.VH_REJECTED_STAFF_ROLE = window.VH_ROLE;
   window.VH_UNAUTHORISED_STAFF_SESSION = true;
@@ -199,6 +199,7 @@ window.loginUser = async function (event) {
   if (button) button.disabled = true;
   let authSucceeded = false;
   try {
+    await securityRequest("/api/security/admin-guard", { action: "logout" }).catch(() => null);
     const { data, error } = await db.auth.signInWithPassword({ email, password });
     if (error) throw error;
     authSucceeded = true;
@@ -290,6 +291,8 @@ window.adminLogin = async function (e) {
   let failureRecorded = false;
 
   try {
+    // Remove any stale Admin cookie before starting a new secret-panel challenge.
+    await securityRequest("/api/security/admin-guard", { action: "logout" }).catch(() => null);
     let gate;
     try {
       gate = await securityRequest("/api/security/admin-guard", { action: "check" });
@@ -341,8 +344,9 @@ window.adminLogin = async function (e) {
       return;
     }
 
-    try { sessionStorage.setItem("vh-admin-secret-session", "1"); } catch (_) {}
-    window.VH_ADMIN_SECRET_SESSION_ACTIVE = true;
+    const adminSessionExpiry = Date.now() + 3600000;
+    try { sessionStorage.setItem("vh-admin-secret-session", String(adminSessionExpiry)); } catch (_) {}
+    window.VH_ADMIN_SECRET_SESSION_ACTIVE = adminSessionExpiry;
     window.VH_ADMIN_LOGIN_IN_PROGRESS = false;
     const roleVerified = await showSignedIn(data.user);
     if (!roleVerified || !window.VH_IS_ADMIN) {
@@ -359,6 +363,7 @@ window.adminLogin = async function (e) {
     msg("Secure Control Center login successful.");
   } catch (err) {
     console.error("Secure Admin sign-in failed:", err);
+    await securityRequest("/api/security/admin-guard", { action: "logout" }).catch(() => null);
     if (attemptId && signInStarted && !failureRecorded) {
       await securityRequest("/api/security/admin-guard", { action: "failed", attemptId }).catch(() => null);
     }
@@ -374,6 +379,7 @@ window.adminLogin = async function (e) {
 async function signOutAndReset(scope, successMessage, eventType = "user_logout") {
   try {
     await window.VHLoginActivity?.log(eventType);
+    await securityRequest("/api/security/admin-guard", { action: "logout" }).catch(() => null);
     const { error } = await db.auth.signOut({ scope });
     if (error) throw error;
 
