@@ -118,8 +118,8 @@ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
 $("page-"+name)?.classList.add("active");
 document.querySelectorAll(".nav-link").forEach(a=>a.classList.toggle("active",a.getAttribute("href")==="#"+name));
 $("navLinks")?.classList.remove("open");
-const pageTitles={home:"Vision Hub | Movies, Web Series & Shorts",movies:"All Movies | Vision Hub",series:"Web Series | Vision Hub",shorts:"Shorts | Vision Hub",watchlist:"My Watchlist | Vision Hub",request:"Request Content | Vision Hub",community:"Community | Vision Hub",profile:"My Account | Vision Hub",login:"Sign In | Vision Hub",register:"Create Account | Vision Hub","reset-password":"Reset Password | Vision Hub","admin-login":"Admin Login | Vision Hub",admin:"Control Center | Vision Hub"};
- const pageDescriptions={home:"Discover authorised movies, web series and shorts on Vision Hub.",movies:"Browse the Vision Hub movie catalog by genre, language and year.",series:"Explore web series available in the Vision Hub catalog.",shorts:"Watch short-form videos published on Vision Hub.",watchlist:"Your saved Vision Hub watchlist.",request:"Send a movie or series request to the Vision Hub team.",community:"Share suggestions, report bugs and vote on the Vision Hub roadmap.",profile:"Manage your Vision Hub profile, password, watchlist and requests.",login:"Sign in to sync your watchlist and playback progress.",register:"Create a Vision Hub account to sync your watchlist and viewing progress.","reset-password":"Set a new password for your Vision Hub account.","admin-login":"Restricted Vision Hub staff sign in.",admin:"Vision Hub Control Center."};
+const pageTitles={home:"Vision Hub | Movies, Web Series & Shorts",movies:"All Movies | Vision Hub",series:"Web Series | Vision Hub",shorts:"Shorts | Vision Hub",songs:"Songs & Music | Vision Hub",watchlist:"My Watchlist | Vision Hub",request:"Request Content | Vision Hub",community:"Community | Vision Hub",profile:"My Account | Vision Hub",login:"Sign In | Vision Hub",register:"Create Account | Vision Hub","reset-password":"Reset Password | Vision Hub","admin-login":"Admin Login | Vision Hub",admin:"Control Center | Vision Hub"};
+ const pageDescriptions={home:"Discover authorised movies, web series and shorts on Vision Hub.",movies:"Browse the Vision Hub movie catalog by genre, language and year.",series:"Explore web series available in the Vision Hub catalog.",shorts:"Watch short-form videos published on Vision Hub.",songs:"Listen to authorised music on Vision Hub.",watchlist:"Your saved Vision Hub watchlist.",request:"Send a movie or series request to the Vision Hub team.",community:"Share suggestions, report bugs and vote on the Vision Hub roadmap.",profile:"Manage your Vision Hub profile, password, watchlist and requests.",login:"Sign in to sync your watchlist and playback progress.",register:"Create a Vision Hub account to sync your watchlist and viewing progress.","reset-password":"Set a new password for your Vision Hub account.","admin-login":"Restricted Vision Hub staff sign in.",admin:"Vision Hub Control Center."};
  document.title=pageTitles[name]||"Vision Hub";
  const metaDescription=document.querySelector('meta[name="description"]');
  if(metaDescription)metaDescription.content=pageDescriptions[name]||pageDescriptions.home;
@@ -129,9 +129,10 @@ const pageTitles={home:"Vision Hub | Movies, Web Series & Shorts",movies:"All Mo
  if(ogDescription)ogDescription.content=pageDescriptions[name]||pageDescriptions.home;
  window.scrollTo({top:0,behavior:"smooth"});
 if(name==="watchlist")renderWatchlist();
+ document.dispatchEvent(new CustomEvent("visionhub:page-changed",{detail:{name}}));
 };
 window.openHiddenAdminLogin=()=>window.showPage("admin-login");
-const publicPageHashes=new Set(["home","movies","series","shorts","watchlist","request","community","profile","login","register","reset-password","admin-login","admin"]);
+const publicPageHashes=new Set(["home","movies","series","shorts","songs","watchlist","request","community","profile","login","register","reset-password","admin-login","admin"]);
 window.addEventListener("hashchange",()=>{
   const target=location.hash.replace(/^#/,"");
   if(target==="control-center")window.openHiddenAdminLogin();
