@@ -614,3 +614,83 @@ body.vh-sidebar-expanded #vhAppSidebar .vh-sidebar-toggle{opacity:1}
    pointer-events:none;z-index:2
  }
 }
+
+
+/* VISION HUB navigation refresh: fixed labelled buttons, no rotation or reorder panel. */
+@media(min-width:761px){
+ :root{--vh-nav-width:190px;--vh-nav-expanded:190px}
+ #app>.page,#app>.footer{width:calc(100% - 226px)!important;margin-left:210px!important;margin-right:16px!important}
+ #app>.telegram-banner{width:calc(100% - 226px)!important;margin-left:210px!important;margin-right:16px!important}
+ .vh-sidebar{left:12px!important;width:190px!important;top:132px!important;bottom:14px!important;padding:12px 10px 10px!important;overflow:hidden!important}
+ .vh-sidebar:hover,.vh-sidebar:focus-within{width:190px!important}
+ .vh-sidebar-brand{justify-content:flex-start!important;gap:11px!important;padding:2px 7px 8px!important}
+ .vh-sidebar-brand-copy{display:flex!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important}
+ .vh-sidebar-section-label{display:block!important;height:15px!important;min-height:15px!important;margin:7px 0 1px 9px!important;opacity:1!important;visibility:visible!important}
+ .vh-sidebar-scroll{overflow-y:auto!important;overflow-x:hidden!important}
+ .vh-sidebar-group{display:flex;flex-direction:column;gap:5px}
+ .vh-sidebar-button{
+   justify-content:flex-start!important;gap:13px!important;width:100%!important;min-height:48px!important;
+   padding:0 12px!important;border-radius:15px!important;transform:none!important;transform-origin:left center!important;
+   cursor:pointer!important;transition:background .2s ease,color .2s ease,border-color .2s ease,box-shadow .22s ease,transform .22s cubic-bezier(.2,.8,.2,1)!important;
+   will-change:transform
+ }
+ .vh-sidebar-button i{flex:0 0 24px!important;width:24px!important;font-size:1.18rem!important}
+ .vh-sidebar-button span{display:block!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important;overflow:visible!important;font-size:.82rem!important;font-weight:800!important}
+ .vh-sidebar-button:hover,.vh-sidebar-button:focus-visible{transform:translateX(3px) scale(1.045)!important;z-index:3;background:rgba(129,143,207,.16)!important;border-color:rgba(157,173,226,.25)!important;box-shadow:0 8px 22px rgba(0,0,0,.2),0 0 18px rgba(99,140,255,.13)!important}
+ .vh-sidebar-button.active{transform:scale(1.015)!important}
+ .vh-sidebar-footer{justify-content:flex-start!important;padding:0 12px!important}
+ .vh-sidebar-footer>span:last-child{display:block!important;opacity:1!important;visibility:visible!important}
+ .vh-nav-tooltip{display:none!important}
+ body.vh-movie-detail-open #vhAppSidebar{left:0!important;width:190px!important}
+ body.vh-movie-detail-open #vhAppSidebar:hover,body.vh-movie-detail-open #vhAppSidebar:focus-within{width:190px!important}
+ body.vh-movie-detail-open #movieModal .vh-detail-page-content{margin-left:190px!important;width:calc(100% - 190px)!important}
+}
+@media(min-width:761px) and (max-width:1100px){
+ #app>.page,#app>.footer{width:calc(100% - 206px)!important;margin-left:190px!important;margin-right:16px!important}
+ #app>.telegram-banner{width:calc(100% - 206px)!important;margin-left:190px!important;margin-right:16px!important}
+ .vh-sidebar{left:8px!important;width:174px!important}
+ .vh-sidebar:hover,.vh-sidebar:focus-within{width:174px!important}
+ .vh-sidebar-button{gap:9px!important;padding:0 9px!important}
+ .vh-sidebar-button span{font-size:.76rem!important}
+}
+@media(max-width:760px){
+ .vh-mobile-dock{
+   display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;
+   gap:5px!important;left:8px!important;right:8px!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;
+   top:auto!important;width:auto!important;height:68px!important;max-height:none!important;overflow-x:auto!important;overflow-y:hidden!important;
+   padding:8px 9px!important;transform:none!important;scroll-snap-type:x proximity!important;
+ }
+ .vh-mobile-dock>.vh-mobile-nav-item{
+   display:flex!important;flex:0 0 auto!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
+   gap:5px!important;width:auto!important;min-width:78px!important;max-width:none!important;height:50px!important;min-height:50px!important;
+   margin:0!important;padding:5px 11px!important;border-radius:15px!important;transform:none!important;scroll-snap-align:center;
+   white-space:nowrap!important;transition:background .2s ease,color .2s ease,border-color .2s ease,box-shadow .2s ease!important
+ }
+ .vh-mobile-dock>.vh-mobile-nav-item span{
+   display:block!important;max-width:none!important;overflow:visible!important;text-overflow:clip!important;white-space:nowrap!important;
+   font-size:.64rem!important;line-height:1.1!important;font-weight:800!important
+ }
+ .vh-mobile-dock>.vh-mobile-nav-item i{font-size:1rem!important}
+ .vh-mobile-dock>.vh-mobile-nav-item.active{transform:none!important}
+ .vh-mobile-dock>.vh-mobile-nav-item:active{transform:scale(.97)!important}
+ .vh-mobile-dock>.vh-mobile-nav-item.active::after{display:none!important}
+ body.vh-movie-detail-open .vh-mobile-dock{display:flex!important}
+}
+
+/* Always-running 24/7 rainbow wordmark and custom Vision Hub play-mark. */
+.vh-logo-mark{display:block;width:27px;height:27px;overflow:visible;filter:drop-shadow(0 1px 2px rgba(0,0,0,.16))}
+.vh-sidebar-brand-icon .vh-logo-mark{width:31px;height:31px}
+.nav-brand .brand-icon,.vh-sidebar-brand-icon{display:grid;place-items:center}
+.nav-brand .vh-brand-vision,.nav-brand .vh-brand-hub,.vh-sidebar-brand-copy strong{
+ background:linear-gradient(100deg,#48d9f4 0%,#8b79ff 18%,#f06acb 38%,#ffd166 58%,#54e2b5 78%,#48d9f4 100%)!important;
+ background-size:400% 100%!important;background-clip:text!important;-webkit-background-clip:text!important;
+ -webkit-text-fill-color:transparent!important;color:transparent!important;
+ animation:vhBrandAuroraShift 16s linear infinite!important;
+}
+.nav-brand .vh-brand-hub{animation-delay:-8s!important}
+@keyframes vhBrandAuroraShift{0%{background-position:0% 50%}100%{background-position:400% 50%}}
+/* Brand colour motion remains active even when the OS requests reduced motion. */
+@media(prefers-reduced-motion:reduce){
+ .nav-brand .vh-brand-vision,.nav-brand .vh-brand-hub,.vh-sidebar-brand-copy strong{animation:vhBrandAuroraShift 16s linear infinite!important}
+ .nav-brand .brand-icon,.vh-sidebar-brand-icon{animation:vhBrandIconAurora 10s ease-in-out infinite!important}
+}
