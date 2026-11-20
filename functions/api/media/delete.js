@@ -21,11 +21,14 @@ export async function onRequestPost({ request, env }) {
     // A content deletion must prove that this exact object is attached to the selected title.
     if (contentId) {
       const contentUrl = new URL(base + "/rest/v1/vh_content");
-      contentUrl.search = new URLSearchParams({ id: "eq." + contentId, select: "id,content_type" }).toString();
+      contentUrl.search = new URLSearchParams({ id: "eq." + contentId, select: "id,content_type,created_by" }).toString();
       const contentResponse = await fetch(contentUrl, { headers });
       if (!contentResponse.ok) return json({ error: "Content permissions could not be verified." }, 502);
       const contentRows = await contentResponse.json();
       if (!contentRows.length) return json({ error: "Content item not found." }, 404);
+      if (profile?.role === "content_editor" && contentRows[0].created_by !== userId) {
+        return json({ error: "Content Editors can only remove media from content they created." }, 403);
+      }
       if (profile?.role === "content_editor" && contentRows[0].content_type === "Short") {
         return json({ error: "Content Editors cannot remove Short videos." }, 403);
       }
