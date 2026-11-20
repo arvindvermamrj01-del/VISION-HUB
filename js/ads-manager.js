@@ -30,8 +30,8 @@
     const enabled=settings.ads_enabled==="on";
     const publisher=String(settings.adsense_publisher_id||"").trim();
     const activePage=document.querySelector(".page.active")?.id||"page-home";
-    const restrictedPage=["page-admin","page-admin-login","page-login","page-register","page-reset-password"].includes(activePage);
-    if(!enabled||!validPublisher(publisher)||restrictedPage){
+    const allowedPage=["page-home","page-movies","page-series","page-shorts","page-songs"].includes(activePage);
+    if(!enabled||!validPublisher(publisher)||!allowedPage){
       clear($("vhAdHomeTop"));clear($("vhAdFooter"));return;
     }
     const script=document.querySelector('script[data-vh-adsense]');
