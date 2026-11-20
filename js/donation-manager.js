@@ -6,13 +6,21 @@
   let settings={donation_upi_id:"",donation_display_name:"Vision Hub",donation_qr_url:""};
   const safeVpa=value=>/^[A-Za-z0-9._-]{2,128}@[A-Za-z0-9.-]{2,64}$/.test(String(value||"").trim());
   const setStatus=(message,isError=false)=>{const el=$("donationStatus");if(el){el.textContent=message;el.classList.toggle("error",isError);}};
+  function updatePayLink(){
+    const pay=$("donationPayBtn"),vpa=String(settings.donation_upi_id||"").trim();
+    if(!pay||!safeVpa(vpa))return;
+    const params=new URLSearchParams({pa:vpa,pn:String(settings.donation_display_name||"Vision Hub").slice(0,80),cu:"INR",tn:"Voluntary Vision Hub support"});
+    const amount=Number($("donationAmount")?.value);
+    if(Number.isFinite(amount)&&amount>=1&&amount<=100000)params.set("am",amount.toFixed(2));
+    pay.href="upi://pay?"+params.toString();
+  }
   function applySettings(next){
     settings={...settings,...(next||{})};
     const vpa=String(settings.donation_upi_id||"").trim();
     const valid=safeVpa(vpa);
     const label=$("donationUpiLabel"),pay=$("donationPayBtn"),qr=$("donationQrImage"),fallback=$("donationQrFallback"),submit=$("donationSubmitBtn");
     if(label)label.textContent=valid?"UPI ID: "+vpa:"UPI donations are not configured yet.";
-    if(pay){pay.classList.toggle("hidden",!valid);pay.href=valid?"upi://pay?"+new URLSearchParams({pa:vpa,pn:String(settings.donation_display_name||"Vision Hub").slice(0,80),cu:"INR",tn:"Voluntary Vision Hub support"}).toString():"#";}
+    if(pay){pay.classList.toggle("hidden",!valid);pay.href=valid?"#":"#";updatePayLink();}
     const qrUrl=String(settings.donation_qr_url||"").trim();
     let validQr=false;try{const u=new URL(qrUrl);validQr=u.protocol==="https:"&&!u.username&&!u.password;}catch(_){}
     if(qr&&fallback){qr.classList.toggle("hidden",!validQr);fallback.classList.toggle("hidden",validQr);if(validQr)qr.src=qrUrl;else qr.removeAttribute("src");}
@@ -74,7 +82,8 @@
   document.addEventListener("DOMContentLoaded",()=>{
     loadSettings();
     $("donationForm")?.addEventListener("submit",submitDonation);
-    document.querySelectorAll("[data-donation-amount]").forEach(button=>button.addEventListener("click",()=>{const amount=$("donationAmount");if(amount)amount.value=button.dataset.donationAmount;}));
+    $("donationAmount")?.addEventListener("input",updatePayLink);
+    document.querySelectorAll("[data-donation-amount]").forEach(button=>button.addEventListener("click",()=>{const amount=$("donationAmount");if(amount){amount.value=button.dataset.donationAmount;updatePayLink();}}));
     document.addEventListener("keydown",event=>{if(event.key==="Escape"&&$("donationModal")?.classList.contains("open"))window.closeDonationPanel();});
   });
   window.addEventListener("vh:site-settings-updated",event=>applySettings(event.detail||{}));
