@@ -63,12 +63,54 @@ export async function recordSecurityEvent(request, env, eventType, identity = nu
     ).run();
 }
 
-export async function requireRole(request, env, roles) {
-  const identity = await requireUser(request, env);
-  if (!identity.profile || !roles.includes(identity.profile.role)) {
+const STAFF_PROTECTED_ROLES = ["admin", "sub_admin", "content_editor", "moderator"];
+
+async function countRecentSecurityFailures(request, env) {
+  if (!env.VH_SECURITY_DB) return { attempts: 0, latest: 0 };
+  const result = await env.VH_SECURITY_DB.prepare(
+    "SELECT COUNT(*) AS attempts, COALESCE(MAX(started_at),0) AS latest " +
+    "FROM vh_admin_login_attempts WHERE ip_address=? AND status='failed' AND started_at > unixepoch()-1800"
+  ).bind(clientIp(request)).first();
+  return { attempts: Number(result?.attempts || 0), latest: Number(result?.latest || 0) };
+}
+
+async function recordDeniedStaffAccess(request, env, identity = null) {
+  try {
+    if (env.VH_SECURITY_DB) {
+      await env.VH_SECURITY_DB.prepare(
+        "INSERT INTO vh_admin_login_attempts (attempt_id,ip_address,status,started_at) VALUES (?,?, 'failed',unixepoch())"
+      ).bind(crypto.randomUUID(), clientIp(request)).run();
+    }
     await recordSecurityEvent(request, env, "unauthorized_admin_access", identity, {
       pagePath: new URL(request.url).pathname
-    }).catch(() => null);
+    });
+  } catch (_) {}
+}
+
+export async function requireRole(request, env, roles) {
+  const protectsStaff = roles.some(role => STAFF_PROTECTED_ROLES.includes(role));
+  if (protectsStaff) {
+    const failures = await countRecentSecurityFailures(request, env).catch(() => ({ attempts: 0, latest: 0 }));
+    if (failures.attempts >= 5 && failures.latest + 1800 > Math.floor(Date.now() / 1000)) {
+      await recordSecurityEvent(request, env, "admin_login_blocked", null).catch(() => null);
+      throw new Error("Admin access is temporarily blocked for this IP after repeated failed or unauthorised attempts.");
+    }
+  }
+
+  let identity;
+  try {
+    identity = await requireUser(request, env);
+  } catch (error) {
+    if (protectsStaff) await recordDeniedStaffAccess(request, env, null);
+    throw error;
+  }
+
+  if (!identity.profile || !roles.includes(identity.profile.role)) {
+    if (protectsStaff) {
+      await recordDeniedStaffAccess(request, env, identity);
+    } else {
+      await recordSecurityEvent(request, env, "unauthorized_admin_access", identity).catch(() => null);
+    }
     throw new Error("You do not have permission to perform this action.");
   }
   return identity;
