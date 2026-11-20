@@ -39,9 +39,15 @@ create policy "Users can view their own requests"
   on public.vh_requests for select to authenticated
   using (requester_id = auth.uid());
 
+drop policy if exists "vh_requests_public_insert" on public.vh_requests;
 drop policy if exists "Users can submit requests for themselves" on public.vh_requests;
-create policy "Users can submit requests for themselves"
-  on public.vh_requests for insert to authenticated
-  with check (requester_id is null or requester_id = auth.uid());
+create policy "vh_requests_public_insert" on public.vh_requests
+  for insert to anon, authenticated
+  with check (
+    status = 'pending'
+    and reviewed_at is null
+    and reviewed_by is null
+    and (requester_id is null or requester_id = (select auth.uid()))
+  );
 
 -- Existing admin policies are intentionally left in place.
