@@ -258,7 +258,7 @@ language sql
 stable
 security definer
 set search_path = ''
-as $
+as $$
   select e.content_id, count(*)::bigint as view_count
   from public.vh_analytics_events e
   join public.vh_content c on c.id = e.content_id
@@ -269,7 +269,7 @@ as $
   group by e.content_id
   order by count(*) desc, max(e.created_at) desc
   limit greatest(1, least(coalesce(p_limit, 10), 50));
-$;
+$$;
 revoke all on function public.vh_get_popular_content(integer) from public;
 grant execute on function public.vh_get_popular_content(integer) to anon, authenticated;
 
