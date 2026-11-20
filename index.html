@@ -949,7 +949,7 @@
             <div class="admin-form" style="margin-top:22px;">
               <h3>Provider availability</h3>
               <p><strong>Backblaze B2:</strong> Active private S3-compatible upload, signed playback access and server-side deletion for Movie, Series, Short and Song audio files. Requires the B2 secrets in Cloudflare Pages.</p>
-              <p><strong>Cloudflare R2:</strong> Direct S3-compatible upload, signed playback and deletion are supported when R2 secrets are configured.</p>
+              <p><strong>Cloudflare R2:</strong> Direct S3-compatible upload, signed playback and deletion are supported for media and song audio when R2 secrets are configured.</p>
               <p><strong>Supabase:</strong> Retained for database, authentication and legacy private media; B2 is the preferred default for new video uploads.</p>
               <p><strong>Google Drive:</strong> Public shared video-file verification and catalog linking are supported when GOOGLE_DRIVE_API_KEY is configured. Original files remain in Drive; importing them into B2 requires a separate authorised transfer connector.</p>
               <p><strong>Box, pCloud, Koofr:</strong> Official API options exist; OAuth credentials and server-side upload integration are still required.</p>
