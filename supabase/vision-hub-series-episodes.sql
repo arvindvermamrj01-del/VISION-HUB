@@ -54,6 +54,12 @@ begin
       raise exception 'Episode parent must be an existing Web Series.';
     end if;
   end if;
+  if tg_op = 'UPDATE'
+     and old.content_type = 'Web Series'
+     and new.content_type <> 'Web Series'
+     and exists (select 1 from public.vh_content e where e.parent_series_id = old.id and e.content_type = 'Episode') then
+    raise exception 'Remove or reassign this series\' episodes before changing its content type.';
+  end if;
   return new;
 end;
 $;
