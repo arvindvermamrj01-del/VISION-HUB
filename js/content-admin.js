@@ -667,6 +667,7 @@
     video.pause();
     video.removeAttribute("src");
     video.load();
+    if(activeVideo===video)activeVideo=null;
     video.poster=item.poster||"";
     video.classList.remove("hidden");
     if(iframe){iframe.src="";iframe.classList.add("hidden");}
@@ -692,6 +693,7 @@
       tracks.forEach((track,index)=>subtitleSelect.add(new Option(track.label||track.language||("Subtitle "+(index+1)),String(index))));
       subtitleSelect.disabled=!tracks.length;
       subtitleSelect.classList.toggle("hidden",!tracks.length);
+      $("detailSubtitleWrap")?.classList.toggle("hidden",!tracks.length);
       subtitleSelect.onchange=()=>setSubtitleMode(Number(subtitleSelect.value));
     }
     const speed=$("detailPlayerSpeed");
