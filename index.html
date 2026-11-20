@@ -23,6 +23,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link rel="stylesheet" href="css/style.css?v=20261120-3"/>
   <link rel="stylesheet" href="css/vision-hyper-ui.css?v=20261120-1"/>
+  <link rel="stylesheet" href="css/cinema4u-layout.css?v=20261120-1"/>
 </head>
 <body>
   <div id="app">
@@ -137,100 +138,93 @@
 
     <!-- 1. HOME PAGE -->
     <div id="page-home" class="page active">
-      <!-- Hero Banner -->
-      <section class="hero" id="heroSection">
-        <div class="hero-bg" id="heroBg"></div>
-        <div class="hero-overlay"></div>
+      <!-- Legacy hero kept for existing app hooks; the Cinema4U-style storefront replaces its presentation. -->
+      <section class="hero" id="heroSection" aria-hidden="true">
+        <div class="hero-bg" id="heroBg"></div><div class="hero-overlay"></div>
         <div class="hero-content" id="heroContent">
-          <span class="hero-badge">🔥 Trending Now</span>
-          <h1 id="heroTitle">Loading...</h1>
-          <p id="heroDesc">Loading description...</p>
+          <span class="hero-badge">Trending Now</span>
+          <h1 id="heroTitle">Loading…</h1><p id="heroDesc"></p>
           <div class="hero-meta" id="heroMeta"></div>
           <div class="hero-buttons">
-            <button class="btn-play" id="heroPlayBtn">
-              <i class="fas fa-play"></i> Watch Now
-            </button>
-            <button class="btn-telegram" onclick="openTelegram()">
-              <i class="fab fa-telegram-plane"></i> Telegram
-            </button>
-            <button class="btn-add-list" id="heroListBtn">
-              <i class="fas fa-plus"></i> My List
-            </button>
+            <button class="btn-play" id="heroPlayBtn">Watch Now</button>
+            <button class="btn-add-list" id="heroListBtn">My List</button>
+          </div>
+        </div><div class="hero-dots" id="heroDots"></div>
+      </section>
+
+      <section class="cinema-search-row" aria-label="Search the catalogue">
+        <div class="cinema-search-box">
+          <i class="fas fa-search" aria-hidden="true"></i>
+          <input id="cinemaQuickSearch" type="search" autocomplete="off"
+            placeholder="Search movies, web series, actors, genres, languages…"
+            aria-label="Search movies and web series">
+          <kbd>/</kbd>
+        </div>
+      </section>
+
+      <section class="section cinema-top-categories" aria-label="Browse categories">
+        <div class="category-filters" id="cinemaCategoryPills">
+          <button type="button" class="filter-btn active" data-cinema-category="all" aria-pressed="true">🌐 All</button>
+          <button type="button" class="filter-btn" data-cinema-category="new" aria-pressed="false">⚡ New Releases</button>
+          <button type="button" class="filter-btn" data-cinema-category="series" aria-pressed="false">📺 Web Series</button>
+          <button type="button" class="filter-btn" data-cinema-category="bollywood" aria-pressed="false">🇮🇳 Bollywood</button>
+          <button type="button" class="filter-btn" data-cinema-category="south" aria-pressed="false">🔥 South</button>
+          <button type="button" class="filter-btn" data-cinema-category="hollywood" aria-pressed="false">🌍 Hollywood</button>
+          <button type="button" class="filter-btn" data-cinema-category="watchlist" aria-pressed="false">⭐ My Watchlist</button>
+        </div>
+      </section>
+
+      <section class="cinema-promo-grid" aria-label="Vision Hub quick links">
+        <a class="cinema-promo cinema-promo-telegram" href="https://t.me/visionhub_official"
+          target="_blank" rel="noopener noreferrer">
+          <div class="cinema-promo-copy">
+            <div class="cinema-promo-kicker"><i class="fab fa-telegram-plane"></i> Official channel</div>
+            <h2>Join the Vision Hub Community</h2>
+            <p>New catalogue announcements and platform updates</p>
+          </div>
+          <span class="cinema-promo-cta">Join <i class="fas fa-arrow-right"></i></span>
+        </a>
+        <button type="button" class="cinema-promo cinema-promo-request" onclick="showPage('request')">
+          <div class="cinema-promo-copy">
+            <div class="cinema-promo-kicker"><i class="fas fa-film"></i> Your next watch</div>
+            <h2>Request a Movie / Series</h2>
+            <p>Send a title suggestion to the Vision Hub team</p>
+          </div>
+          <span class="cinema-promo-cta">Request <i class="fas fa-arrow-right"></i></span>
+        </button>
+      </section>
+
+      <section class="vh-ad-section cinema-sponsored-slot" id="vhAdHomeTop" aria-label="Sponsored partner" hidden></section>
+
+      <section class="section cinema-trending-shell">
+        <div class="cinema-section-heading">
+          <div><h2>🔥 Trending on Vision Hub</h2><p>Featured titles and popular picks from the catalogue</p></div>
+          <span class="cinema-heading-meta">Discover</span>
+        </div>
+        <div class="cinema-trending-grid" id="cinemaTrendingGrid" aria-live="polite"></div>
+      </section>
+
+      <section class="section cinema-catalog-section" id="explore-catalog">
+        <div class="cinema-section-heading">
+          <div><h2>🎬 Catalog Explorer</h2><p>Browse the full published Vision Hub library</p></div>
+          <span class="cinema-catalog-count" id="cinemaCatalogCount">Loading titles…</span>
+        </div>
+        <div class="cinema-catalog-toolbar">
+          <div class="cinema-selects">
+            <select id="cinemaGenreFilter" aria-label="Filter by genre">
+              <option value="All">All genres</option>
+            </select>
+            <select id="cinemaQualityFilter" aria-label="Filter by available quality">
+              <option value="All">All qualities</option>
+            </select>
+            <select id="cinemaSortFilter" aria-label="Sort catalogue">
+              <option value="newest">Sort: Latest added</option>
+              <option value="popular">Sort: Most viewed</option>
+              <option value="rating">Sort: Top IMDb</option>
+            </select>
           </div>
         </div>
-        <div class="hero-dots" id="heroDots"></div>
-      </section>
-
-      <!-- Category & Industry Filter Bar -->
-      <section class="section">
-        <div class="category-filters" id="industryFilters" style="margin-bottom: 14px;">
-          <button class="filter-btn active" onclick="filterByIndustry('All', this)">🌐 All Industries</button>
-          <button class="filter-btn" onclick="filterByIndustry('Bollywood', this)">🇮🇳 Bollywood</button>
-          <button class="filter-btn" onclick="filterByIndustry('Hollywood', this)">🎬 Hollywood</button>
-          <button class="filter-btn" onclick="filterByIndustry('South', this)">⚡ South Indian</button>
-        </div>
-        <div class="category-filters" id="categoryFilters">
-          <button class="filter-btn active" onclick="filterByGenre('All', this)">All Genres</button>
-          <button class="filter-btn" onclick="filterByGenre('Action', this)">🔥 Action</button>
-          <button class="filter-btn" onclick="filterByGenre('Drama', this)">🎭 Drama</button>
-          <button class="filter-btn" onclick="filterByGenre('Comedy', this)">😂 Comedy</button>
-          <button class="filter-btn" onclick="filterByGenre('Horror', this)">👻 Horror</button>
-          <button class="filter-btn" onclick="filterByGenre('Sci-Fi', this)">🚀 Sci-Fi</button>
-          <button class="filter-btn" onclick="filterByGenre('Romance', this)">💖 Romance</button>
-          <button class="filter-btn" onclick="filterByGenre('Thriller', this)">🔪 Thriller</button>
-        </div>
-      </section>
-
-      <section class="vh-ad-section" id="vhAdHomeTop" aria-label="Advertisement" hidden></section>
-      <!-- Trending Movies Section -->
-      <section class="section">
-        <div class="section-header">
-          <h2>🔥 Trending Movies</h2>
-          <a onclick="showPage('movies')" class="see-all">See All Movies →</a>
-        </div>
-        <div class="movies-grid" id="trendingGrid"></div>
-      </section>
-
-      <section class="section hidden" id="popularContentSection">
-        <div class="section-header">
-          <h2>🔥 Most Popular · Last 30 Days</h2>
-          <span class="popular-period-label">Based on real content-detail views</span>
-        </div>
-        <div class="movies-grid" id="popularGrid"></div>
-      </section>
-
-      <!-- Popular Web Series Section -->
-      <section class="section">
-        <div class="section-header">
-          <h2>📺 Popular Web Series</h2>
-          <a onclick="showPage('series')" class="see-all">See All Series →</a>
-        </div>
-        <div class="movies-grid" id="seriesGrid"></div>
-      </section>
-
-      <!-- New Releases Section -->
-      <section class="section">
-        <div class="section-header">
-          <h2>🆕 Last Entries & New Releases</h2>
-          <a onclick="showPage('movies')" class="see-all">Browse More →</a>
-        </div>
-        <div class="movies-grid" id="newGrid"></div>
-      </section>
-      <section class="section" id="continueWatchingSection">
-        <div class="section-header"><h2>▶️ Continue Watching</h2></div>
-        <div class="movies-grid" id="continueWatchingGrid"></div>
-      </section>
-      <section class="section">
-        <div class="section-header"><h2>⭐ Top Rated</h2><a onclick="showPage('movies')" class="see-all">Explore Movies →</a></div>
-        <div class="movies-grid" id="topRatedGrid"></div>
-      </section>
-      <section class="section">
-        <div class="section-header"><h2>📱 Featured Shorts</h2><a onclick="showPage('shorts')" class="see-all">See All Shorts →</a></div>
-        <div class="movies-grid" id="homeShortsGrid"></div>
-      </section>
-      <section class="section">
-        <div class="section-header"><h2>🎭 Explore Popular Genres</h2></div>
-        <div class="category-filters" id="popularGenreLinks"></div>
+        <div class="cinema-catalog-grid" id="homeCatalogGrid" aria-live="polite"></div>
       </section>
     </div>
 
@@ -1306,6 +1300,7 @@
           <div class="modal-right">
             <h2 id="modalTitle">Movie Title</h2>
             <div class="modal-meta" id="modalMeta"></div>
+            <div class="cinema-modal-badges" id="cinemaMovieBadges" aria-label="Movie quality and audio details"></div>
             <p id="modalDesc" class="modal-desc"></p>
             <div class="modal-detail-row" id="modalDirector"></div>
             <div class="modal-screenshots" id="modalScreenshots" aria-label="Movie screenshots"></div>
@@ -1601,5 +1596,6 @@
 <script src="js/song-library.js"></script>
 <script src="js/community.js"></script>
 <script src="js/experience-ui.js?v=20261120-2"></script>
+<script src="js/cinema-home.js?v=20261120-1"></script>
 </body>
 </html>
