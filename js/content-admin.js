@@ -170,7 +170,8 @@
       list.push(asset);
       grouped.set(String(asset.content_id),list);
     }
-    (rows||[]).forEach(row=>addToCatalog(row,grouped.get(String(row.id))||[]));
+    // addToCatalog prepends; reverse the descending DB rows so the newest entries remain first.
+    (rows||[]).slice().reverse().forEach(row=>addToCatalog(row,grouped.get(String(row.id))||[]));
     await loadUserWatchProgress();
     window.renderVisionHub?.();
     renderManageList($("manageSearch")?.value||"");
