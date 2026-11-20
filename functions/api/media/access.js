@@ -13,6 +13,8 @@ export async function onRequestPost({ request, env }) {
     const contentId = String(body.contentId || "").trim();
     const storagePath = String(body.storagePath || "").trim();
     const provider = String(body.provider || "").trim().toLowerCase();
+    const downloadName = String(body.downloadName || "").replace(/[\\r\\n"]/g, "").replace(/[\\/\\\\]/g, "_").replace(/[^A-Za-z0-9._() -]/g, "_").trim().slice(0, 120);
+    const contentDisposition = downloadName ? 'attachment; filename="' + downloadName + '"' : "";
     if (!contentId || !storagePath || !["supabase", "cloudflare_r2", "backblaze_b2"].includes(provider)) {
       return json({ error: "Invalid media access request." }, 400);
     }
@@ -39,15 +41,15 @@ export async function onRequestPost({ request, env }) {
 
     if (provider === "cloudflare_r2" || provider === "backblaze_b2") {
       const signed = provider === "backblaze_b2"
-        ? await presignB2(env, "GET", storagePath, "", 21600)
-        : await presignR2(env, "GET", storagePath, "", 21600);
+        ? await presignB2(env, "GET", storagePath, "", 21600, contentDisposition)
+        : await presignR2(env, "GET", storagePath, "", 21600, contentDisposition);
       return json({ url: signed.url, expiresIn: 21600 });
     }
     const bucket = "vh-private-media";
     const signResponse = await fetch(base + "/storage/v1/object/sign/" + bucket + "/" + encodePath(storagePath), {
       method: "POST",
       headers,
-      body: JSON.stringify({ expiresIn: 21600 })
+      body: JSON.stringify(downloadName ? { expiresIn: 21600, download: downloadName } : { expiresIn: 21600 })
     });
     const signData = await signResponse.json().catch(() => ({}));
     if (!signResponse.ok || !signData.signedURL) {
