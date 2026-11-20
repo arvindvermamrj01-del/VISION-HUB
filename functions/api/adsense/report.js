@@ -23,7 +23,10 @@ export async function onRequestGet({ request, env }) {
     if (!tokenResponse.ok || !token.access_token) return json({ error: token.error_description || "Google OAuth refresh failed. Reconnect AdSense reporting credentials." }, 502);
 
     const reportUrl = new URL("https://adsense.googleapis.com/v2/" + account + "/reports:generate");
-    reportUrl.searchParams.set("dateRange", "LAST_7_DAYS");
+    const requestedRange = new URL(request.url).searchParams.get("range") || "LAST_7_DAYS";
+    const allowedRanges = ["LAST_7_DAYS", "LAST_30_DAYS", "THIS_MONTH", "LAST_MONTH"];
+    const dateRange = allowedRanges.includes(requestedRange) ? requestedRange : "LAST_7_DAYS";
+    reportUrl.searchParams.set("dateRange", dateRange);
     reportUrl.searchParams.set("currencyCode", "INR");
     reportUrl.searchParams.set("limit", "7");
     reportUrl.searchParams.set("orderBy", "-DATE");
@@ -42,7 +45,7 @@ export async function onRequestGet({ request, env }) {
       totals: report.totals || null,
       averages: report.averages || null,
       totalMatchedRows: report.totalMatchedRows ?? null,
-      dateRange: "LAST_7_DAYS"
+      dateRange
     });
   } catch (error) {
     const message = error.message || "AdSense report request failed.";
