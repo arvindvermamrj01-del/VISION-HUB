@@ -29,7 +29,9 @@
     settings={...settings,...(next||{})};
     const enabled=settings.ads_enabled==="on";
     const publisher=String(settings.adsense_publisher_id||"").trim();
-    if(!enabled||!validPublisher(publisher)){
+    const activePage=document.querySelector(".page.active")?.id||"page-home";
+    const restrictedPage=["page-admin","page-admin-login","page-login","page-register","page-reset-password"].includes(activePage);
+    if(!enabled||!validPublisher(publisher)||restrictedPage){
       clear($("vhAdHomeTop"));clear($("vhAdFooter"));return;
     }
     const script=document.querySelector('script[data-vh-adsense]');
@@ -41,7 +43,8 @@
       node.onerror=()=>{scriptClient="";clear($("vhAdHomeTop"));clear($("vhAdFooter"));console.warn("AdSense script could not load.");};
       document.head.appendChild(node);scriptClient=publisher;
     }
-    renderPlacement("vhAdHomeTop",settings.adsense_slot_home,publisher);
+    if(activePage==="page-home")renderPlacement("vhAdHomeTop",settings.adsense_slot_home,publisher);
+    else clear($("vhAdHomeTop"));
     renderPlacement("vhAdFooter",settings.adsense_slot_footer,publisher);
   }
   async function load(){
@@ -54,5 +57,6 @@
     }catch(error){console.warn("AdSense settings unavailable:",error.message);apply({ads_enabled:"off"});}
   }
   document.addEventListener("DOMContentLoaded",load);
+  document.addEventListener("visionhub:page-changed",()=>apply(settings));
   window.addEventListener("vh:site-settings-updated",event=>apply(event.detail||{}));
 })();
