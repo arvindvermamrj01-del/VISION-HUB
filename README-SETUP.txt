@@ -1,148 +1,224 @@
 VISION HUB — DEPLOYMENT & INTEGRATION GUIDE
 ===============================================
 
-WHAT IS IN THIS REPOSITORY
---------------------------
-Vision Hub is a static frontend served by Cloudflare Pages, with Supabase Auth,
-Postgres, Row Level Security and private Supabase Storage. Cloudflare Pages
-Functions provide server-side endpoints for staff management and secure media
-signing. When the R2 environment variables are configured, direct video uploads
-can use Cloudflare R2.
+ARCHITECTURE
+------------
+Vision Hub is a static frontend served by Cloudflare Pages.
+Supabase provides authentication, PostgreSQL, Row Level Security and metadata.
+Backblaze B2 is the preferred private media store for new video uploads.
+Cloudflare R2 and legacy private Supabase Storage remain supported.
+Cloudflare Pages Functions hold provider secrets and expose protected APIs.
 
-The site must only publish media, trailers, music and artwork that you own or
-are authorised to distribute.
+Publish only media, music, trailers and artwork that you own or are authorised
+to distribute.
 
-DEPLOYMENT
-----------
+CLOUDFLARE PAGES DEPLOYMENT
+---------------------------
 1. Connect this repository to the Cloudflare Pages project.
 2. Framework preset: None.
 3. Build command: leave blank.
 4. Build output directory: / (repository root).
-5. Keep the Functions directory at the repository root. Cloudflare Pages
-   automatically deploys functions under /functions as /api/* endpoints.
-6. Deploy the main branch. A new GitHub commit should trigger a Pages build if
-   the GitHub integration is enabled.
+5. Keep /functions at the repository root; Pages deploys these as routes.
+6. Deploy main. GitHub commits trigger Pages deployments when auto-deploy is on.
 
-SUPABASE CONFIGURATION
-----------------------
-The browser uses the publishable/anon key in js/supabase-config.js. That key is
-intended to be public. NEVER put a Supabase service-role key in JavaScript,
-HTML, GitHub source, or any browser-visible environment variable.
-
-In Cloudflare Pages > Settings > Variables and Secrets, add these server-side
-variables (mark secrets as encrypted):
+SUPABASE SERVER VARIABLES
+-------------------------
+In Cloudflare Pages > Settings > Variables and Secrets, configure encrypted
+server-side values:
 
   SUPABASE_URL
   SUPABASE_ANON_KEY
   SUPABASE_SERVICE_ROLE_KEY
 
-SUPABASE_SERVICE_ROLE_KEY is highly privileged. Limit access to the Cloudflare
-project and rotate it immediately if it is exposed.
+The browser publishable/anon key in js/supabase-config.js is public by design.
+NEVER place the service-role key in JavaScript, HTML, GitHub or chat. It bypasses
+RLS and must remain a Cloudflare server secret.
 
-For Supabase Auth:
-- Enable Email provider.
-- Configure the site's production URL and password-reset redirect URL in
-  Authentication > URL Configuration.
-- Set the desired email-confirmation policy and configure SMTP if reliable
-  production email delivery is needed.
-- Keep the owner account's profiles.role equal to admin.
+Enable Supabase Email Auth, set the production Site URL and password-reset
+redirect URL, configure SMTP for reliable production email, and keep the owner
+account's profiles.role equal to admin.
 
 DATABASE MIGRATIONS
 -------------------
-Run SQL in Supabase Dashboard > SQL Editor, in this general order. Do not
-recreate an existing production database or overwrite the existing catalog.
-The scripts marked additive are intended to upgrade existing tables.
+Do not recreate the production database or overwrite existing catalog rows.
+For an existing installation, run the additive feature bundle in Supabase
+Dashboard > SQL Editor:
 
-Initial project setup (only if not already applied):
+  supabase/vision-hub-feature-upgrade-bundle.sql
+
+This bundle includes:
+- Backblaze B2 as a recognised storage provider and preferred default.
+- UPI donation confirmation records and admin verification policies.
+- Web Series seasons and episodes.
+- Community suggestions, bug reports, complaints and one-vote-per-user voting.
+- Download-link click analytics.
+- Privacy-safe 30-day popular-content aggregation.
+
+If applying individual migrations instead, use the relevant files:
+  supabase/vision-hub-backblaze-b2-provider-upgrade.sql
+  supabase/vision-hub-donations.sql
+  supabase/vision-hub-series-episodes.sql
+  supabase/vision-hub-community-feedback.sql
+  supabase/vision-hub-analytics-download-clicks.sql
+  supabase/vision-hub-popular-content.sql
+
+Initial setup only (if the database has not already been created):
   supabase/vision-hub-master-setup.sql
 
-Existing catalog / media metadata:
-  supabase/vision-hub-movie-details-phase1.sql
-  supabase/vision-hub-media-assets-extension.sql
-  supabase/vision-hub-resolution-constraint-fix.sql
-
-Existing account and request features:
+Previously applied account/request upgrades should not need to be repeated:
   supabase/vision-hub-request-workflow-upgrade.sql
   supabase/vision-hub-user-watchlist.sql
   supabase/vision-hub-watch-progress.sql
-
-Storage and final platform upgrade:
-  supabase/vision-hub-storage-manager.sql
-  supabase/add-cloud-storage-providers.sql
   supabase/vision-hub-platform-upgrade.sql
 
-The latest platform upgrade is additive and creates the private
-vh-private-media bucket required by the direct-upload code. It also adds the
-staff roles, Cloudflare R2 provider, subtitle metadata and staff RLS policies.
-After applying it, confirm that the private vh-private-media bucket exists and
-that its Public setting is OFF.
+After the B2 migration, open Admin > Storage Manager. The legacy Supabase
+default is migrated to Backblaze B2; existing legacy files remain supported.
 
-CLOUDFLARE R2 DIRECT UPLOAD
----------------------------
-Create an R2 bucket in Cloudflare and an R2 API token scoped to that bucket.
-Add these encrypted Pages environment variables:
+BACKBLAZE B2 — PREFERRED VIDEO STORAGE
+--------------------------------------
+Create a private B2 bucket and an application key restricted to that bucket
+with read/write access. Configure these encrypted Cloudflare Pages variables:
+
+  B2_ENDPOINT
+  B2_BUCKET_NAME
+  B2_KEY_ID
+  B2_APPLICATION_KEY
+
+Set the bucket CORS rule for the exact production Pages origin, for example:
+  https://vision-hub-bat.pages.dev
+
+Allow the S3-compatible API methods used by the browser (PUT and GET; HEAD and
+DELETE may also be included) and the Content-Type request header. Do not use a
+wildcard origin in production.
+
+The browser uploads directly to B2 using short-lived signed single-PUT URLs;
+video bytes do not pass through the Pages Function. Current single-file upload
+limit is 5 GB. Multipart/resumable upload above 5 GB is not implemented.
+Playback URLs are short-lived and issued only after the server verifies that
+the file belongs to published catalog content. Delete operations verify the
+asset-to-content relationship before removing the object.
+
+CLOUDFLARE R2 — OPTIONAL ALTERNATE STORAGE
+------------------------------------------
+R2 remains supported. Configure encrypted Pages variables:
 
   R2_ACCOUNT_ID
   R2_BUCKET_NAME
   R2_ACCESS_KEY_ID
   R2_SECRET_ACCESS_KEY
 
-Configure the R2 bucket CORS policy to allow your exact Pages origin, for
-example https://vision-hub-bat.pages.dev, and methods GET, HEAD and PUT.
-Allow the Content-Type request header. Add any separate production custom
-domain you actually use; do not use a wildcard origin in production.
+Configure R2 CORS for the exact Pages origin and the required methods/headers.
+Do not remove R2 credentials if existing content still uses R2.
 
-The current R2 upload endpoint uses a short-lived signed single PUT request and
-accepts video files up to 5 GB. Multipart uploads for larger objects are not
-implemented yet. The browser uploads directly to R2; file bytes do not pass
-through the Pages Function. Signed playback URLs are short-lived and are issued
-only after the server verifies that the media asset belongs to published
-content.
+SUPABASE STORAGE
+---------------
+Supabase remains the database/auth provider and supports legacy private media.
+The vh-private-media bucket must remain private. Do not make it public to solve
+signed playback errors.
 
-For private Supabase uploads, the platform upgrade must first create the
-vh-private-media bucket. The bucket must remain private.
+GOOGLE DRIVE PUBLIC-SHARE IMPORT
+--------------------------------
+The Admin > Drive Import workflow can verify and add an individual public
+Google Drive video file to the catalog. It does not copy the original into B2.
+The file must be shared as "Anyone with the link — Viewer".
 
-WHAT IS CONNECTED AND WHAT STILL NEEDS PROVIDER SETUP
------------------------------------------------------
-Connected in source:
-- Supabase email/password sign-in, sign-up, password reset request and logout.
-- User profile name and password management.
-- Cross-device watchlist and saved playback progress (after their SQL migrations).
-- Movie/series/short publishing and edit metadata.
-- Private Supabase Storage upload and secure signed playback.
-- Cloudflare R2 signed upload and playback routes (after R2 secrets and CORS).
-- Staff account creation/revocation through the server-side Supabase Auth Admin API.
-- Role-specific admin tabs and database permissions.
-- Video quality selection, playback speed and WebVTT subtitle track controls.
+1. Enable Google Drive API in Google Cloud.
+2. Create an API key restricted to the Google Drive API.
+3. Add the key as an encrypted Cloudflare Pages secret:
 
-Not an API integration yet:
-- TeraBox, MEGA, Degoo, Google Drive, MediaFire and the other listed providers
-  can be selected for metadata or used as authorised external links. Their
-  direct account upload APIs are not connected by this code.
-- Google Drive OAuth/Picker import is not connected yet; it needs a Google
-  Cloud OAuth client, consent configuration and a server-side connector.
-- R2 multipart/resumable upload for files larger than 5 GB is not connected.
+  GOOGLE_DRIVE_API_KEY
+
+Folder import, private Drive files and server-side Drive-to-B2 copying are not
+implemented. The Drive preview uses Google's embedded player; browser download
+and playback behavior remains subject to Google's sharing and file policies.
+
+TELEGRAM BOT
+-------------
+Configure encrypted Cloudflare Pages secrets:
+
+  TELEGRAM_BOT_TOKEN
+  TELEGRAM_WEBHOOK_SECRET
+  TELEGRAM_ADMIN_CHAT_ID
+  TELEGRAM_CHANNEL_CHAT_ID
+  TELEGRAM_CHANNEL_URL
+
+Add the bot as an administrator of the target Telegram channel if it must post
+announcements. In Admin > Platform Settings, use "Connect / Refresh Bot
+Webhook" after the secrets are configured.
+
+Commands: /start, /help, /latest, /search title, /genres, /request, /channel.
+The /status command is restricted to TELEGRAM_ADMIN_CHAT_ID.
+Published-content and authenticated-user request notifications are supported.
+Bot-driven file uploads are not connected.
+
+GOOGLE ADSENSE / REVENUE
+------------------------
+Ad placements are disabled by default. In Admin > Platform Settings, enter the
+AdSense Publisher ID (ca-pub-...), numeric ad slot IDs and enable ads only after
+Google approves the site. The /ads.txt route reads the publisher ID saved there.
+
+For the AdSense earnings report, enable the AdSense Management API in Google
+Cloud and configure these encrypted Cloudflare Pages secrets:
+
+  ADSENSE_CLIENT_ID
+  ADSENSE_CLIENT_SECRET
+  ADSENSE_REFRESH_TOKEN
+  ADSENSE_ACCOUNT_ID   (format: accounts/pub-...)
+
+The report reads estimated earnings, page views, RPM, clicks and impressions.
+Google account approval, policy compliance and reporting permissions remain
+external requirements. Never click your own ads or encourage invalid clicks.
+
+DONATIONS
+---------
+In Admin > Platform Settings, configure the public UPI ID, display name and an
+HTTPS QR image URL. Users can submit their UPI transaction reference. All
+submissions remain pending until an administrator checks the payment record
+and marks it verified or rejected. This is manual UPI verification, not an
+automatic payment-gateway settlement. No UPI PIN, OTP or bank password is ever
+required by Vision Hub.
+
+THEMES, CATALOG AND COMMUNITY
+-----------------------------
+The appearance selector offers HyperOS Aurora, ColorOS Ocean, AMOLED Black
+and Light Glass. Preferences are saved on the visitor's device.
+The catalog includes search across title/actor/director/genre/language/year,
+release-year and language filters, sorting, latest entries, top-rated content,
+popular genres, Web Series seasons/episodes, watchlist, continue watching,
+shorts, trailers, subtitles and actual supplied download links.
+The homepage popular rail uses aggregated content-detail views from the last
+30 days; raw session tags remain admin-only.
+Community feedback supports suggestions, bug reports, complaints, admin
+moderation and authenticated voting.
+
+OTHER STORAGE PROVIDERS
+-----------------------
+Backblaze B2, Cloudflare R2 and legacy Supabase Storage support direct uploads.
+Google Drive supports public-share catalog linking as described above.
+TeraBox, MEGA, Degoo, MediaFire, pCloud, Box, Icedrive, Koofr, Internxt and
+Telegram are not all direct-upload integrations. Where no verified connector
+is configured, use an authorised external share URL. Selecting a provider in
+the UI does not create or authenticate a provider account.
 
 SECURITY NOTES
 --------------
-- Never paste or commit service-role keys, R2 secrets, provider passwords or
-  OAuth client secrets into repository files or chat.
-- Keep all server secrets in Cloudflare Pages encrypted environment variables.
-- Give staff the least privilege: sub_admin, content_editor or moderator.
-- Only the root admin should create staff accounts or change owner permissions.
-- Keep media buckets private unless you deliberately choose to publish a
-  separate public image bucket.
-- Use valid HTTPS media URLs. Subtitle tracks must be WebVTT (.vtt) files and
-  the subtitle host must permit browser cross-origin requests.
-- Browser-side localStorage is only a guest/device convenience; it is not a
-  secure account database or a replacement for Supabase RLS.
+- Never paste or commit service-role keys, B2/R2 secrets, provider passwords,
+  OAuth secrets, UPI PINs or OTPs into repository files or chat.
+- Keep server secrets in Cloudflare Pages encrypted variables.
+- Give staff least privilege: sub_admin, content_editor or moderator.
+- Keep media buckets private and use signed URLs for published assets.
+- Only publish media you own or are licensed to distribute.
+- Use HTTPS media URLs. Subtitle tracks must be WebVTT (.vtt) files and their
+  host must permit browser cross-origin requests.
+- localStorage is a guest/device convenience, not a secure account database.
+- Baseline browser security headers are defined in /_headers.
 
 FINAL VERIFICATION
 ------------------
-After all database migrations, Cloudflare variables, R2 CORS rules, email
-settings and the production deployment are complete, run the full final
-end-to-end test pass. Verify guest browsing, sign-up and sign-in, profile
-updates, role separation, movie create/edit/delete, request submission and
-moderation, cross-device watchlist/progress, Supabase/R2 upload and playback,
-subtitle tracks, speed changes, responsive layout, SEO and security policies.
-Do this final test pass only after the remaining integrations are configured.
+Run the full end-to-end, functional, mobile, performance and security pass only
+after the database migrations, Cloudflare secrets, B2 CORS, optional provider
+credentials and production deployment are configured. Verify sign-up/sign-in,
+password reset, profile, roles, content create/edit/delete, Drive public-share
+import, B2/R2/Supabase upload and playback, download links, subtitles, episode
+management, requests, watchlist/progress, community voting, donations, AdSense,
+Telegram bot/webhook, responsive themes, SEO and security policies.
