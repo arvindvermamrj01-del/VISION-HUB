@@ -185,7 +185,7 @@
         const extension=file.name.split(".").pop()?.toLowerCase()||"";
         const inferred={"mp3":"audio/mpeg","m4a":"audio/mp4","aac":"audio/aac","ogg":"audio/ogg","opus":"audio/ogg","wav":"audio/wav","flac":"audio/flac"};
         const contentType=file.type||inferred[extension]||"";
-        if(!contentType.startsWith("audio/"))throw new Error("The selected file does not have a supported audio MIME type.");
+        if(!["audio/mpeg","audio/mp4","audio/aac","audio/ogg","audio/wav","audio/x-wav","audio/flac","audio/x-flac","audio/webm","audio/opus"].includes(contentType))throw new Error("Use an MP3, M4A, AAC, OGG, WAV, FLAC or supported WebM audio file.");
         const signedResponse=await fetch("/api/media/upload-url",{method:"POST",headers:{"Authorization":"Bearer "+sessionToken,"Content-Type":"application/json"},body:JSON.stringify({provider:storageProvider,kind:"audio",contentType,fileName:file.name,fileSize:file.size})});
         const signed=await signedResponse.json().catch(()=>({}));
         if(!signedResponse.ok)throw new Error(signed.error||"Could not prepare secure audio upload.");
