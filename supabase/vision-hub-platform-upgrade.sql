@@ -131,6 +131,14 @@ alter table public.vh_content
   add column if not exists storage_provider text not null default 'supabase';
 
 alter table public.vh_content drop constraint if exists vh_content_storage_provider_check;
+revoke select on public.vh_content from anon;
+grant select (
+  id,title,content_type,video_url,poster_url,genre,language,release_year,rating,
+  description,"cast",duration,trailer_url,industry,published,created_at,storage_provider,
+  telegram_url,is_featured,subtitle_tracks,director,screenshots
+) on public.vh_content to anon;
+grant select on public.vh_content to authenticated;
+
 alter table public.vh_content add constraint vh_content_storage_provider_check
   check (storage_provider in (
     'supabase','cloudflare_r2','backblaze_b2','terabox','mega','degoo','google_drive',
