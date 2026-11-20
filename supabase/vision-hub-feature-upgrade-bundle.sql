@@ -17,6 +17,12 @@ alter table public.vh_storage_settings
     'google_drive','mediafire','pcloud','box','icedrive','koofr','internxt','telegram'
   ));
 
+alter table public.vh_storage_settings
+  alter column default_provider set default 'backblaze_b2';
+update public.vh_storage_settings
+  set default_provider='backblaze_b2', updated_at=now()
+  where id=1 and default_provider='supabase';
+
 -- Content metadata and individual media assets must accept B2 as well.
 alter table public.vh_content
   drop constraint if exists vh_content_storage_provider_check;
