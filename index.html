@@ -497,6 +497,9 @@
             <button class="admin-nav-btn" onclick="adminTab('manage',this)">
               <i class="fas fa-film"></i> Manage Catalog
             </button>
+            <button class="admin-nav-btn" onclick="adminTab('episodes',this)">
+              <i class="fas fa-layer-group"></i> Seasons & Episodes
+            </button>
             <button class="admin-nav-btn" onclick="adminTab('drive-import',this)">
               <i class="fab fa-google-drive"></i> Drive Import
             </button>
@@ -779,6 +782,35 @@
               <input type="text" id="manageSearch" placeholder="Filter by title, genre, language..." oninput="filterManageList(this.value)" autocomplete="off"/>
             </div>
             <div id="manageList" class="manage-list"></div>
+          </div>
+
+          <!-- TAB 4: Series Seasons & Episodes -->
+          <div id="tab-episodes" class="admin-tab">
+            <h2>📺 Seasons & Episodes Manager</h2>
+            <p>Publish episodes under an existing Web Series. Episode videos use the same private B2/R2/Supabase media pipeline as movies.</p>
+            <form class="admin-form" id="episodeForm" onsubmit="publishEpisode(event)">
+              <div class="form-row">
+                <div class="form-group"><label for="episodeSeriesId">Web Series *</label><select id="episodeSeriesId" required><option value="">Loading series…</option></select></div>
+                <div class="form-group"><label for="episodeStorageProvider">Storage Provider</label><select id="episodeStorageProvider"><option value="backblaze_b2">Backblaze B2</option><option value="cloudflare_r2">Cloudflare R2</option><option value="supabase">Supabase legacy</option><option value="direct">Authorised direct URL</option></select></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label for="episodeSeasonNumber">Season Number *</label><input id="episodeSeasonNumber" type="number" min="1" max="100" value="1" required/></div>
+                <div class="form-group"><label for="episodeNumber">Episode Number *</label><input id="episodeNumber" type="number" min="1" max="500" required/></div>
+                <div class="form-group"><label for="episodeReleaseYear">Release Year</label><input id="episodeReleaseYear" type="number" min="1888" max="2100" placeholder="2026"/></div>
+              </div>
+              <div class="form-group"><label for="episodeTitle">Episode Title *</label><input id="episodeTitle" maxlength="250" required placeholder="e.g. The Beginning"/></div>
+              <div class="form-row">
+                <div class="form-group"><label for="episodeDuration">Duration</label><input id="episodeDuration" maxlength="40" placeholder="45 min"/></div>
+                <div class="form-group"><label for="episodePoster">Episode Poster URL (optional)</label><input id="episodePoster" type="url" placeholder="https://..."/></div>
+              </div>
+              <div class="form-group"><label for="episodeDescription">Episode Description</label><textarea id="episodeDescription" rows="3" maxlength="3000"></textarea></div>
+              <div class="form-group"><label for="episodeVideoFile">Upload Episode Video</label><input id="episodeVideoFile" type="file" accept="video/*"/><small>Direct uploads: Backblaze B2, Cloudflare R2 or legacy Supabase. Maximum 5 GB per file.</small></div>
+              <div class="form-group"><label for="episodeVideoUrl">Or authorised video URL</label><input id="episodeVideoUrl" type="url" placeholder="https://..."/></div>
+              <button type="submit" class="btn-primary full-width"><i class="fas fa-cloud-upload-alt"></i> Publish Episode</button>
+              <p id="episodePublishStatus" role="status"></p>
+            </form>
+            <h3 style="margin:24px 0 12px;">Published Episodes</h3>
+            <div id="episodeManageList" class="manage-list">Choose a series to view its episodes.</div>
           </div>
 
           <!-- TAB 4: Google Drive Import -->
@@ -1163,6 +1195,10 @@
             </div>
           </div>
         </div>
+        <section class="series-episodes-panel hidden" id="seriesEpisodesPanel">
+          <h3>Seasons & Episodes</h3>
+          <div id="seriesEpisodesList"></div>
+        </section>
         <!-- Embedded Trailer -->
         <div class="trailer-section" id="trailerSection">
           <h3>🎞️ Official Trailer</h3>
@@ -1380,5 +1416,6 @@
 <script src="js/theme-manager.js"></script>
 <script src="js/donation-manager.js"></script>
 <script src="js/ads-manager.js"></script>
+<script src="js/episode-manager.js"></script>
 </body>
 </html>
