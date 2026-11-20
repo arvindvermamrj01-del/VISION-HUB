@@ -429,9 +429,9 @@
     let wrap=$("vhPlayerQualityWrap");
     if(!wrap){wrap=document.createElement("label");wrap.id="vhPlayerQualityWrap";wrap.className="vh-player-quality";wrap.innerHTML='<span>Quality</span><select id="vhPlayerQuality"></select>';controls.prepend(wrap);}
     const select=$("vhPlayerQuality");
-    const assets=(item.media_assets||[]).filter(asset=>asset.url);
-    const choices=assets.length?assets:[{resolution:"Original",url:item.video_url,is_primary:true}].filter(x=>x.url);
-    select.innerHTML=choices.map((asset,index)=>'<option value="'+index+'">'+esc(asset.resolution||"Original")+'</option>').join("");
+    const assets=(item.media_assets||[]).filter(asset=>asset.url&&(!asset.asset_type||asset.asset_type==="video"));
+    const choices=assets.length?assets:[{resolution:"Original",url:item.video_url,is_primary:true,asset_type:"video"}].filter(x=>x.url);
+    select.innerHTML=choices.map((asset,index)=>'<option value="'+index+'">'+esc(asset.resolution||"Original")+(asset.language?" · "+esc(asset.language):"")+'</option>').join("");
     select.onchange=()=>playAsset(item,choices[Number(select.value)]);
     const preferred=choices.findIndex(asset=>asset.is_primary);
     select.value=String(preferred>=0?preferred:0);
@@ -572,7 +572,7 @@
     if(video.src!==asset.url){video.pause();video.src=asset.url;video.load();}
     activeVideo.play().catch(()=>{});
     const status=$("playerOverlay")?.querySelector(".player-controls span:nth-child(2)");
-    if(status)status.textContent=(asset.resolution||"Original")+" · supplied source";
+    if(status)status.textContent=(asset.resolution||"Original")+(asset.language?" · "+asset.language:"")+" · supplied source";
   }
 
   window.openMovie=function(id){
