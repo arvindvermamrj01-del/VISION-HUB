@@ -340,3 +340,5 @@ body.vh-modal-open{overflow:hidden}
 .vh-admin-feedback label{display:grid;gap:5px;font-size:.78rem;color:var(--muted)}
 .vh-admin-feedback select,.vh-admin-feedback textarea{width:100%;background:var(--panel);color:var(--text);border:1px solid var(--vh-line);border-radius:10px;padding:8px}
 @media(max-width:800px){.community-layout{grid-template-columns:1fr}.vh-admin-feedback{grid-template-columns:1fr}}
+
+:root[data-vh-theme="hyperos"]{--vh-glass:rgba(255,255,255,.065);--vh-line:rgba(173,190,224,.2)}
