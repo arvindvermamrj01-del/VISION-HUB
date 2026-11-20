@@ -221,3 +221,17 @@ button:active{transform:scale(.975)}
 @media(prefers-reduced-motion:reduce){
  html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+/* ColorOS Ocean is the calm default: deep ocean surfaces, blue-teal accents and soft contrast. */
+:root[data-vh-theme="coloros"]{
+ --bg:#081824;--panel:#102536;--card:#133044;--text:#eef7fa;--muted:#a9c1cc;
+ --accent:#238fc4;--accent2:#54cdb4;--border:#244657;
+ --vh-surface:rgba(16,39,56,.76);--vh-surface-strong:rgba(9,28,42,.94);
+ --vh-glass:rgba(95,186,201,.075);--vh-glass-line:rgba(126,208,218,.2);
+ --vh-glow:rgba(41,154,205,.22);--vh-cyan-glow:rgba(66,211,179,.15)
+}
+:root[data-vh-theme="coloros"] body{background:radial-gradient(ellipse at 8% -12%,rgba(37,147,193,.19),transparent 38%),radial-gradient(ellipse at 100% 18%,rgba(67,207,177,.11),transparent 32%),var(--bg)}
+:root[data-vh-theme="coloros"] .navbar{background:rgba(8,26,39,.86);border-color:rgba(120,207,214,.18)}
+:root[data-vh-theme="coloros"] .movie-card,:root[data-vh-theme="coloros"] .cinema-catalog-card,:root[data-vh-theme="coloros"] .cinema-trend-card{background:linear-gradient(145deg,rgba(18,49,68,.94),rgba(10,31,45,.97));border-color:rgba(115,194,207,.15)}
+:root[data-vh-theme="coloros"] .filter-btn.active,:root[data-vh-theme="coloros"] .cinema-card-details{background:linear-gradient(110deg,rgba(35,143,196,.3),rgba(84,205,180,.2));color:#e9fbfb;border-color:rgba(86,201,189,.22)}
+:root[data-vh-theme="coloros"] .detail-playback-panel{background:linear-gradient(145deg,rgba(17,47,64,.93),rgba(9,29,43,.95));border-color:rgba(121,204,210,.16)}
