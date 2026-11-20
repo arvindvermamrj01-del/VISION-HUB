@@ -13,7 +13,7 @@ export async function onRequestPost({ request, env }) {
     const contentId = String(body.contentId || "").trim();
     const storagePath = String(body.storagePath || "").trim();
     const provider = String(body.provider || "").trim().toLowerCase();
-    const downloadName = String(body.downloadName || "").replace(/[\\r\\n"]/g, "").replace(/[\\/\\\\]/g, "_").replace(/[^A-Za-z0-9._() -]/g, "_").trim().slice(0, 120);
+    const downloadName = String(body.downloadName || "").replace(/[\r\n"]/g, "").replace(/[\\/\\\\]/g, "_").replace(/[^A-Za-z0-9._() -]/g, "_").trim().slice(0, 120);
     const contentDisposition = downloadName ? 'attachment; filename="' + downloadName + '"' : "";
     if (!contentId || !storagePath || !["supabase", "cloudflare_r2", "backblaze_b2"].includes(provider)) {
       return json({ error: "Invalid media access request." }, 400);
