@@ -200,6 +200,7 @@
         const legacy={title,artist,audio_url:audioUrl,poster_url:posterUrl?.href||null,is_published:true,created_by:user.id};
         const retry=await db.from("vh_songs").insert(legacy);error=retry.error;
       }
+      if(error&&file&&/storage_provider|storage_path|column/i.test(error.message||""))throw new Error("Apply supabase/vision-hub-song-storage.sql (or the feature upgrade bundle) before uploading private song audio.");
       if(error)throw error;
       form?.reset();toast(file?"Song uploaded to private cloud storage.":"Song added.");
       await loadSongs();await window.refreshSongLibrary?.();
