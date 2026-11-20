@@ -54,7 +54,13 @@
     if(item.action)button.dataset.vhAction=item.action;
     const icon=document.createElement("i");icon.className="fas "+item.icon;icon.setAttribute("aria-hidden","true");
     const label=document.createElement("span");label.textContent=item.label;
-    button.append(icon,label);return button;
+    button.append(icon,label);
+    button.addEventListener("click",event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      execute(button);
+    });
+    return button;
   };
   function sync(name){
     const page=String(name||"home").replace(/^page-/,"");
@@ -66,6 +72,35 @@
       const active=button.dataset.vhPage===page;
       button.classList.toggle("active",active);button.setAttribute("aria-current",active?"page":"false");
     });
+  }
+  function routePage(page){
+    const requested=String(page||"").replace(/^page-/,"");
+    if(!requested)return false;
+    try{
+      if(typeof window.showPage==="function")window.showPage(requested);
+    }catch(error){
+      console.error("VISION HUB page router failed; applying safe route fallback:",error);
+    }
+    let resolved=requested;
+    if(requested==="profile"&&!window.VH_USER_ID)resolved="login";
+    if(requested==="admin"&&!window.VH_IS_ADMIN)resolved="admin-login";
+    const target=document.getElementById("page-"+resolved);
+    if(!target){
+      console.error("VISION HUB navigation target is missing:",resolved);
+      return false;
+    }
+    document.querySelectorAll(".page").forEach(section=>{
+      const active=section===target;
+      section.classList.toggle("active",active);
+      section.style.setProperty("display",active?"block":"none","important");
+    });
+    const privatePages=["login","register","reset-password","admin-login","admin"];
+    document.body.classList.toggle("vh-sidebar-hidden",privatePages.includes(resolved));
+    document.getElementById("navLinks")?.classList.remove("open");
+    if(document.getElementById("movieModal")?.classList.contains("open"))window.closeModalBtn?.();
+    sync(resolved);
+    try{window.scrollTo({top:0,behavior:"smooth"});}catch(_){}
+    return true;
   }
   function execute(button){
     const page=button.dataset.vhPage,action=button.dataset.vhAction;
@@ -86,10 +121,7 @@
     }
     if(action==="donate"){window.openDonationPanel?.();return;}
     if(action==="settings"){window.toggleThemePanel?.();return;}
-    if(page){
-      if(document.getElementById("movieModal")?.classList.contains("open"))window.closeModalBtn?.();
-      window.showPage?.(page);sync(page);
-    }
+    if(page)routePage(page);
   }
   function createDock(){
     if(document.querySelector(".vh-mobile-dock"))return;
@@ -100,28 +132,9 @@
     dock.addEventListener("focusin",()=>pauseAutoSlide(AUTO_RESUME_DELAY));
     dock.addEventListener("mouseenter",()=>pauseAutoSlide(AUTO_RESUME_DELAY));
     dock.addEventListener("mouseleave",()=>pauseAutoSlide(AUTO_RESUME_DELAY));
-    dock.addEventListener("click",event=>{
-      const button=event.target.closest("button[data-vh-page],button[data-vh-action]");
-      if(button)execute(button);
-    });
     document.addEventListener("visibilitychange",()=>{if(document.hidden)clearAutoSlide();else startAutoSlide(AUTO_RESUME_DELAY);});
     window.addEventListener("resize",()=>{if(mobileQuery())startAutoSlide(AUTO_RESUME_DELAY);else clearAutoSlide();});
     document.body.appendChild(dock);
-  }
-  function bindResponsiveNavClicks(){
-    if(document.documentElement.dataset.vhNavCaptureBound==="1")return;
-    document.documentElement.dataset.vhNavCaptureBound="1";
-    document.addEventListener("click",event=>{
-      const button=event.target?.closest?.(
-        "#vhAppSidebar button[data-vh-nav],#vhAppSidebar button[data-vh-action],.vh-mobile-dock button[data-vh-page],.vh-mobile-dock button[data-vh-action]"
-      );
-      if(!button)return;
-      event.preventDefault();
-      event.stopPropagation();
-      event.stopImmediatePropagation();
-      if(button.closest("#vhAppSidebar"))revealSidebar();
-      execute(button);
-    },true);
   }
   function bindAutoSlideActivity(){
     const resume=()=>{if(mobileQuery())pauseAutoSlide(AUTO_RESUME_DELAY);};
@@ -189,9 +202,12 @@
         if(!sidebar.contains(document.activeElement))scheduleSidebarCollapse(3000);
       });
     });
-    sidebar.addEventListener("click",event=>{
-      const button=event.target.closest("button[data-vh-nav],button[data-vh-action]");
-      if(button){revealSidebar();execute(button);}
+    sidebar.querySelectorAll("button[data-vh-nav],button[data-vh-action]").forEach(button=>{
+      button.addEventListener("click",event=>{
+        event.preventDefault();
+        event.stopPropagation();
+        execute(button);
+      });
     });
     document.addEventListener("visibilitychange",()=>{
       if(document.hidden)clearSidebarCollapse();
@@ -238,7 +254,7 @@
     });
   }
   function init(){
-    createDock();bindResponsiveNavClicks();bindAutoSlideActivity();bindDesktopSidebar();bindUserDropdown();
+    createDock();bindAutoSlideActivity();bindDesktopSidebar();bindUserDropdown();
     if(mobileQuery())startAutoSlide(AUTO_RESUME_DELAY);
     document.addEventListener("visionhub:page-changed",event=>sync(event.detail?.name||"home"));
     window.addEventListener("hashchange",()=>sync(location.hash.replace(/^#/,"")||"home"));
