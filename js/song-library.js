@@ -24,7 +24,7 @@
       const body=document.createElement("div");body.className="song-card-body";
       const title=document.createElement("h3");title.textContent=song.title;
       const artist=document.createElement("p");artist.className="song-artist";artist.textContent=song.artist||"Vision Hub Music";
-      const audio=document.createElement("audio");audio.controls=true;audio.preload="none";audio.src=httpsUrl(song.audio_url);audio.setAttribute("aria-label","Play "+song.title);
+      const audio=document.createElement("audio");audio.controls=true;audio.preload="none";audio.src=httpsUrl(song.playable_url||song.audio_url);audio.setAttribute("aria-label","Play "+song.title);
       audio.addEventListener("play",()=>document.querySelectorAll(".song-card audio").forEach(other=>{if(other!==audio)other.pause();}));
       body.append(title,artist,audio);card.append(cover,body);host.appendChild(card);
     });
@@ -33,9 +33,21 @@
     const host=$("songsLibraryGrid");if(!host||!db||loading)return;
     loading=true;
     try{
-      const {data,error}=await db.from("vh_songs").select("id,title,artist,audio_url,poster_url,created_at").eq("is_published",true).order("created_at",{ascending:false}).limit(100);
+      const {data,error}=await db.from("vh_songs").select("id,title,artist,audio_url,poster_url,storage_provider,storage_path,created_at").eq("is_published",true).order("created_at",{ascending:false}).limit(40);
       if(error)throw error;
-      songs=(data||[]).filter(song=>httpsUrl(song.audio_url));
+      songs=(await Promise.all((data||[]).map(async song=>{
+        const provider=String(song.storage_provider||"direct").toLowerCase();
+        if(song.storage_path&&["supabase","cloudflare_r2","backblaze_b2"].includes(provider)){
+          try{
+            const response=await fetch("/api/song/access",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({songId:song.id,storagePath:song.storage_path,provider})});
+            const result=await response.json().catch(()=>({}));
+            if(response.ok&&httpsUrl(result.url))return {...song,playable_url:result.url};
+            return null;
+          }catch(_){return null;}
+        }
+        const direct=httpsUrl(song.audio_url);
+        return direct?{...song,playable_url:direct}:null;
+      }))).filter(Boolean);
       render();
     }catch(error){
       host.textContent=error.message||"Music library is unavailable. Apply the latest Supabase setup SQL.";
