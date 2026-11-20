@@ -226,7 +226,7 @@ returns integer
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 declare
   v_user uuid := (select auth.uid());
   v_inserted bigint;
@@ -252,7 +252,7 @@ begin
   if v_votes is null then raise exception 'Feedback item not found.'; end if;
   return v_votes;
 end;
-$;
+$$;
 
 revoke all on function public.vh_vote_feedback(bigint) from public;
 grant execute on function public.vh_vote_feedback(bigint) to authenticated;
