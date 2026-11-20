@@ -877,10 +877,18 @@
               <div class="form-row">
                 <div class="form-group"><label for="episodeDuration">Duration</label><input id="episodeDuration" maxlength="40" placeholder="45 min"/></div>
                 <div class="form-group"><label for="episodePoster">Episode Poster URL (optional)</label><input id="episodePoster" type="url" placeholder="https://..."/></div>
+                <div class="form-group"><label for="episodeLanguage">Source Language</label><input id="episodeLanguage" maxlength="40" placeholder="Hindi"/></div>
               </div>
               <div class="form-group"><label for="episodeDescription">Episode Description</label><textarea id="episodeDescription" rows="3" maxlength="3000"></textarea></div>
-              <div class="form-group"><label for="episodeVideoFile">Upload Episode Video</label><input id="episodeVideoFile" type="file" accept="video/*"/><small>Direct uploads: Backblaze B2, Cloudflare R2 or legacy Supabase. Maximum 5 GB per file.</small></div>
-              <div class="form-group"><label for="episodeVideoUrl">Or authorised video URL</label><input id="episodeVideoUrl" type="url" placeholder="https://..."/></div>
+              <div class="form-row">
+                <div class="form-group"><label for="episodeResolution">Primary Video Quality</label><select id="episodeResolution"><option value="">Original / unspecified</option><option>480p</option><option>720p</option><option>1080p</option><option>2K</option><option>4K</option><option>8K</option></select></div>
+                <div class="form-group"><label for="episodeVideoFile">Upload Episode Video</label><input id="episodeVideoFile" type="file" accept="video/*"/><small>Direct uploads: Backblaze B2, Cloudflare R2 or legacy Supabase. Maximum 5 GB per file.</small></div>
+              </div>
+              <div class="form-group"><label for="episodeVideoUrl">Or authorised primary video URL</label><input id="episodeVideoUrl" type="url" placeholder="https://..."/></div>
+              <details class="episode-extra-quality"><summary>Add alternate quality links (optional)</summary>
+                <div class="form-row"><div class="form-group"><label for="episode480Url">480p URL</label><input id="episode480Url" type="url" placeholder="https://..."/></div><div class="form-group"><label for="episode720Url">720p URL</label><input id="episode720Url" type="url" placeholder="https://..."/></div></div>
+                <div class="form-row"><div class="form-group"><label for="episode1080Url">1080p URL</label><input id="episode1080Url" type="url" placeholder="https://..."/></div><div class="form-group"><label for="episode4kUrl">4K URL</label><input id="episode4kUrl" type="url" placeholder="https://..."/></div></div>
+              </details>
               <button type="submit" class="btn-primary full-width"><i class="fas fa-cloud-upload-alt"></i> Publish Episode</button>
               <p id="episodePublishStatus" role="status"></p>
             </form>
