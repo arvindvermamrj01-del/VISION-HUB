@@ -14,7 +14,7 @@
 
   async function saveProfile(event) {
     event.preventDefault();
-    const button = form.querySelector('[type="submit"]');
+    const button = event.currentTarget.querySelector('[type="submit"]');
     const name = $("userProfileName")?.value.trim();
     if (!name) return toast("Display name is required.");
     if (button) button.disabled = true;
@@ -41,7 +41,7 @@
     const confirm = $("userConfirmPassword")?.value || "";
     if (next.length < 12) return toast("New password must contain at least 12 characters.");
     if (next !== confirm) return toast("New password and confirmation do not match.");
-    const button = event.currentTarget.querySelector('[type="submit"]');
+    const button = form.querySelector('[type="submit"]');
     if (button) button.disabled = true;
     try {
       const user = await requireSession();
