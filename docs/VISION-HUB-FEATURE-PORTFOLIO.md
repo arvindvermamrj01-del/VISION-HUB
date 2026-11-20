@@ -9,7 +9,7 @@
 
 VISION HUB already has the primary catalogue experience, member flows, role-based Control Center, player, upload/storage integrations, community and donation surfaces. The main remaining work is not a full redesign: it is production schema reconciliation, real storage/playback validation, legal sample content, provider configuration and the final device/security test pass.
 
-The security activity system is implemented in code; Cloudflare's latest Production deployment (commit 92cec0e6, deployment 030a7537) completed successfully with the VH_SECURITY_DB binding. Live positive/negative browser tests and the one-hour cookie expiry check remain pending, so it is not yet **Verified**. A legacy profile-name compatibility fix is also being added so installations with either full_name or fullname can read and update display names safely.
+The security activity system is implemented in code; Cloudflare's latest Production deployment (commit 4e876729, deployment 5033bee0) completed successfully with the VH_SECURITY_DB binding. Live positive/negative browser tests and the one-hour cookie expiry check remain pending, so it is not yet **Verified**. Legacy profile-name compatibility for both full_name and fullname is now merged and deployed.
 
 ## Portfolio at a glance
 
