@@ -63,11 +63,10 @@ updates, run these additive migrations once for the existing database:
   supabase/vision-hub-content-editor-ownership-security.sql
   supabase/vision-hub-request-submission-security.sql
   supabase/vision-hub-public-column-access-security.sql
-  supabase/vision-hub-content-editor-ownership-security.sql
 
-They update Row Level Security policies and private-object access rules without
-deleting catalog records, media files or existing requests. Do not rerun the
-old setup scripts.
+They tighten catalog ownership, guest-request identity, anonymous column
+access and private-object permissions without deleting catalog records, media
+files or existing requests. Do not rerun the old setup scripts.
 
 If applying individual migrations instead, use the relevant files:
   supabase/vision-hub-backblaze-b2-provider-upgrade.sql
