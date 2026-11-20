@@ -28,7 +28,22 @@ export async function onRequestPost({ request, env }) {
         body: probe
       });
       if (!putResponse.ok) {
-        return json({ verified: false, stage, httpStatus: putResponse.status, error: "B2 rejected the temporary test upload. Check key write permissions, bucket scope, endpoint and CORS-independent S3 access." }, 502);
+        // Surface only the provider's safe diagnostic fields; never return the
+        // presigned URL, Authorization data, application key, or raw XML.
+        const providerBody = await putResponse.text().catch(() => "");
+        const readXmlField = name => {
+          const match = providerBody.match(new RegExp("<" + name + ">([\\s\\S]*?)</" + name + ">"));
+          return match ? match[1].replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").slice(0, 240) : "";
+        };
+        return json({
+          verified: false,
+          stage,
+          httpStatus: putResponse.status,
+          providerCode: readXmlField("Code") || undefined,
+          providerMessage: readXmlField("Message") || undefined,
+          requestId: readXmlField("RequestId") || readXmlField("RequestID") || undefined,
+          error: "B2 rejected the temporary test upload. Provider diagnostics are included to identify the exact cause."
+        }, 502);
       }
       uploaded = true;
 
