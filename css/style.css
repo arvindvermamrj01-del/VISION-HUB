@@ -402,3 +402,9 @@ body.vh-modal-open{overflow:hidden}
 
 .adsense-report-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
 .adsense-report-controls select{min-height:40px;padding:8px 10px;border:1px solid var(--vh-line);border-radius:10px;background:var(--panel);color:var(--text)}
+
+:root[data-vh-theme="hyperos"] .movie-card,:root[data-vh-theme="coloros"] .movie-card{overflow:hidden;border:1px solid var(--vh-line);border-radius:21px;background:var(--vh-glass);backdrop-filter:blur(16px) saturate(135%);box-shadow:0 14px 34px rgba(0,0,0,.2)}
+:root[data-vh-theme="hyperos"] .section-header h2,:root[data-vh-theme="coloros"] .section-header h2{letter-spacing:-.035em}
+:root[data-vh-theme="hyperos"] .btn-play,:root[data-vh-theme="coloros"] .btn-play{border-radius:999px}
+:root[data-vh-theme="hyperos"] .admin-form,:root[data-vh-theme="coloros"] .admin-form{border-radius:22px}
+:root[data-vh-theme="hyperos"] .modal-content,:root[data-vh-theme="coloros"] .modal-content{border-radius:26px}
