@@ -66,13 +66,14 @@ export async function onRequestPost({ request, env }) {
         await sendMessage(env, chatId, "This command is available to the Vision Hub administrator only.");
       } else {
         const base = supabaseBase(env), headers = supabaseAdminHeaders(env);
+        const countHeaders = { ...headers, Prefer: "count=exact" };
         const [contentResponse, requestResponse] = await Promise.all([
-          fetch(base + "/rest/v1/vh_content?select=id&published=eq.true", { headers }),
-          fetch(base + "/rest/v1/vh_requests?select=id&status=eq.pending", { headers })
+          fetch(base + "/rest/v1/vh_content?select=id&published=eq.true", { method: "HEAD", headers: countHeaders }),
+          fetch(base + "/rest/v1/vh_requests?select=id&status=eq.pending", { method: "HEAD", headers: countHeaders })
         ]);
         if (!contentResponse.ok || !requestResponse.ok) throw new Error("Admin status could not be loaded.");
-        const [contentRows, requestRows] = await Promise.all([contentResponse.json(), requestResponse.json()]);
-        await sendMessage(env, chatId, "Vision Hub status\nPublished titles: " + contentRows.length + "\nPending requests: " + requestRows.length);
+        const count = response => Number((response.headers.get("content-range") || "").split("/").pop()) || 0;
+        await sendMessage(env, chatId, "Vision Hub status\nPublished titles: " + count(contentResponse) + "\nPending requests: " + count(requestResponse));
       }
     } else {
       await sendMessage(env, chatId, "Unknown command. Send /help to see available commands.");
