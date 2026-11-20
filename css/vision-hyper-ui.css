@@ -269,8 +269,8 @@ button:active{transform:scale(.975)}
 
 
 /* Dynamic Vision Hub side rail and responsive navigation system. */
-:root{--vh-nav-width:82px;--vh-nav-expanded:226px;--vh-aurora-violet:#8b72ff;--vh-aurora-cyan:#36c9ec;--vh-aurora-pink:#ec64c9}
-#app>.page,#app>.footer{width:calc(100% - 124px)!important;margin-left:108px!important;margin-right:16px!important}
+:root{--vh-nav-width:138px;--vh-nav-expanded:226px;--vh-aurora-violet:#8b72ff;--vh-aurora-cyan:#36c9ec;--vh-aurora-pink:#ec64c9}
+#app>.page,#app>.footer{width:calc(100% - 180px)!important;margin-left:164px!important;margin-right:16px!important}
 .navbar{width:calc(100% - 32px)!important;max-width:none!important;margin-left:16px!important;margin-right:16px!important}
 .vh-sidebar{
  position:fixed;left:12px;top:132px;bottom:14px;z-index:1700;display:flex;flex-direction:column;gap:9px;
@@ -284,17 +284,17 @@ button:active{transform:scale(.975)}
 .vh-sidebar:hover,.vh-sidebar:focus-within{width:var(--vh-nav-expanded);border-color:rgba(151,145,255,.38);box-shadow:0 20px 58px rgba(0,0,0,.45),0 0 44px rgba(91,92,255,.16),inset 0 1px 0 rgba(255,255,255,.09)}
 .vh-sidebar-brand{display:flex;align-items:center;gap:11px;min-height:48px;padding:2px 7px 8px;overflow:hidden;white-space:nowrap}
 .vh-sidebar-brand-icon{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:14px;color:#fff;background:linear-gradient(135deg,#36c9ec 0%,#6867f5 51%,#dc58c7 100%);box-shadow:0 8px 26px rgba(85,104,255,.33),inset 0 1px 0 rgba(255,255,255,.25)}
-.vh-sidebar-brand-copy{display:flex;flex-direction:column;gap:2px;opacity:0;transform:translateX(-7px);transition:opacity .18s ease,transform .22s ease}
-.vh-sidebar:hover .vh-sidebar-brand-copy,.vh-sidebar:focus-within .vh-sidebar-brand-copy{opacity:1;transform:none}
+.vh-sidebar-brand-copy{display:flex;flex-direction:column;gap:2px;opacity:1;transform:none;transition:opacity .18s ease,transform .22s ease}
+
 .vh-sidebar-brand-copy strong{color:#f4f7ff;font-size:.75rem;font-weight:950;letter-spacing:.035em}
 .vh-sidebar-brand-copy small{color:#7f91b3;font-size:.52rem;font-weight:900;letter-spacing:.15em}
 .vh-sidebar-scroll{display:flex;flex:1;flex-direction:column;gap:4px;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:rgba(135,151,198,.3) transparent}
-.vh-sidebar-section-label{height:15px;min-height:15px;margin:7px 0 1px 9px;color:#637393;font-size:.52rem;font-weight:950;letter-spacing:.16em;white-space:nowrap;opacity:0;transition:opacity .18s ease}
-.vh-sidebar:hover .vh-sidebar-section-label,.vh-sidebar:focus-within .vh-sidebar-section-label{opacity:1}
+.vh-sidebar-section-label{height:15px;min-height:15px;margin:7px 0 1px 9px;color:#637393;font-size:.52rem;font-weight:950;letter-spacing:.16em;white-space:nowrap;opacity:1;transition:opacity .18s ease}
+
 .vh-sidebar-button{position:relative;display:flex;align-items:center;gap:14px;width:100%;min-height:46px;flex:0 0 auto;padding:0 11px;border:1px solid transparent;border-radius:15px;color:#9eabc5;background:transparent;text-align:left;cursor:pointer;white-space:nowrap;transition:background .22s ease,color .22s ease,border-color .22s ease,transform .22s ease,box-shadow .22s ease}
 .vh-sidebar-button i{display:grid;place-items:center;flex:0 0 22px;width:22px;font-size:1.12rem;color:#94a5cb;transition:color .22s ease,transform .22s ease,text-shadow .22s ease}
-.vh-sidebar-button span{overflow:hidden;font-size:.78rem;font-weight:780;letter-spacing:-.01em;opacity:0;transform:translateX(-8px);transition:opacity .18s ease,transform .22s ease}
-.vh-sidebar:hover .vh-sidebar-button span,.vh-sidebar:focus-within .vh-sidebar-button span{opacity:1;transform:none}
+.vh-sidebar-button span{overflow:hidden;font-size:.76rem;font-weight:780;letter-spacing:-.01em;opacity:1;transform:none;transition:opacity .18s ease,transform .22s ease}
+
 .vh-sidebar-button:hover{color:#fff;background:rgba(129,143,207,.1);border-color:rgba(157,173,226,.13)}
 .vh-sidebar-button:hover i{color:#80d9ff;transform:translateY(-1px)}
 .vh-sidebar-button.active{color:#fff;border-color:rgba(136,128,255,.26);background:linear-gradient(105deg,rgba(97,92,232,.25),rgba(43,175,220,.13) 62%,rgba(194,91,207,.12));box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 6px 20px rgba(70,90,210,.11)}
@@ -304,16 +304,16 @@ button:active{transform:scale(.975)}
 .vh-sidebar-donate i{color:#ff6698}
 .vh-sidebar-divider{height:1px;min-height:1px;margin:7px 5px;background:linear-gradient(90deg,transparent,rgba(144,163,213,.22),transparent)}
 .vh-sidebar-footer{display:flex;align-items:center;gap:9px;min-height:25px;padding:0 12px;overflow:hidden;white-space:nowrap;color:#6f80a2;font-size:.52rem;font-weight:900;letter-spacing:.1em}
-.vh-sidebar-footer>span:last-child{opacity:0;transition:opacity .18s ease}
-.vh-sidebar:hover .vh-sidebar-footer>span:last-child,.vh-sidebar:focus-within .vh-sidebar-footer>span:last-child{opacity:1}
+.vh-sidebar-footer>span:last-child{opacity:1;transition:opacity .18s ease}
+
 .vh-sidebar-status-dot{width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:#50e0ae;box-shadow:0 0 12px rgba(80,224,174,.7)}
 body.vh-sidebar-hidden #vhAppSidebar{display:none!important}
 body.vh-sidebar-hidden #app>.page,body.vh-sidebar-hidden #app>.footer{width:100%!important;margin-left:0!important;margin-right:0!important}
-body.vh-movie-detail-open #vhAppSidebar{top:72px;bottom:0;left:0;width:88px;z-index:1810;border-radius:0 17px 0 0;border-left:0;border-bottom:0;background:linear-gradient(180deg,rgba(8,16,31,.98),rgba(6,11,23,.98));box-shadow:inset -1px 0 0 rgba(137,166,227,.17),9px 0 28px rgba(0,0,0,.16)}
-body.vh-movie-detail-open #vhAppSidebar:hover,body.vh-movie-detail-open #vhAppSidebar:focus-within{width:88px}
-body.vh-movie-detail-open #vhAppSidebar .vh-sidebar-brand-copy,body.vh-movie-detail-open #vhAppSidebar .vh-sidebar-section-label,body.vh-movie-detail-open #vhAppSidebar .vh-sidebar-button span,body.vh-movie-detail-open #vhAppSidebar .vh-sidebar-footer>span:last-child{display:none}
-body.vh-movie-detail-open #movieModal .vh-detail-page-content{margin-left:88px;width:calc(100% - 88px)}
-body.vh-movie-detail-open #vhAppSidebar .vh-sidebar-button{justify-content:center;padding:0 8px;border-radius:0}
+body.vh-movie-detail-open #vhAppSidebar{top:72px;bottom:0;left:0;width:138px;z-index:1810;border-radius:0 17px 0 0;border-left:0;border-bottom:0;background:linear-gradient(180deg,rgba(8,16,31,.98),rgba(6,11,23,.98));box-shadow:inset -1px 0 0 rgba(137,166,227,.17),9px 0 28px rgba(0,0,0,.16)}
+body.vh-movie-detail-open #vhAppSidebar:hover,body.vh-movie-detail-open #vhAppSidebar:focus-within{width:138px}
+
+body.vh-movie-detail-open #movieModal .vh-detail-page-content{margin-left:138px;width:calc(100% - 138px)}
+body.vh-movie-detail-open #vhAppSidebar .vh-sidebar-button{justify-content:flex-start;padding:0 11px;border-radius:14px}
 body.vh-movie-detail-open #vhAppSidebar .vh-sidebar-button.active::before{left:0}
 @keyframes vhSidebarGlow{0%{background-position:0 0}100%{background-position:200% 0}}
 @keyframes vhAmbientDrift{0%{transform:translate3d(-2%,0,0);opacity:.45}100%{transform:translate3d(2%,1%,0);opacity:.8}}
@@ -343,7 +343,7 @@ body.vh-movie-detail-open #vhAppSidebar .vh-sidebar-button.active::before{left:0
 
 
 
-#app>.telegram-banner{width:calc(100% - 124px);margin-left:108px;margin-right:16px}
+#app>.telegram-banner{width:calc(100% - 180px);margin-left:164px;margin-right:16px}
 :root[data-vh-theme="light"] .vh-sidebar{
  border-color:rgba(62,83,135,.16);
  background:linear-gradient(165deg,rgba(250,252,255,.97),rgba(232,239,250,.96) 60%,rgba(241,234,255,.96));
