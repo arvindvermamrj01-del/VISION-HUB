@@ -16,6 +16,15 @@
   const slug = value => String(value || "media").normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g,"-").replace(/^-+|-+$/g,"").slice(-100) || "media";
   const qualityOrder = ["180p","240p","360p","420p","480p","720p","1080p","2k","4k","8k"];
   const staffRoles = ["admin","sub_admin","content_editor"];
+  const googleDriveFileId = value => {
+    const raw=String(value||"").trim();
+    if(/^[A-Za-z0-9_-]{10,}$/.test(raw))return raw;
+    try{
+      const url=new URL(raw);
+      if(!["drive.google.com","docs.google.com"].includes(url.hostname.toLowerCase()))return "";
+      return url.pathname.match(/\\/file\\/d\\/([A-Za-z0-9_-]{10,})/)?.[1]||url.searchParams.get("id")||"";
+    }catch(_){return "";}
+  };
   const validHttpUrl = raw => { if(!raw)return null; let url; try{url=new URL(raw);}catch(_){throw new Error("Media URL valid nahi hai.");} if(!["http:","https:"].includes(url.protocol))throw new Error("Media URL http/https hona chahiye."); return url.href; };
   const dbResolution = value => !value || String(value).toLowerCase() === "original" ? null : String(value).toLowerCase();
 
@@ -71,6 +80,10 @@
     const provider = String(asset.storage_provider || "supabase").toLowerCase();
     const path = asset.storage_path || asset.video_url || "";
     if (!path) return null;
+    if(provider==="google_drive"){
+      const id=googleDriveFileId(asset.storage_path||asset.asset_url||path);
+      return id?"https://drive.google.com/uc?export=download&id="+encodeURIComponent(id):(validHttpUrl(asset.asset_url||path)||null);
+    }
     if (["supabase","cloudflare_r2","backblaze_b2"].includes(provider) && !/^https?:\/\//i.test(path)) {
       try {
         const response=await fetch("/api/media/access",{
@@ -490,6 +503,16 @@
   function playAsset(item,asset) {
     if(!asset?.url){toast("Is quality ka playable URL available nahi hai.");return;}
     const provider=String(asset.storage_provider||"supabase").toLowerCase();
+    if(provider==="google_drive"){
+      const id=googleDriveFileId(asset.storage_path||asset.url);
+      const iframe=$("playerIframe"),fallback=$("playerFallback");
+      if(!id||!iframe){window.open(asset.url,"_blank","noopener");toast("Google Drive preview could not be embedded; opening the shared file.");return;}
+      activeVideo=null;
+      fallback?.classList.remove("active");
+      iframe.src="https://drive.google.com/file/d/"+encodeURIComponent(id)+"/preview";
+      iframe.classList.remove("hidden");
+      return;
+    }
     if(provider!=="supabase" && provider!=="cloudflare_r2" && provider!=="backblaze_b2" && provider!=="direct"){
       window.open(asset.url,"_blank","noopener");
       toast("Ye external provider link hai; playback provider ke page par khulega.");
