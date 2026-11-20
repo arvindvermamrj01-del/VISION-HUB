@@ -288,7 +288,7 @@
       for(const asset of assets||[]){
         const provider=String(asset.storage_provider||"").toLowerCase();
         const path=String(asset.storage_path||"");
-        if(!["supabase","cloudflare_r2"].includes(provider)||!path||/^https?:\/\//i.test(path))continue;
+        if(!["supabase","cloudflare_r2","backblaze_b2"].includes(provider)||!path||/^https?:\/\//i.test(path))continue;
         const response=await fetch("/api/media/delete",{
           method:"POST",
           headers:{"Authorization":"Bearer "+(session?.access_token||""),"Content-Type":"application/json"},
