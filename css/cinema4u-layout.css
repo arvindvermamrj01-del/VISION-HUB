@@ -575,3 +575,15 @@ body.vh-movie-detail-open{overflow:hidden}
 #downloadModal{position:fixed!important;inset:0!important;z-index:1950!important}
 #playerOverlay{z-index:1960!important}
 #movieModal.vh-lights-out .vh-detail-backdrop{opacity:.06}
+
+/* Admin upload provider health — explicit backend status without displaying credentials. */
+.vh-storage-health{margin-top:17px;padding:14px 15px;border:1px solid var(--vh-glass-line);border-radius:16px;background:linear-gradient(120deg,rgba(20,32,54,.82),rgba(19,19,47,.78))}
+.vh-storage-health-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.vh-storage-health-item{display:flex;align-items:center;gap:7px;min-width:0;padding:9px;border:1px solid rgba(138,160,207,.15);border-radius:11px;background:rgba(255,255,255,.025)}
+.vh-storage-health-item i{flex:0 0 auto;font-size:.8rem}
+.vh-storage-health-item b{overflow:hidden;color:var(--text);font-size:.68rem;text-overflow:ellipsis;white-space:nowrap}
+.vh-storage-health-item em{margin-left:auto;color:var(--muted);font-size:.6rem;font-style:normal;white-space:nowrap}
+.vh-storage-health-item.is-ready i{color:#4fdbab}
+.vh-storage-health-item.is-missing i{color:#ff8b8b}
+.vh-storage-health-note{margin:10px 0 0;color:#f4c57d;font-size:.7rem;line-height:1.55}
+@media(max-width:560px){.vh-storage-health-grid{grid-template-columns:1fr}.vh-storage-health-item{flex-wrap:wrap}}
