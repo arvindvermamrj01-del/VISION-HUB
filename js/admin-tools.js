@@ -245,6 +245,20 @@
     }catch(error){toast(error.message||"Donation status could not be updated.");}
   };
 
+  window.setupTelegramBotWebhook=async()=>{
+    const status=$("telegramBotSetupStatus");if(status)status.textContent="Connecting Telegram webhook…";
+    try{
+      await requireAdmin();
+      const {data:{session},error}=await db.auth.getSession();
+      if(error||!session?.access_token)throw new Error("Admin session expired. Sign in again.");
+      const response=await fetch("/api/telegram/setup-webhook",{method:"POST",headers:{"Authorization":"Bearer "+session.access_token}});
+      const result=await response.json().catch(()=>({}));
+      if(!response.ok)throw new Error(result.error||"Telegram webhook setup failed.");
+      if(status)status.textContent="Connected. Webhook: "+result.webhookUrl;
+      toast("Telegram bot webhook connected.");
+    }catch(error){if(status)status.textContent=error.message||"Telegram bot connection failed.";toast(error.message||"Telegram bot connection failed.");}
+  };
+
   window.updateAdminCredentials=async event=>{
     event?.preventDefault();const current=$("changeCurrPass")?.value||"",next=$("changeNewPass")?.value||"",confirm=$("changeConfirmPass")?.value||"";
     if(next.length<12)return toast("New password must be at least 12 characters.");
