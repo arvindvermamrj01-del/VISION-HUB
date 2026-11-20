@@ -422,3 +422,7 @@ body.vh-modal-open{overflow:hidden}
 :root[data-vh-theme="light"] #page-admin .vh-bot-settings{background:linear-gradient(145deg,#edf7fc,#fff)}
 :root[data-vh-theme="light"] #page-admin .stat-card{background:linear-gradient(145deg,#fff,#edf2fa);border-color:#d7e0ee;color:#172338}
 :root[data-vh-theme="light"] #page-admin .stat-card h3,:root[data-vh-theme="light"] #page-admin .stat-card p{color:#63728a}
+
+:root[data-vh-theme="amoled"] #page-admin .admin-sidebar,:root[data-vh-theme="amoled"] #page-admin .admin-main{background:#030303;border-color:#202020;box-shadow:0 18px 55px #000}
+:root[data-vh-theme="amoled"] #page-admin .admin-form,:root[data-vh-theme="amoled"] #page-admin .report-card,:root[data-vh-theme="amoled"] #page-admin .drive-import-box,:root[data-vh-theme="amoled"] #page-admin .admin-recent{background:#080808;border-color:#222;color:#f7f7f7}
+:root[data-vh-theme="amoled"] #page-admin .stat-card{background:linear-gradient(145deg,#0b0b0b,#030303);border-color:#222;color:#f7f7f7}
