@@ -507,6 +507,8 @@
       const id=googleDriveFileId(asset.storage_path||asset.url);
       const iframe=$("playerIframe"),fallback=$("playerFallback");
       if(!id||!iframe){window.open(asset.url,"_blank","noopener");toast("Google Drive preview could not be embedded; opening the shared file.");return;}
+      const previousVideo=fallback?.querySelector("video");
+      if(previousVideo){previousVideo.pause();previousVideo.removeAttribute("src");previousVideo.load();}
       activeVideo=null;
       fallback?.classList.remove("active");
       iframe.src="https://drive.google.com/file/d/"+encodeURIComponent(id)+"/preview";
