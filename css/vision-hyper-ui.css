@@ -235,3 +235,33 @@ button:active{transform:scale(.975)}
 :root[data-vh-theme="coloros"] .movie-card,:root[data-vh-theme="coloros"] .cinema-catalog-card,:root[data-vh-theme="coloros"] .cinema-trend-card{background:linear-gradient(145deg,rgba(18,49,68,.94),rgba(10,31,45,.97));border-color:rgba(115,194,207,.15)}
 :root[data-vh-theme="coloros"] .filter-btn.active,:root[data-vh-theme="coloros"] .cinema-card-details{background:linear-gradient(110deg,rgba(35,143,196,.3),rgba(84,205,180,.2));color:#e9fbfb;border-color:rgba(86,201,189,.22)}
 :root[data-vh-theme="coloros"] .detail-playback-panel{background:linear-gradient(145deg,rgba(17,47,64,.93),rgba(9,29,43,.95));border-color:rgba(121,204,210,.16)}
+
+
+/* ColorOS Ocean: very soft multi-colour movement, never a flashing or fast animation. */
+:root[data-vh-theme="coloros"] body{
+  background-image:
+    radial-gradient(ellipse at 8% -12%,rgba(37,147,193,.19),transparent 38%),
+    radial-gradient(ellipse at 100% 18%,rgba(67,207,177,.11),transparent 32%),
+    radial-gradient(ellipse at 48% 92%,rgba(150,130,220,.065),transparent 42%),
+    linear-gradient(145deg,#081824,#0a1b27);
+  background-size:140% 140%,140% 140%,130% 130%,100% 100%;
+  background-position:0% 0%,100% 18%,50% 100%,center;
+  background-attachment:fixed;
+  animation:vh-ocean-colour-breathe 28s ease-in-out infinite alternate;
+}
+@keyframes vh-ocean-colour-breathe{
+  0%{background-position:0% 0%,100% 18%,50% 100%,center}
+  50%{background-position:12% 9%,86% 26%,56% 88%,center}
+  100%{background-position:5% 16%,96% 8%,44% 96%,center}
+}
+:root[data-vh-theme="coloros"] .cinema-search-box,
+:root[data-vh-theme="coloros"] .cinema-promo,
+:root[data-vh-theme="coloros"] .detail-playback-panel{
+  transition:border-color .6s ease,box-shadow .6s ease,background-color .6s ease;
+}
+:root[data-vh-theme="coloros"] .cinema-promo-request{
+  background:linear-gradient(118deg,rgba(35,143,196,.92),rgba(84,172,180,.93) 54%,rgba(93,125,190,.94));
+}
+@media(prefers-reduced-motion:reduce){
+  :root[data-vh-theme="coloros"] body{animation:none}
+}
