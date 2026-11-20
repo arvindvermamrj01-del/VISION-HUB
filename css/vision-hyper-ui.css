@@ -1104,3 +1104,87 @@ body.vh-sidebar-expanded #vhAppSidebar .vh-sidebar-toggle{opacity:1}
   }
 }
 
+/* VISION HUB rainbow palette: one complete colour journey every 60 seconds,
+   repeating continuously on both the wordmark and the motto beneath it. */
+.nav-brand .vh-brand-vision,
+.nav-brand .vh-brand-hub,
+.nav-brand .vh-brand-motto,
+.vh-sidebar-brand-copy strong {
+  background-image:linear-gradient(100deg,
+    #53e5ff 0%,#568cff 13%,#9275ff 27%,#e96bd0 42%,
+    #ff9b72 56%,#ffd36d 68%,#62e2a9 82%,#53e5ff 100%)!important;
+  background-size:400% 100%!important;
+  background-clip:text!important;
+  -webkit-background-clip:text!important;
+  color:transparent!important;
+  -webkit-text-fill-color:transparent!important;
+  animation:vhBrandAuroraShift 60s linear infinite!important;
+}
+.nav-brand .vh-brand-hub{animation-delay:-30s!important}
+.nav-brand .vh-brand-motto{
+  font-size:.53rem;
+  font-weight:900;
+  letter-spacing:.13em;
+  line-height:1.2;
+  text-shadow:none!important;
+}
+
+/* Auth pages use the full mobile viewport. Hide the navigation rail/dock so
+   the login and sign-up cards are not squeezed beside or behind it. */
+@media(max-width:760px){
+  body.vh-sidebar-hidden #vhAppSidebar,
+  body.vh-sidebar-hidden .vh-mobile-dock,
+  body.vh-sidebar-hidden .telegram-fab {
+    display:none!important;
+  }
+  body.vh-sidebar-hidden #app>.page {
+    width:100%!important;
+    max-width:100%!important;
+    margin-left:0!important;
+    margin-right:0!important;
+    padding-left:0!important;
+    padding-right:0!important;
+  }
+  #page-login.active,
+  #page-register.active {
+    width:100%!important;
+    max-width:100%!important;
+    min-height:calc(100dvh - 72px)!important;
+    padding:8px 0 20px!important;
+    overflow-x:hidden!important;
+  }
+  #page-login .auth-container,
+  #page-register .auth-container {
+    display:block;
+    width:calc(100% - 24px)!important;
+    max-width:440px!important;
+    min-width:0!important;
+    margin:8px auto 18px!important;
+    padding:clamp(15px,4.2vw,21px)!important;
+    box-sizing:border-box!important;
+  }
+  #page-login .auth-box,
+  #page-register .auth-box,
+  #page-login .auth-container form,
+  #page-register .auth-container form {
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+  #page-login .auth-container input,
+  #page-register .auth-container input {
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+    font-size:16px!important;
+  }
+}
+@media(max-width:380px){
+  #page-login .auth-container,
+  #page-register .auth-container {
+    width:calc(100% - 18px)!important;
+    padding:13px 12px!important;
+  }
+}
+
