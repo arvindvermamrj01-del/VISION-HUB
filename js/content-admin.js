@@ -49,6 +49,29 @@
     return user;
   }
 
+  async function refreshStorageHealth() {
+    const host=$("vhStorageHealth");
+    if(!host)return;
+    host.textContent="Checking media provider connections…";
+    try{
+      const response=await fetch("/api/media/status",{cache:"no-store"});
+      const status=await response.json().catch(()=>({}));
+      if(!response.ok)throw new Error(status.error||"Storage status unavailable.");
+      const entries=[
+        ["Backblaze B2",status.backblazeB2?.configured],
+        ["Cloudflare R2",status.cloudflareR2?.configured],
+        ["PixelDrain",status.pixelDrain?.configured]
+      ];
+      const lines=entries.map(([label,ready])=>'<span class="vh-storage-health-item '+(ready?"is-ready":"is-missing")+'"><i class="fas '+(ready?"fa-circle-check":"fa-circle-xmark")+'"></i><b>'+label+'</b><em>'+(ready?"Connected":"Not configured")+'</em></span>').join("");
+      const service=status.supabase?.serviceRoleConfigured;
+      host.innerHTML='<div class="vh-storage-health-grid">'+lines+'</div><p class="vh-storage-health-note">'+
+        (service?"Private media signing is configured.":"Supabase service-role key is missing. Private video playback, deletion and signed downloads cannot work until it is set as a Cloudflare Pages secret.")+
+        '</p>';
+    }catch(error){
+      host.textContent="Storage status could not be checked: "+(error.message||"Unknown error");
+    }
+  }
+
   function ensureQualityFields() {
     const form = document.querySelector("#tab-add-movie form");
     if (!form || $("vhQualityUploads")) return;
@@ -60,8 +83,10 @@
       '</div><div class="vh-quality-links">' +
       [["180p","addDl180"],["240p","addDl240"],["420p","addDl420"],["480p","addDl480"],["720p","addDl720"],["1080p","addDl1080"],["2K","addDl2k"],["4K","addDl4k"],["8K","addDl8k"]].map(([q,id]) => '<label class="vh-quality-field"><span>'+q+' authorised link</span><input type="url" id="'+id+'" placeholder="Optional direct media URL"></label>').join("") +
       '</div><label class="vh-quality-field vh-language-field"><span>Source language label (for this video source)</span><input id="vhMediaLanguages" type="text" placeholder="Hindi"></label><label class="vh-quality-field vh-language-field"><span>Subtitle tracks — one per line: Label|language|HTTPS .vtt URL</span><textarea id="vhSubtitleTracks" rows="3" placeholder="Hindi|hi|https://cdn.example.com/subtitles/movie-hi.vtt"></textarea></label>';
+    block.innerHTML += '<div class="vh-storage-health" id="vhStorageHealth" role="status" aria-live="polite">Checking media provider connections…</div>';
     const submit = form.querySelector('[type="submit"]');
     form.insertBefore(block, submit || null);
+    refreshStorageHealth();
   }
 
   async function uploadPrivate(file,user,provider) {
