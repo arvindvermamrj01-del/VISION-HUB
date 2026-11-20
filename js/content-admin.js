@@ -14,7 +14,7 @@
   const toast = message => typeof window.toast === "function" ? window.toast(message) : window.alert(message);
   const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const slug = value => String(value || "media").normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g,"-").replace(/^-+|-+$/g,"").slice(-100) || "media";
-  const qualityOrder = ["180p","240p","360p","420p","480p","720p","1080p","2K","4K","8K"];
+  const qualityOrder = ["180p","240p","360p","420p","480p","720p","1080p","2k","4k","8k"];
   const staffRoles = ["admin","sub_admin","content_editor"];
   const validHttpUrl = raw => { if(!raw)return null; let url; try{url=new URL(raw);}catch(_){throw new Error("Media URL valid nahi hai.");} if(!["http:","https:"].includes(url.protocol))throw new Error("Media URL http/https hona chahiye."); return url.href; };
   const dbResolution = value => !value || String(value).toLowerCase() === "original" ? null : String(value).toLowerCase();
