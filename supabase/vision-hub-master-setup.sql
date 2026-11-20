@@ -121,7 +121,12 @@ create policy "vh_content_public_read" on public.vh_content
 for select to anon, authenticated using (published = true or public.vh_is_admin());
 create policy "vh_content_admin_all" on public.vh_content
 for all to authenticated using (public.vh_is_admin()) with check (public.vh_is_admin());
-grant select on public.vh_content to anon, authenticated;
+revoke select on public.vh_content from anon;
+grant select (
+  id,title,content_type,video_url,poster_url,genre,language,release_year,rating,
+  description,"cast",duration,trailer_url,industry,published,created_at,storage_provider
+) on public.vh_content to anon;
+grant select on public.vh_content to authenticated;
 grant insert, update, delete on public.vh_content to authenticated;
 grant usage, select on sequence public.vh_content_id_seq to authenticated;
 
@@ -225,7 +230,11 @@ drop policy if exists "vh_songs_public_read" on public.vh_songs;
 drop policy if exists "vh_songs_admin_all" on public.vh_songs;
 create policy "vh_songs_public_read" on public.vh_songs for select to anon, authenticated using (is_published or public.vh_is_admin());
 create policy "vh_songs_admin_all" on public.vh_songs for all to authenticated using (public.vh_is_admin()) with check (public.vh_is_admin());
-grant select on public.vh_songs to anon, authenticated;
+revoke select on public.vh_songs from anon;
+grant select (
+  id,title,artist,audio_url,storage_provider,storage_path,poster_url,is_published,created_at
+) on public.vh_songs to anon;
+grant select on public.vh_songs to authenticated;
 grant insert, update, delete on public.vh_songs to authenticated;
 grant usage, select on sequence public.vh_songs_id_seq to authenticated;
 
