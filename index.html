@@ -1151,6 +1151,7 @@
                 <h3><i class="fab fa-telegram-plane"></i> Telegram Bot Integration</h3>
                 <p>Bot secrets must be stored in Cloudflare Pages → Settings → Variables and Secrets. Never paste a bot token into this dashboard.</p>
                 <ul><li>TELEGRAM_BOT_TOKEN</li><li>TELEGRAM_WEBHOOK_SECRET</li><li>TELEGRAM_ADMIN_CHAT_ID</li><li>TELEGRAM_CHANNEL_CHAT_ID (bot must be an admin in this channel)</li><li>TELEGRAM_CHANNEL_URL (optional public link)</li></ul>
+                <p><strong>Available bot commands:</strong> /start, /help, /latest, /search title, /genres, /request, /channel and admin-only /status. New catalog publishing and authenticated user requests can send channel/admin notifications.</p>
                 <button type="button" class="btn-primary" onclick="setupTelegramBotWebhook()">Connect / Refresh Bot Webhook</button>
                 <p id="telegramBotSetupStatus" role="status">Webhook not checked yet.</p>
                 <small>Commands: /start, /help, /latest, /request, /channel and admin-only /status.</small>
