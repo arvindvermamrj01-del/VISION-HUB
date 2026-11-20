@@ -68,6 +68,8 @@ For live earnings over 7 days, 30 days, this month or last month in Admin → An
 
 The report panel reads actual AdSense API results; it does not invent revenue or track ad clicks.
 
+Before serving personalised ads to visitors in the EEA, UK or Switzerland, configure a Google-certified CMP integrated with IAB TCF. Google documents this requirement here: https://support.google.com/adsense/answer/13554116. Do not enable personalised ads in those regions until the CMP is configured.
+
 ## 7. Seasons and episodes
 
 After the SQL migration and deployment:
