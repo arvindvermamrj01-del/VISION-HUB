@@ -10,7 +10,8 @@ export async function onRequestPost({ request, env }) {
     const kind = body.kind === "audio" ? "audio" : "video";
     const fileName = String(body.fileName || kind).slice(0, 180);
     const fileSize = Number(body.fileSize || 0);
-    const validType = kind === "audio" ? contentType.startsWith("audio/") : contentType.startsWith("video/");
+    const allowedAudioTypes = ["audio/mpeg","audio/mp4","audio/aac","audio/ogg","audio/wav","audio/x-wav","audio/flac","audio/x-flac","audio/webm","audio/opus"];
+    const validType = kind === "audio" ? allowedAudioTypes.includes(contentType) : contentType.startsWith("video/");
     const maxSize = kind === "audio" ? 1024 * 1024 * 1024 : 5 * 1024 * 1024 * 1024;
     if (!validType) return json({ error: kind === "audio" ? "Only audio uploads are accepted for this request." : "Only video uploads are accepted." }, 400);
     if (!Number.isFinite(fileSize) || fileSize <= 0 || fileSize > maxSize) {
