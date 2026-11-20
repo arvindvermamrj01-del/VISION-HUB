@@ -408,3 +408,17 @@ body.vh-modal-open{overflow:hidden}
 :root[data-vh-theme="hyperos"] .btn-play,:root[data-vh-theme="coloros"] .btn-play{border-radius:999px}
 :root[data-vh-theme="hyperos"] .admin-form,:root[data-vh-theme="coloros"] .admin-form{border-radius:22px}
 :root[data-vh-theme="hyperos"] .modal-content,:root[data-vh-theme="coloros"] .modal-content{border-radius:26px}
+
+:root[data-vh-theme="light"] #page-admin .admin-sidebar{background:#fff;border-color:#d7e0ee;box-shadow:0 12px 35px rgba(42,63,96,.09)}
+:root[data-vh-theme="light"] #page-admin .admin-main{background:linear-gradient(145deg,#fff,#f5f8fd);border-color:#d7e0ee;color:#172338;box-shadow:0 12px 35px rgba(42,63,96,.08)}
+:root[data-vh-theme="light"] #page-admin .admin-nav-btn{color:#52627b}
+:root[data-vh-theme="light"] #page-admin .admin-nav-btn.active,:root[data-vh-theme="light"] #page-admin .admin-nav-btn:hover{background:#e8edfb;color:#4f46b5}
+:root[data-vh-theme="light"] #page-admin .admin-form,:root[data-vh-theme="light"] #page-admin .report-card,:root[data-vh-theme="light"] #page-admin .drive-import-box,:root[data-vh-theme="light"] #page-admin .admin-recent,:root[data-vh-theme="light"] #page-admin .tab-categories-form{background:#fff;border-color:#d7e0ee;color:#172338}
+:root[data-vh-theme="light"] #page-admin .admin-form h3,:root[data-vh-theme="light"] #page-admin .report-card h4,:root[data-vh-theme="light"] #page-admin .admin-tab h2,:root[data-vh-theme="light"] #page-admin .admin-tab h3{color:#172338}
+:root[data-vh-theme="light"] #page-admin .admin-form p,:root[data-vh-theme="light"] #page-admin .admin-tab p,:root[data-vh-theme="light"] #page-admin .admin-form small{color:#63728a}
+:root[data-vh-theme="light"] #page-admin input,:root[data-vh-theme="light"] #page-admin select,:root[data-vh-theme="light"] #page-admin textarea{background:#f8faff;color:#172338;border-color:#d7e0ee}
+:root[data-vh-theme="light"] #page-admin .user-table,:root[data-vh-theme="light"] #page-admin .user-table th,:root[data-vh-theme="light"] #page-admin .user-table td{color:#26364f;border-color:#d7e0ee}
+:root[data-vh-theme="light"] #page-admin .telegram-callout{background:#e8f4fb;color:#175071}
+:root[data-vh-theme="light"] #page-admin .vh-bot-settings{background:linear-gradient(145deg,#edf7fc,#fff)}
+:root[data-vh-theme="light"] #page-admin .stat-card{background:linear-gradient(145deg,#fff,#edf2fa);border-color:#d7e0ee;color:#172338}
+:root[data-vh-theme="light"] #page-admin .stat-card h3,:root[data-vh-theme="light"] #page-admin .stat-card p{color:#63728a}
