@@ -55,7 +55,7 @@ Enable ads only after Google approves the site and its content/policies:
 - Homepage and footer ad slot IDs from AdSense
 - Set Cloudflare Pages variable `ADSENSE_PUBLISHER_ID` (accepts `pub-...` or `ca-pub-...`) so `/ads.txt` can be served.
 
-For live earnings in Admin → Analytics & Reports, configure these Cloudflare Pages secrets:
+For live earnings over 7 days, 30 days, this month or last month in Admin → Analytics & Reports, configure these Cloudflare Pages secrets:
 - `ADSENSE_CLIENT_ID`
 - `ADSENSE_CLIENT_SECRET`
 - `ADSENSE_REFRESH_TOKEN` with the read-only AdSense OAuth scope
