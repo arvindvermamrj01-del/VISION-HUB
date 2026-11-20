@@ -276,7 +276,8 @@
       await requireAdmin();
       const {data:{session},error}=await db.auth.getSession();
       if(error||!session?.access_token)throw new Error("Admin session expired. Sign in again.");
-      const response=await fetch("/api/adsense/report",{headers:{"Authorization":"Bearer "+session.access_token}});
+      const range=$("adsenseRange")?.value||"LAST_7_DAYS";
+      const response=await fetch("/api/adsense/report?range="+encodeURIComponent(range),{headers:{"Authorization":"Bearer "+session.access_token}});
       const result=await response.json().catch(()=>({}));
       if(!response.ok)throw new Error(result.error||"AdSense report unavailable.");
       const headers=result.headers||[],rows=result.rows||[];
@@ -285,7 +286,7 @@
       const index=key=>names.indexOf(key);
       const money=value=>"₹"+(Number(value)||0).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});
       const body=rows.map(row=>{const cells=row.cells||[];return '<tr>'+names.map((name,i)=>'<td>'+esc(name==="ESTIMATED_EARNINGS"||name==="PAGE_VIEWS_RPM"?money(cells[i]?.value):cells[i]?.value??"—")+'</td>').join("")+'</tr>';}).join("");
-      host.innerHTML='<div class="vh-adsense-summary"><strong>Last 7 days</strong><span>Estimated earnings: '+money((result.totals?.cells||[])[index("ESTIMATED_EARNINGS")]?.value||0)+'</span></div><div class="vh-adsense-table-wrap"><table class="vh-adsense-table"><thead><tr>'+names.map(name=>'<th>'+esc(name.replaceAll("_"," "))+'</th>').join("")+'</tr></thead><tbody>'+body+'</tbody></table></div><small>Estimated earnings may be adjusted by Google for invalid traffic and finalisation.</small>';
+      host.innerHTML='<div class="vh-adsense-summary"><strong>'+esc((result.dateRange||range).replaceAll("_"," "))+'</strong><span>Estimated earnings: '+money((result.totals?.cells||[])[index("ESTIMATED_EARNINGS")]?.value||0)+'</span></div><div class="vh-adsense-table-wrap"><table class="vh-adsense-table"><thead><tr>'+names.map(name=>'<th>'+esc(name.replaceAll("_"," "))+'</th>').join("")+'</tr></thead><tbody>'+body+'</tbody></table></div><small>Estimated earnings may be adjusted by Google for invalid traffic and finalisation.</small>';
     }catch(error){host.textContent=error.message||"AdSense report could not be loaded.";}
   };
 
