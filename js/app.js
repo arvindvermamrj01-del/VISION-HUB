@@ -39,6 +39,21 @@ function sortCatalog(items,sort){
  if(sort==="title")return list.sort((a,b)=>String(a.title).localeCompare(String(b.title)));
  return list.sort((a,b)=>(new Date(b.created_at||0).getTime()-new Date(a.created_at||0).getTime())||Number(b.year||0)-Number(a.year||0)||String(a.title).localeCompare(String(b.title)));
 }
+async function loadPopularContent(){
+ const section=$("popularContentSection"),host=$("popularGrid"),db=window.VH_SUPABASE;
+ if(!section||!host||!db)return;
+ try{
+  const {data:ranked,error}=await db.rpc("vh_get_popular_content",{p_limit:6});
+  if(error)throw error;
+  const items=(ranked||[]).map(row=>data.find(item=>item.isSupabaseContent&&Number(item.id)===Number(row.content_id))).filter(Boolean);
+  if(!items.length){section.classList.add("hidden");return;}
+  grid("popularGrid",items);
+  section.classList.remove("hidden");
+ }catch(error){
+  section.classList.add("hidden");
+  console.debug("Popular content rail unavailable:",error.message);
+ }
+}
 function render(){
 const f=data.filter(m=>(industry==="All"||m.industry===industry)&&(genre==="All"||m.genre===genre));
 grid("trendingGrid",f.filter(x=>x.type==="Movie").slice(0,6));
@@ -192,6 +207,8 @@ function initTheme(){
 document.addEventListener("DOMContentLoaded",()=>{
   initTheme();
   render();
+  loadPopularContent();
+  document.addEventListener("visionhub:content-loaded",loadPopularContent);
   loadCloudWatchlist();
   window.VH_SUPABASE?.auth.onAuthStateChange((_event,session)=>{if(session?.user){window.VH_USER_ID=session.user.id;window.VH_ACCOUNT_DATA?.migrateLegacy(session.user.id);loadCloudWatchlist();}else{window.VH_USER_ID=null;renderWatchlist();render();}});
   renderRequests();
