@@ -218,7 +218,12 @@
       if(sessionError||!session?.access_token)throw new Error("Admin session expired. Sign in again.");
       const response=await fetch("/api/song/delete",{method:"POST",headers:{"Authorization":"Bearer "+session.access_token,"Content-Type":"application/json"},body:JSON.stringify({songId:id})});
       const result=await response.json().catch(()=>({}));
-      if(!response.ok)throw new Error(result.error||"Song deletion failed.");
+      if(!response.ok){
+        if(/storage_provider|storage_path|column/i.test(result.error||"")){
+          const legacyDelete=await db.from("vh_songs").delete().eq("id",id);
+          if(legacyDelete.error)throw legacyDelete.error;
+        }else throw new Error(result.error||"Song deletion failed.");
+      }
       toast("Song and stored audio deleted.");await loadSongs();await window.refreshSongLibrary?.();
     }catch(error){toast(error.message||"Delete failed.");}
   };
