@@ -26,6 +26,28 @@ export async function onRequestPost({ request, env }) {
     if (command === "/start" || command === "/help") {
       await sendMessage(env, chatId,
         "Welcome to Vision Hub.\n\n/start or /help — commands\n/latest — latest published titles\n/request — submit a title request\n/channel — official community\n\nWebsite: " + site);
+    } else if (command === "/search") {
+      const query = String(message.text || "").replace(/^\\/search(?:@\\w+)?/i, "").trim().replace(/[,*%()]/g, " ").slice(0, 80);
+      if (query.length < 2) {
+        await sendMessage(env, chatId, "Usage: /search movie name");
+      } else {
+        if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) throw new Error("Catalog service is not configured.");
+        const url = new URL(supabaseBase(env) + "/rest/v1/vh_content");
+        url.search = new URLSearchParams({ published: "eq.true", title: "ilike.*" + query + "*", select: "title,content_type,release_year", order: "created_at.desc", limit: "5" }).toString();
+        const response = await fetch(url, { headers: supabaseAdminHeaders(env) });
+        if (!response.ok) throw new Error("Catalog search is temporarily unavailable.");
+        const rows = await response.json();
+        const list = rows.length ? rows.map((item, index) => (index + 1) + ". " + item.title + " (" + item.content_type + (item.release_year ? ", " + item.release_year : "") + ")").join("\\n") : "No matching published titles found.";
+        await sendMessage(env, chatId, "Search results for: " + query + "\\n" + list + "\\n\\n" + site);
+      }
+    } else if (command === "/genres") {
+      if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) throw new Error("Catalog service is not configured.");
+      const url = new URL(supabaseBase(env) + "/rest/v1/vh_categories");
+      url.search = new URLSearchParams({ is_active: "eq.true", select: "name", order: "name", limit: "40" }).toString();
+      const response = await fetch(url, { headers: supabaseAdminHeaders(env) });
+      if (!response.ok) throw new Error("Categories could not be loaded.");
+      const rows = await response.json();
+      await sendMessage(env, chatId, rows.length ? "Browse genres and categories:\\n" + rows.map(item => "• " + item.name).join("\\n") + "\\n\\n" + site : "No categories are published yet.");
     } else if (command === "/request") {
       await sendMessage(env, chatId, "Submit a movie or series request here: " + site + "/#request");
     } else if (command === "/channel") {
