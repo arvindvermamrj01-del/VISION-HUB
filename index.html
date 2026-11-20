@@ -839,15 +839,15 @@
             </form>
             <div class="admin-form" style="margin-top:22px;">
               <h3>Provider availability</h3>
-              <p><strong>Backblaze B2:</strong> Primary private cloud upload provider for new Movie, Series and Short files.</p>
-              <p><strong>Supabase:</strong> Retained for database, authentication and legacy media; new uploads use B2 by default.</p>
+              <p><strong>Backblaze B2:</strong> Active private S3-compatible upload, signed playback access and server-side deletion for new Movie, Series and Short files. Requires the B2 secrets in Cloudflare Pages.</p>
+              <p><strong>Cloudflare R2:</strong> Direct S3-compatible upload, signed playback and deletion are supported when R2 secrets are configured.</p>\n              <p><strong>Supabase:</strong> Retained for database, authentication and legacy private media; B2 is the preferred default for new video uploads.</p>
               <p><strong>Google Drive, Box, pCloud, Koofr:</strong> Official API options exist; OAuth credentials and server-side upload integration are still required.</p>
               <p><strong>TeraBox:</strong> Official Open Platform exists; application approval and server-side OAuth credentials are required.</p>
               <p><strong>MEGA:</strong> Third-party SDK options exist; no website connector is configured.</p>
               <p><strong>MediaFire:</strong> API credentials and a tested upload connector are still required.</p>
               <p><strong>Degoo, Icedrive, Internxt:</strong> Manual authorised links only until a supported integration is verified.</p>
               <p><strong>Telegram:</strong> Channel/post links can be saved; bot upload automation is not connected yet.</p>
-              <p style="color:var(--text-muted);font-size:.88rem;">Selecting a provider does not connect its account or enable uploads yet. Until its connector is configured, use an authorised share/direct URL. Never paste passwords, API tokens or private keys into this page.</p>
+              <p style="color:var(--text-muted);font-size:.88rem;">Direct file uploads are currently implemented for Backblaze B2, Cloudflare R2 and legacy Supabase Storage. Other listed providers are link-only until their official server-side connectors and credentials are configured. Never paste passwords, API tokens or private keys into this page.</p>
             </div>
           </div>
 
