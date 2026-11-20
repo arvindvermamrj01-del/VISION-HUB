@@ -1,6 +1,6 @@
 # VISION HUB - Feature Portfolio & Completion Chart
 
-**Snapshot:** 20 November 2026  
+**Snapshot:** 21 November 2026  
 **Purpose:** review the current product, identify what is implemented, what is verified, and what remains blocked before starting the next feature batch.
 
 > Status terminology: **Implemented** means code is present; **Provisioned** means an external resource/secret has been configured; **Verified** means a live end-to-end check passed; **Blocked** means a named provider, database access, approval or owner decision is still required.
@@ -9,7 +9,7 @@
 
 VISION HUB already has the primary catalogue experience, member flows, role-based Control Center, player, upload/storage integrations, community and donation surfaces. The main remaining work is not a full redesign: it is production schema reconciliation, real storage/playback validation, legal sample content, provider configuration and the final device/security test pass.
 
-The new security activity system is implemented in code and its Cloudflare D1 database, production binding and signing secret have been provisioned. It still needs the matching production deployment and live negative/positive browser tests before it can be marked **Verified**.
+The security activity system is implemented in code; Cloudflare's latest Production deployment (commit 92cec0e6, deployment 030a7537) completed successfully with the VH_SECURITY_DB binding. Live positive/negative browser tests and the one-hour cookie expiry check remain pending, so it is not yet **Verified**. A legacy profile-name compatibility fix is also being added so installations with either full_name or fullname can read and update display names safely.
 
 ## Portfolio at a glance
 
@@ -19,13 +19,14 @@ The new security activity system is implemented in code and its Cloudflare D1 da
 | User login and signup | **Implemented** | Resolve confirmation-email SMTP delivery; final signup/login/password-reset tests |
 | Secret Admin sign-in | **Implemented**; separate from user login | Verify signed Admin cookie in production and test the 1-hour expiry |
 | Admin / staff permissions | **Implemented in shared API guard** | Test every role and verify denied requests are recorded |
-| IP, guest and login activity | **D1 provisioned; code implemented** | Deploy current commit; test guest, user, staff, blocked and Main-Admin-only views |
+| IP, guest and login activity | **D1 provisioned; Production deployment succeeded** | Test guest, user, staff, blocked and Main-Admin-only views; verify the one-hour cookie expiry |
 | Catalogue and detail popups | **Implemented** | Publish lawful demo catalogue; validate filters, search, detail popup and empty states |
 | Player and playback progress | **Implemented** | Complete B2/Supabase signed playback, quality, subtitles, progress and download tests |
 | Backblaze B2 | **Credentials/configuration provisioned; code implemented** | Validate exact-origin CORS and upload -> metadata -> signed read/playback -> delete |
 | Cloudflare R2 | **Optional code path implemented** | Add R2 credentials only if this provider is intended to be used |
 | Supabase Storage | **Legacy path retained** | Test existing private assets without changing/deleting legacy objects |
 | Seasons / episodes / popular ranking / community voting | **Code present** | Apply and verify the feature SQL bundle on the correct Production Supabase project |
+| Legacy profile schema compatibility | **Code fix prepared** for both full_name and fullname columns | Run CI, deploy, then confirm login/profile/staff APIs after schema recovery |
 | Requests and feedback | **Code present** | Final guest/member submission, moderation, permissions and notification tests |
 | Donations | **Code present** | SQL bundle, UPI ID/QR setup and manual bank/UTR verification test |
 | Telegram bot and notifications | **Code present** | Bot token, webhook secret, admin chat ID and optional channel ID |
@@ -57,7 +58,7 @@ flowchart TD
 | SEC-01 | P0 | Deploy secure Admin session cookie + D1 IP activity | Code committed; production deployment/verification pending | Admin panel issues a 1-hour HttpOnly signed cookie; protected APIs reject a staff JWT without it |
 | SEC-02 | P0 | Test lockout and role boundaries | Pending live test; D1 provisioned | 5 failed/unauthorised attempts within 30 minutes block that IP for 30 minutes; Main Admin alone can read logs |
 | SEC-03 | P0 | Verify guest and member activity capture | Pending live test | Guest visit, user login, staff login, failed login, logout and blocked attempt show server IP + timestamp |
-| DB-01 | P0 | Obtain access to the exact Production Supabase project | **Blocked**: website ref is `bmtbsguwbbeuvmvdfdyb`; available connector project is `rcpofawscmxtayrvuqzn` | Verify target project and migration history before any DB write |
+| DB-01 | P0 | Obtain access to the exact Production Supabase project | **Blocked**: website ref is `bmtbsguwbbeuvmvdfdyb`; available connector project is `rcpofawscmxtayrvuqzn`. User-provided SQL inventory currently shows only legacy public tables (`movies`, `profiles`, `requests`, `watchlist`) and no `vh_*` tables, which conflicts with the earlier publish constraint error. | Confirm the SQL Editor project ref and migration history before any DB write |
 | DB-02 | P0 | Apply and validate feature upgrade SQL | Blocked by DB-01 | Schema diff, RLS, grants, constraints, triggers and functions verified with existing data preserved |
 | STO-01 | P0 | B2 upload / signed playback / deletion | B2 config and code present; e2e pending | A small authorised test object completes upload, metadata link, signed read, playback and delete |
 | CAT-01 | P1 | Seed a licensed demo catalogue | Empty published catalogue | Populate Movies, Series + Episodes, Show/Documentary, Shorts and Songs with rights-cleared metadata/assets |
@@ -84,7 +85,7 @@ flowchart TD
 |---|---|---|
 | Production Supabase access | Feature SQL and RLS validation | Connector mismatch; no migration executed on the wrong project |
 | SMTP provider | Account confirmation and password reset | Must be re-authenticated / verified |
-| B2 bucket CORS and live test | Secure object upload/read/delete | Server values exist; full browser e2e remains |
+| B2 bucket CORS and live test | Secure object upload/read/delete | Exact-origin PUT CORS was configured and provider-level temporary object PUT/GET/DELETE was verified; application upload → metadata → signed playback → delete still needs final live validation |
 | R2 account values | Optional second object-storage provider | Not configured |
 | Google Drive API key | Public shared-video import | Missing |
 | Telegram credentials | Webhook and notifications | Missing |
