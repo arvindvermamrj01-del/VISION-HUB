@@ -1068,6 +1068,19 @@
                 </select>
               </div>
               <div class="form-group">
+                <label for="settingDonationUpi">Donation UPI ID (VPA)</label>
+                <input type="text" id="settingDonationUpi" maxlength="128" placeholder="yourname@upi" autocomplete="off"/>
+                <small>Only your public UPI ID. Never enter a UPI PIN, bank password or OTP.</small>
+              </div>
+              <div class="form-group">
+                <label for="settingDonationName">Donation Display Name</label>
+                <input type="text" id="settingDonationName" maxlength="80" value="Vision Hub" autocomplete="off"/>
+              </div>
+              <div class="form-group">
+                <label for="settingDonationQr">UPI QR Image URL (HTTPS)</label>
+                <input type="url" id="settingDonationQr" placeholder="https://your-domain.com/upi-qr.png" autocomplete="off"/>
+              </div>
+              <div class="form-group">
                 <label>Google Drive Integration Status</label>
                 <p style="color: var(--success); font-weight: 600; font-size: 0.9rem;">
                   <i class="fas fa-info-circle"></i> Not connected — secure Google OAuth, credentials and a server-side import function are still required.
@@ -1077,6 +1090,11 @@
                 <i class="fas fa-save"></i> Save Configuration
               </button>
             </form>
+            <section class="admin-form vh-donation-admin" style="margin-top:22px;">
+              <h3>Donation Review</h3>
+              <p>UPI confirmations stay pending until you verify the transaction reference in your payment app or bank statement.</p>
+              <div id="adminDonationsList">Open this tab to load donation confirmations.</div>
+            </section>
           </div>
 
         </main>
@@ -1265,6 +1283,32 @@
       </div>
     </div>
 
+  <div class="donation-overlay" id="donationModal" role="dialog" aria-modal="true" aria-labelledby="donationTitle" aria-hidden="true" onclick="closeDonationPanel(event)">
+    <section class="donation-panel" onclick="event.stopPropagation()">
+      <button type="button" class="donation-close" onclick="closeDonationPanel()" aria-label="Close donation panel">×</button>
+      <span class="donation-kicker"><i class="fas fa-heart"></i> Community support</span>
+      <h2 id="donationTitle">Support Vision Hub</h2>
+      <p class="donation-intro">Your voluntary contribution helps with hosting and platform maintenance. Donations do not buy or unlock content.</p>
+      <div class="donation-pay-area">
+        <img id="donationQrImage" class="donation-qr hidden" alt="Vision Hub UPI payment QR code"/>
+        <div id="donationQrFallback" class="donation-qr-fallback"><i class="fas fa-qrcode"></i><span>UPI payment details will appear here when configured.</span></div>
+        <p id="donationUpiLabel" class="donation-upi-label">UPI not configured yet</p>
+        <a id="donationPayBtn" class="btn-primary donation-pay-btn hidden" href="#" rel="nofollow"><i class="fas fa-mobile-alt"></i> Pay using UPI app</a>
+      </div>
+      <form id="donationForm" class="donation-form">
+        <h3>Already donated? Submit confirmation</h3>
+        <div class="form-group"><label for="donorName">Name</label><input id="donorName" maxlength="80" required placeholder="Your name"/></div>
+        <div class="donation-amounts" aria-label="Suggested donation amounts">
+          <button type="button" data-donation-amount="51">₹51</button><button type="button" data-donation-amount="101">₹101</button><button type="button" data-donation-amount="251">₹251</button><button type="button" data-donation-amount="501">₹501</button>
+        </div>
+        <div class="form-group"><label for="donationAmount">Amount (INR)</label><input id="donationAmount" type="number" min="1" max="100000" step="1" required placeholder="Enter amount"/></div>
+        <div class="form-group"><label for="donationReference">UPI transaction reference / UTR</label><input id="donationReference" minlength="8" maxlength="64" pattern="[A-Za-z0-9-]{8,64}" required placeholder="Enter transaction reference"/></div>
+        <button id="donationSubmitBtn" type="submit" class="btn-primary full-width" disabled>Submit for verification</button>
+        <p id="donationStatus" class="donation-status" role="status">Configure a UPI ID in Admin → Platform Settings to accept contributions.</p>
+      </form>
+      <section id="myDonationHistory" class="my-donation-history hidden"><h3>My donation history</h3><div id="myDonationHistoryList"></div></section>
+    </section>
+  </div>
   </div><!-- end #app -->
 
   <!-- ===== FOOTER ===== -->
@@ -1279,6 +1323,7 @@
         <a href="#movies" onclick="showPage('movies')">Movies</a>
         <a href="#series" onclick="showPage('series')">Web Series</a>
         <a href="#request" onclick="showPage('request')">Request Movie</a>
+        <button type="button" class="footer-donate-btn" onclick="openDonationPanel()"><i class="fas fa-heart"></i> Support Vision Hub</button>
         <a href="https://t.me/visionhub_official" target="_blank" class="telegram-target-link" style="color: #229ED9;">
           <i class="fab fa-telegram-plane"></i> Join Telegram
         </a>
@@ -1302,5 +1347,6 @@
 <script src="js/maintenance-mode.js"></script>
 <script src="js/public-settings.js"></script>
 <script src="js/theme-manager.js"></script>
+<script src="js/donation-manager.js"></script>
 </body>
 </html>
