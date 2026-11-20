@@ -45,6 +45,12 @@ export async function onRequestPost({ request, env }) {
     const previewUrl = "https://drive.google.com/file/d/" + encodeURIComponent(fileId) + "/preview";
     const base = supabaseBase(env);
     const headers = { ...supabaseAdminHeaders(env), Prefer: "return=representation" };
+    const duplicateUrl = new URL(base + "/rest/v1/vh_media_assets");
+    duplicateUrl.search = new URLSearchParams({ storage_provider: "eq.google_drive", storage_path: "eq." + fileId, select: "content_id", limit: "1" }).toString();
+    const duplicateResponse = await fetch(duplicateUrl, { headers: supabaseAdminHeaders(env) });
+    if (!duplicateResponse.ok) return json({ error: "Existing Drive imports could not be checked." }, 502);
+    const duplicates = await duplicateResponse.json();
+    if (duplicates.length) return json({ error: "This Google Drive video is already imported as catalog item #" + duplicates[0].content_id + "." }, 409);
     const contentResponse = await fetch(base + "/rest/v1/vh_content", {
       method: "POST",
       headers,
