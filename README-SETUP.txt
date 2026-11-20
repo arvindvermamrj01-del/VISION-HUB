@@ -52,6 +52,7 @@ This bundle includes:
 - Web Series seasons and episodes.
 - Community suggestions, bug reports, complaints and one-vote-per-user voting.
 - Download-link click analytics.
+- Private B2/R2 song-audio upload and signed playback/deletion.
 - Privacy-safe 30-day popular-content aggregation.
 
 If applying individual migrations instead, use the relevant files:
@@ -61,6 +62,7 @@ If applying individual migrations instead, use the relevant files:
   supabase/vision-hub-community-feedback.sql
   supabase/vision-hub-analytics-download-clicks.sql
   supabase/vision-hub-popular-content.sql
+  supabase/vision-hub-song-storage.sql
 
 Initial setup only (if the database has not already been created):
   supabase/vision-hub-master-setup.sql
@@ -185,7 +187,7 @@ and Light Glass. Preferences are saved on the visitor's device.
 The catalog includes search across title/actor/director/genre/language/year,
 release-year and language filters, sorting, latest entries, top-rated content,
 popular genres, Web Series seasons/episodes, watchlist, continue watching,
-shorts, trailers, subtitles, actual supplied download links and a searchable public music library using direct HTTPS audio URLs.
+shorts, trailers, subtitles, actual supplied download links and a searchable public music library with private B2/R2 audio uploads or direct HTTPS audio URLs.
 The homepage popular rail uses aggregated content-detail views from the last
 30 days; raw session tags remain admin-only.
 Community feedback supports suggestions, bug reports, complaints, admin
