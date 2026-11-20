@@ -7,19 +7,10 @@ alter table public.vh_content
   add column if not exists season_number integer,
   add column if not exists episode_number integer;
 
-do $$
-declare c record;
-begin
-  for c in
-    select conname
-    from pg_constraint
-    where conrelid='public.vh_content'::regclass
-      and contype='c'
-      and pg_get_constraintdef(oid) ilike '%content_type%'
-  loop
-    execute format('alter table public.vh_content drop constraint %I',c.conname);
-  end loop;
-end $$;
+-- Replace only the original content-type allow-list constraint.
+-- Do not remove unrelated/custom CHECK constraints that happen to reference content_type.
+alter table public.vh_content
+  drop constraint if exists vh_content_content_type_check;
 
 alter table public.vh_content
   add constraint vh_content_content_type_check
