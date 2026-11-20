@@ -360,6 +360,8 @@ window.adminLogin = async function (e) {
     }
 
     await securityRequest("/api/security/admin-guard", { action: "success", attemptId }, data.session?.access_token);
+    window.VH_SECURE_ADMIN_SESSION_READY = true;
+    window.dispatchEvent(new Event("vh-secure-admin-session-ready"));
     showPage("page-admin");
     msg("Secure Control Center login successful.");
   } catch (err) {
