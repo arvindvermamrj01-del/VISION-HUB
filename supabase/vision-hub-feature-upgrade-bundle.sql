@@ -478,6 +478,7 @@ create policy "vh_private_media_admin_read" on storage.objects
 
 
 -- ===== Content-editor ownership and private-storage isolation =====
+-- Admins and sub-admins retain full access; content editors are restricted to their own non-Short titles and private objects.
 
 create or replace function public.vh_can_manage_content_item(p_content_id bigint)
 returns boolean
@@ -563,7 +564,6 @@ drop policy if exists "vh_private_media_staff_insert" on storage.objects;
 drop policy if exists "vh_private_media_staff_update" on storage.objects;
 drop policy if exists "vh_private_media_staff_delete" on storage.objects;
 drop policy if exists "vh_private_media_admin_read" on storage.objects;
-
 create policy "vh_private_media_staff_insert" on storage.objects
   for insert to authenticated
   with check (bucket_id = 'vh-private-media' and public.vh_can_manage_private_media_object(name));
@@ -577,7 +577,5 @@ create policy "vh_private_media_staff_delete" on storage.objects
 create policy "vh_private_media_admin_read" on storage.objects
   for select to authenticated
   using (bucket_id = 'vh-private-media' and public.vh_can_manage_private_media_object(name));
-
-
 
 commit;
