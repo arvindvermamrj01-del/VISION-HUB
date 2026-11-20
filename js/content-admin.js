@@ -133,7 +133,9 @@
     return output;
   }
 
-  window.refreshVisionHubCatalog=loadPublished;\n\n  async function loadPublished() {
+  window.refreshVisionHubCatalog=loadPublished;
+
+  async function loadPublished() {
     const {data:rows,error}=await db.from("vh_content").select("*").eq("published",true).order("created_at",{ascending:false});
     if(error){console.error("Published content load failed:",error);toast("Catalog load failed: "+error.message);return;}
     const ids=(rows||[]).map(row=>row.id).filter(id=>id!=null);
