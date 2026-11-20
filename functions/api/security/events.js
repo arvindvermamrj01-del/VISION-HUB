@@ -38,12 +38,13 @@ export async function onRequestGet({ request, env }) {
     await cleanup(env.VH_SECURITY_DB);
     const url = new URL(request.url);
     const limit = Math.max(1, Math.min(500, Number.parseInt(url.searchParams.get("limit") || "250", 10) || 250));
+    const offset = Math.max(0, Math.min(100000, Number.parseInt(url.searchParams.get("offset") || "0", 10) || 0));
     const result = await env.VH_SECURITY_DB.prepare(
       "SELECT id,event_type,user_id,account_email,user_role,ip_address,user_agent,page_path,created_at " +
-      "FROM vh_security_events ORDER BY created_at DESC,id DESC LIMIT ?"
-    ).bind(limit).all();
+      "FROM vh_security_events ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?"
+    ).bind(limit, offset).all();
     const total = await env.VH_SECURITY_DB.prepare("SELECT COUNT(*) AS total FROM vh_security_events").first();
-    return json({ events: result.results || [], total: Number(total?.total || 0), retentionDays: 90, viewerRole: profile.role });
+    return json({ events: result.results || [], total: Number(total?.total || 0), offset, limit, retentionDays: 90, viewerRole: profile.role });
   } catch (error) {
     return json({ error: error.message || "Main administrator access required." }, 403);
   }
