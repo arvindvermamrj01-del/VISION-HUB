@@ -11,7 +11,7 @@ async function hmac(key, value) {
   return crypto.subtle.sign("HMAC", imported, encoder.encode(value));
 }
 
-export async function presignR2(env, method, key, contentType = "", expires = 900) {
+export async function presignR2(env, method, key, contentType = "", expires = 900, responseContentDisposition = "") {
   const account = env.R2_ACCOUNT_ID;
   const bucket = env.R2_BUCKET_NAME;
   const accessKey = env.R2_ACCESS_KEY_ID;
@@ -32,6 +32,7 @@ export async function presignR2(env, method, key, contentType = "", expires = 90
     "X-Amz-Expires": String(Math.max(60, Math.min(21600, Number(expires) || 900))),
     "X-Amz-SignedHeaders": contentType ? "content-type;host" : "host"
   };
+  if (responseContentDisposition) params["response-content-disposition"] = responseContentDisposition;
   const canonicalQuery = Object.entries(params).sort(([a], [b]) => a.localeCompare(b))
     .map(([name, value]) => encode(name) + "=" + encode(value)).join("&");
   // SigV4 canonical headers must be lexicographically sorted (content-type before host).
