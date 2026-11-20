@@ -399,3 +399,6 @@ body.vh-modal-open{overflow:hidden}
 :root[data-vh-theme="light"] .song-card{background:rgba(255,255,255,.92);border-color:#d7e0ee}
 :root[data-vh-theme="light"] .songs-toolbar input{background:#fff;color:#172338;border-color:#d7e0ee}
 @media(max-width:420px){.songs-grid{grid-template-columns:1fr}.song-card{grid-template-columns:72px minmax(0,1fr);gap:11px;padding:11px}.song-cover{width:72px;height:72px}}
+
+.adsense-report-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.adsense-report-controls select{min-height:40px;padding:8px 10px;border:1px solid var(--vh-line);border-radius:10px;background:var(--panel);color:var(--text)}
