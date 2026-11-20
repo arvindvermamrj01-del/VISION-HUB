@@ -108,3 +108,31 @@
 @media(prefers-reduced-motion:reduce){
  .cinema-promo,.cinema-catalog-card,.cinema-trend-card,.cinema-poster img{transition:none}
 }
+
+/* Cinema-style global search, homepage hierarchy and Vision Hub top actions. */
+.cinema-search-row{width:min(1480px,calc(100% - 40px));margin:17px auto 4px}
+.cinema-search-box{min-height:54px;display:flex;align-items:center;gap:13px;padding:0 17px;border:1px solid var(--vh-glass-line);border-radius:18px;background:rgba(255,255,255,.055);box-shadow:inset 0 1px 0 rgba(255,255,255,.05);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.cinema-search-box>i{color:var(--muted);font-size:1rem}
+.cinema-search-box input{width:100%;min-width:0;min-height:52px;padding:0;border:0;outline:0;background:transparent;color:var(--text);font-size:.91rem;box-shadow:none}
+.cinema-search-box input::placeholder{color:var(--muted)}
+.cinema-search-box kbd{flex:0 0 auto;padding:5px 8px;border:1px solid var(--vh-glass-line);border-radius:8px;background:var(--vh-glass);color:var(--muted);font-size:.68rem}
+#page-home>.hero{display:none!important}
+#page-home .cinema-top-categories{padding-top:8px;padding-bottom:9px}
+.cinema-top-actions{display:flex;align-items:center;gap:8px}
+.cinema-top-actions button{padding:7px 12px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.07);color:var(--text);font-size:.72rem;font-weight:800}
+.cinema-top-actions button:hover{background:rgba(255,255,255,.14)}
+:root[data-vh-theme="light"] .cinema-search-box{background:rgba(255,255,255,.78);border-color:#d6deeb}
+:root[data-vh-theme="light"] .cinema-top-actions button{color:#25324a;background:rgba(255,255,255,.65);border-color:#d5deed}
+:root[data-vh-theme="amoled"] .cinema-search-box{background:rgba(255,255,255,.035)}
+@media(max-width:760px){
+ .cinema-search-row{width:calc(100% - 22px);margin:11px auto 2px}
+ .cinema-search-box{min-height:47px;padding:0 13px;border-radius:15px}
+ .cinema-search-box input{min-height:45px;font-size:.79rem}
+ .cinema-search-box kbd{display:none}
+ .cinema-top-actions{gap:5px}
+ .cinema-top-actions button{padding:6px 9px;font-size:.65rem}
+}
+@media(max-width:520px){
+ .cinema-top-actions button{font-size:.6rem;padding:6px 7px}
+ .cinema-search-box input::placeholder{font-size:.73rem}
+}
