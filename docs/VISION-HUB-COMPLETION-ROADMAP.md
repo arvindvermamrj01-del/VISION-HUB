@@ -7,7 +7,7 @@
 | Check | Observed result | Interpretation |
 |---|---|---|
 | Cloudflare Pages | `vision-hub` project, GitHub `main`, automatic production deployment | Connected and deploying |
-| Latest production deployment | `030a7537`, commit `92cec0e6`, deploy stage succeeded at 2026-11-20 19:58:15 UTC (2026-11-21 01:28:15 IST) | Cloudflare Pages Production deployment is successful; this is not a browser/E2E pass |
+| Latest production deployment | `5033bee0`, commit `4e876729`, build and deploy stages succeeded at 2026-11-20 22:50:58 UTC (2026-11-21 04:20:58 IST) | Profile compatibility fixes and recovery docs are live in Pages Production; this is not a browser/E2E pass |
 | Pages Function `/api/media/status` | Supabase client + service-role configured; Backblaze B2 configured; R2 and PixelDrain not configured | B2 and Supabase server variables are present; this endpoint does not prove a real object upload works |
 | Public homepage | Renders without maintenance overlay; catalogue sections show empty states | UI is present; published catalogue is empty |
 | Main homepage rails | Trending, catalogue, series, latest, top-rated, shorts and genres render | Needs lawful sample records |
