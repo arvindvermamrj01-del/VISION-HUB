@@ -237,6 +237,11 @@
           <button class="filter-btn" onclick="filterMoviesPage('Romance',this)">Romance</button>
           <button class="filter-btn" onclick="filterMoviesPage('Thriller',this)">Thriller</button>
         </div>
+        <div class="catalog-refine-bar">
+          <label>Release year <select id="movieYearFilter" onchange="filterMovieYear(this.value)"><option value="All">All years</option></select></label>
+          <label>Language <select id="movieLanguageFilter" onchange="filterMovieLanguage(this.value)"><option value="All">All languages</option></select></label>
+          <label>Sort <select id="movieSortFilter" onchange="sortMoviesPage(this.value)"><option value="newest">Newest first</option><option value="rating">Top rated</option><option value="title">A–Z title</option></select></label>
+        </div>
         <div class="movies-grid" id="allMoviesGrid"></div>
       </section>
     </div>
@@ -248,6 +253,19 @@
         <p>Binge-worthy shows with multi-season and episode streaming</p>
       </div>
       <section class="section">
+        <div class="category-filters">
+          <button class="filter-btn active" onclick="filterSeriesGenre('All',this)">All genres</button>
+          <button class="filter-btn" onclick="filterSeriesGenre('Action',this)">Action</button>
+          <button class="filter-btn" onclick="filterSeriesGenre('Drama',this)">Drama</button>
+          <button class="filter-btn" onclick="filterSeriesGenre('Comedy',this)">Comedy</button>
+          <button class="filter-btn" onclick="filterSeriesGenre('Thriller',this)">Thriller</button>
+          <button class="filter-btn" onclick="filterSeriesGenre('Sci-Fi',this)">Sci-Fi</button>
+        </div>
+        <div class="catalog-refine-bar">
+          <label>Release year <select id="seriesYearFilter" onchange="filterSeriesYear(this.value)"><option value="All">All years</option></select></label>
+          <label>Language <select id="seriesLanguageFilter" onchange="filterSeriesLanguage(this.value)"><option value="All">All languages</option></select></label>
+          <label>Sort <select id="seriesSortFilter" onchange="sortSeriesPage(this.value)"><option value="newest">Newest first</option><option value="rating">Top rated</option><option value="title">A–Z title</option></select></label>
+        </div>
         <div class="movies-grid" id="allSeriesGrid"></div>
       </section>
     </div>
