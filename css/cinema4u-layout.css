@@ -665,3 +665,239 @@ body.vh-movie-detail-open{overflow:hidden}
 /* Keep the global account menu hidden whenever auth logic marks it hidden.
    The ID-level layout rule above must not override the hidden utility class. */
 #userNav.hidden{display:none!important}
+
+/* Final PC and mobile navigation repair: direct page controls remain visible. */
+.page.active {
+  display:block!important;
+}
+@media(min-width:761px) {
+  #vhAppSidebar button[data-vh-nav],
+  #vhAppSidebar button[data-vh-action] {
+    cursor:pointer!important;
+    pointer-events:auto!important;
+    position:relative;
+    z-index:2;
+  }
+}
+
+/* VISION HUB wordmark: uppercase, heavier and compact beside the logo. */
+.nav-brand .brand-name {
+  display:inline-flex;
+  align-items:baseline;
+  gap:.2em;
+  font-weight:1000!important;
+  letter-spacing:.015em!important;
+  text-transform:uppercase!important;
+  white-space:nowrap;
+}
+.nav-brand .vh-brand-vision,
+.nav-brand .vh-brand-hub {
+  font-weight:1000!important;
+  text-transform:uppercase!important;
+}
+
+/* OS-inspired appearance palettes. These are original Vision Hub themes,
+   inspired by each design language rather than copied system UI assets. */
+:root[data-vh-theme="miui-oneui"] {
+  --bg:#111827;--panel:#1a2434;--card:#202d40;--text:#f7f8fc;--muted:#b6c1d4;
+  --accent:#ff7b52;--accent2:#6c91ff;--border:#37475e;
+  --vh-glass:rgba(255,255,255,.07);--vh-glass-line:rgba(164,187,231,.2);
+  --vh-surface:rgba(25,37,57,.84);--vh-surface-strong:rgba(16,27,44,.97);
+  --vh-glow:rgba(255,116,82,.2);--vh-cyan-glow:rgba(91,140,255,.18);
+}
+:root[data-vh-theme="miui-oneui"] body {
+  background:radial-gradient(ellipse at 8% -12%,rgba(255,125,77,.16),transparent 38%),
+    radial-gradient(ellipse at 100% 18%,rgba(104,139,255,.17),transparent 32%),
+    linear-gradient(145deg,#111827,#151f32);
+}
+:root[data-vh-theme="oneui"] {
+  --bg:#111827;--panel:#1b2538;--card:#222f45;--text:#f5f7fc;--muted:#bac6d8;
+  --accent:#5685f5;--accent2:#68c9ed;--border:#35445d;
+  --vh-glass:rgba(255,255,255,.065);--vh-glass-line:rgba(156,185,239,.2);
+  --vh-surface:rgba(26,39,61,.82);--vh-surface-strong:rgba(18,30,49,.97);
+  --vh-glow:rgba(79,127,245,.2);--vh-cyan-glow:rgba(74,188,231,.15);
+}
+:root[data-vh-theme="oneui"] body {
+  background:radial-gradient(ellipse at 12% -10%,rgba(91,132,242,.2),transparent 38%),
+    radial-gradient(ellipse at 100% 22%,rgba(64,188,219,.1),transparent 36%),#111827;
+}
+:root[data-vh-theme="oxygenos"] {
+  --bg:#10151d;--panel:#1a202b;--card:#222b38;--text:#f8f9fb;--muted:#b4c0cd;
+  --accent:#eb4b54;--accent2:#f08a7e;--border:#3b4654;
+  --vh-glass:rgba(255,255,255,.055);--vh-glass-line:rgba(220,230,242,.17);
+  --vh-surface:rgba(27,35,48,.82);--vh-surface-strong:rgba(15,22,33,.97);
+  --vh-glow:rgba(235,75,84,.2);--vh-cyan-glow:rgba(240,138,126,.12);
+}
+:root[data-vh-theme="oxygenos"] body {
+  background:radial-gradient(ellipse at 8% -12%,rgba(232,65,79,.17),transparent 38%),
+    radial-gradient(ellipse at 100% 18%,rgba(238,136,112,.1),transparent 32%),#10151d;
+}
+:root[data-vh-theme="hydrogenos"] {
+  --bg:#101820;--panel:#172630;--card:#1d303b;--text:#f4fbfc;--muted:#b2c6c9;
+  --accent:#00aeb5;--accent2:#ff8868;--border:#34505a;
+  --vh-glass:rgba(86,202,198,.065);--vh-glass-line:rgba(109,219,213,.19);
+  --vh-surface:rgba(20,47,56,.82);--vh-surface-strong:rgba(9,31,39,.97);
+  --vh-glow:rgba(0,174,181,.2);--vh-cyan-glow:rgba(255,136,104,.12);
+}
+:root[data-vh-theme="hydrogenos"] body {
+  background:radial-gradient(ellipse at 8% -12%,rgba(0,174,181,.17),transparent 38%),
+    radial-gradient(ellipse at 100% 18%,rgba(255,136,104,.11),transparent 32%),#101820;
+}
+:root[data-vh-theme="hyperos"] {
+  --accent:#8d70f5;--accent2:#51d5eb;--vh-glow:rgba(141,112,245,.24);
+}
+:root[data-vh-theme="coloros"] {
+  --accent:#238fc4;--accent2:#54cdb4;
+}
+
+/* Keep the phone header to one contained row: Search, Login and Sign Up.
+   Appearance is opened from the Settings item at the bottom mobile dock. */
+@media(max-width:760px) {
+  .navbar {
+    width:calc(100% - 16px)!important;
+    max-width:100%!important;
+    min-height:56px!important;
+    margin:7px 8px 0!important;
+    padding:6px 8px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:6px!important;
+    overflow:visible!important;
+  }
+  .nav-brand {
+    flex:1 1 auto!important;
+    min-width:0!important;
+    max-width:calc(100% - 158px)!important;
+    gap:7px!important;
+    overflow:hidden!important;
+  }
+  .nav-brand .brand-icon {
+    flex:0 0 34px!important;
+    width:34px!important;
+    height:34px!important;
+    border-radius:11px!important;
+  }
+  .nav-brand .vh-logo-mark {width:25px!important;height:25px!important}
+  .vh-brand-lockup {
+    flex:1 1 auto!important;
+    min-width:0!important;
+    overflow:hidden!important;
+    gap:0!important;
+  }
+  .nav-brand .brand-name {
+    font-size:clamp(.88rem,4.05vw,1.05rem)!important;
+    font-weight:1000!important;
+    letter-spacing:.005em!important;
+    line-height:1.12!important;
+  }
+  .nav-brand .vh-brand-motto {display:none!important}
+  .nav-actions {
+    flex:0 0 auto!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    gap:5px!important;
+    margin:0!important;
+  }
+  .nav-actions .btn-telegram-sm,
+  .nav-actions .btn-theme-toggle,
+  .nav-actions .hamburger {
+    display:none!important;
+  }
+  .nav-actions .btn-search-toggle {
+    order:1;
+    display:grid!important;
+    place-items:center!important;
+    flex:0 0 42px!important;
+    width:42px!important;
+    min-width:42px!important;
+    height:42px!important;
+    padding:0!important;
+    border-radius:50%!important;
+    font-size:1.05rem!important;
+    align-self:center!important;
+  }
+  .nav-actions #authNav:not(.hidden) {
+    order:2;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:5px!important;
+    min-width:0!important;
+    margin:0!important;
+  }
+  .nav-actions #authNav .btn-login,
+  .nav-actions #authNav .btn-signup {
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    flex:0 0 auto!important;
+    min-width:52px!important;
+    min-height:38px!important;
+    height:38px!important;
+    padding:0 10px!important;
+    border-radius:999px!important;
+    font-size:.68rem!important;
+    line-height:1!important;
+    font-weight:850!important;
+    white-space:nowrap!important;
+  }
+  .nav-actions #authNav .btn-signup {min-width:61px!important}
+  .nav-actions #userNav:not(.hidden) {
+    order:2;
+    flex:0 0 auto!important;
+  }
+  .nav-actions #userNav .user-avatar {
+    width:39px!important;
+    min-width:39px!important;
+    height:39px!important;
+    border-radius:50%!important;
+  }
+  body.vh-mobile-settings-open .theme-panel {
+    top:auto!important;
+    right:12px!important;
+    bottom:calc(82px + env(safe-area-inset-bottom))!important;
+    left:12px!important;
+    width:auto!important;
+    max-width:440px!important;
+    max-height:min(70dvh,560px)!important;
+    margin:0 auto!important;
+    padding:15px!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    z-index:1900!important;
+    border-radius:22px!important;
+    box-shadow:0 20px 64px rgba(0,0,0,.5)!important;
+  }
+  body.vh-mobile-settings-open .theme-options {
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:7px!important;
+  }
+  body.vh-mobile-settings-open .theme-options>button {
+    min-height:54px!important;
+    padding:8px 10px!important;
+    gap:9px!important;
+  }
+  body.vh-mobile-settings-open .theme-options>button strong {font-size:.78rem!important}
+  body.vh-mobile-settings-open .theme-options>button small {font-size:.67rem!important}
+}
+@media(max-width:360px) {
+  .navbar {gap:4px!important;padding:6px 6px!important}
+  .nav-brand {max-width:calc(100% - 151px)!important;gap:5px!important}
+  .nav-brand .brand-icon {flex-basis:32px!important;width:32px!important;height:32px!important}
+  .nav-brand .brand-name {font-size:.84rem!important}
+  .nav-actions {gap:4px!important}
+  .nav-actions .btn-search-toggle {flex-basis:39px!important;width:39px!important;min-width:39px!important;height:39px!important}
+  .nav-actions #authNav {gap:4px!important}
+  .nav-actions #authNav .btn-login,.nav-actions #authNav .btn-signup {
+    min-width:47px!important;height:36px!important;min-height:36px!important;padding:0 8px!important;font-size:.64rem!important
+  }
+  .nav-actions #authNav .btn-signup {min-width:56px!important}
+}
+.theme-swatch-miui {background:linear-gradient(135deg,#ff865a,#f4ba64 48%,#668eff)}
+.theme-swatch-oneui {background:linear-gradient(135deg,#5b8cff,#4bbbd8 52%,#b1d5f1)}
+.theme-swatch-oxygen {background:linear-gradient(135deg,#bd2937,#ee654f 55%,#f4b5a4)}
+.theme-swatch-hydrogen {background:linear-gradient(135deg,#00a9b0,#3c837d 55%,#ff956d)}
+
