@@ -21,6 +21,7 @@
     button.type="button";button.className="vh-mobile-nav-item";
     button.setAttribute("aria-label",item.label);button.title=item.label;
     if(item.page)button.dataset.vhPage=item.page;
+    if(item.label==="Shows")button.dataset.vhLabel="Shows";
     if(item.action)button.dataset.vhAction=item.action;
     const icon=document.createElement("i");icon.className="fas "+item.icon;icon.setAttribute("aria-hidden","true");
     const label=document.createElement("span");label.textContent=item.label;
