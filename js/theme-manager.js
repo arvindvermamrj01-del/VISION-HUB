@@ -11,7 +11,7 @@
   };
   const panel=()=>document.getElementById("themePanel");
   const apply=value=>{
-    const selected=themes[value]?value:"hyperos";
+    const selected=themes[value]?value:"coloros";
     root.dataset.vhTheme=selected;
     root.dataset.theme=selected==="light"?"light":"dark";
     root.style.colorScheme=selected==="light"?"light":"dark";
@@ -34,7 +34,16 @@
     document.getElementById("themeToggle")?.setAttribute("aria-expanded",String(open));
   };
   document.addEventListener("DOMContentLoaded",()=>{
-    let saved="hyperos";try{saved=localStorage.getItem(key)||(localStorage.getItem("vh_theme")==="light"?"light":"hyperos");}catch(_){}
+    let saved="coloros";
+    try{
+      const migrationKey="vh_theme_coloros_default_migrated";
+      if(!localStorage.getItem(migrationKey)){
+        const previous=localStorage.getItem(key);
+        if(!previous||previous==="hyperos")localStorage.setItem(key,localStorage.getItem("vh_theme")==="light"?"light":"coloros");
+        localStorage.setItem(migrationKey,"1");
+      }
+      saved=localStorage.getItem(key)||(localStorage.getItem("vh_theme")==="light"?"light":"coloros");
+    }catch(_){}
     apply(saved);
     document.querySelectorAll("[data-theme-choice]").forEach(button=>{
       button.addEventListener("click",()=>{apply(button.dataset.themeChoice);panel()?.classList.remove("open");panel()?.setAttribute("aria-hidden","true");document.getElementById("themeToggle")?.setAttribute("aria-expanded","false");});
