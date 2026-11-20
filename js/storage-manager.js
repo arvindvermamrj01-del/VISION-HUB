@@ -40,7 +40,7 @@
       if (status) status.textContent = "Current default: " + provider.replace("_", " ");
     } catch (error) {
       const status = $("storageSettingsStatus");
-      if (status) status.textContent = error.message + " — Run the updated Supabase SQL setup first.";
+      if (status) status.textContent = /vh_storage_settings_default_provider_check|check constraint/i.test(error.message || "") ? "Database migration required: run supabase/vision-hub-backblaze-b2-provider-upgrade.sql in Supabase SQL Editor, then save again." : (error.message || "Storage settings could not be loaded.");
       console.warn("Storage settings unavailable:", error.message);
     }
   }
