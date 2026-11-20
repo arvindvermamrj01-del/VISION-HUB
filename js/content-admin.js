@@ -76,7 +76,7 @@
     return {path,file,storage_provider:"supabase"};
   }
 
-  async function signedAsset(asset) {
+  async function signedAsset(asset, downloadName = "") {
     const provider = String(asset.storage_provider || "supabase").toLowerCase();
     const path = asset.storage_path || asset.video_url || "";
     if (!path) return null;
@@ -88,7 +88,7 @@
       try {
         const response=await fetch("/api/media/access",{
           method:"POST",headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({contentId:asset.content_id,storagePath:path,provider})
+          body:JSON.stringify({contentId:asset.content_id,storagePath:path,provider,downloadName})
         });
         const result=await response.json().catch(()=>({}));
         if(!response.ok||!result.url)throw new Error(result.error||"Private media URL could not be signed.");
@@ -642,8 +642,20 @@
     const screenshotHost=$("dlScreenshotSlider"),dots=$("dlSliderDots"),screens=Array.isArray(activeItem.screenshots)?activeItem.screenshots:[];
     if(screenshotHost)screenshotHost.innerHTML=screens.length?screens.map((url,index)=>'<img loading="lazy" src="'+esc(url)+'" alt="'+esc(activeItem.title)+' preview '+(index+1)+'">').join(""):"";
     if(dots)dots.textContent=screens.length?screens.length+" preview image(s)":"";
-    host.innerHTML=choices.length?choices.map(asset=>'<div class="res-card"><div class="res-info"><span class="res-tag">'+esc(asset.resolution||"Original")+'</span><div class="res-meta"><span>'+esc(asset.language||"Source audio")+'</span><small>Verified source link · actual supplied quality</small></div></div><div class="res-actions"><button class="btn-dl-server" type="button" data-vh-download="'+esc(asset.url)+'"><i class="fas fa-external-link-alt"></i> Open source</button></div></div>').join(""):"<p>No verified video resolution links have been added for this title.</p>";
-    host.querySelectorAll("[data-vh-download]").forEach(button=>button.addEventListener("click",()=>window.open(button.dataset.vhDownload,"_blank","noopener")));
+    host.innerHTML=choices.length?choices.map((asset,index)=>'<div class="res-card"><div class="res-info"><span class="res-tag">'+esc(asset.resolution||"Original")+'</span><div class="res-meta"><span>'+esc(asset.language||"Source audio")+'</span><small>Verified source link · actual supplied quality</small></div></div><div class="res-actions"><button class="btn-dl-server" type="button" data-vh-download-index="'+index+'"><i class="fas fa-download"></i> Download file</button></div></div>').join(""):"<p>No verified video resolution links have been added for this title.</p>";
+    host.querySelectorAll("[data-vh-download-index]").forEach(button=>button.addEventListener("click",async()=>{
+      const asset=choices[Number(button.dataset.vhDownloadIndex)];if(!asset)return;
+      const popup=window.open("about:blank","_blank");if(popup)popup.opener=null;
+      try{
+        const source=String(asset.storage_path||asset.asset_url||"").split("?")[0];
+        const extension=(source.match(/\.([a-z0-9]{2,5})$/i)||[])[1]||"mp4";
+        const downloadName=slug(activeItem.title)+"-"+slug(asset.resolution||"original")+"."+extension;
+        const url=await signedAsset({...asset,content_id:activeItem.id},downloadName);
+        const destination=url||asset.url;
+        if(!destination)throw new Error("Download URL is unavailable.");
+        if(popup)popup.location.href=destination;else window.location.href=destination;
+      }catch(error){popup?.close();toast(error.message||"Download could not be prepared.");}
+    }));
     const tg=$("dlModalTelegramBtn");if(tg)tg.classList.toggle("hidden",!activeItem.telegram_url);
     modal.classList.add("open");
   };
