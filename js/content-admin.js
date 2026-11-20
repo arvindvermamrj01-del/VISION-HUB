@@ -600,9 +600,14 @@
     $("dlModalTitle").textContent=activeItem.title;
     $("dlModalMeta").textContent=[activeItem.year,activeItem.genre,activeItem.language,activeItem.duration].filter(Boolean).join(" · ");
     $("dlModalPoster").src=activeItem.poster||"";
-    const assets=(activeItem.media_assets||[]).filter(asset=>asset.url);
-    const choices=assets.length?assets:[{resolution:"Original",url:activeItem.video_url}].filter(asset=>asset.url);
-    host.innerHTML=choices.length?choices.map(asset=>'<div class="res-card"><div class="res-info"><span class="res-tag">'+esc(asset.resolution||"Original")+'</span><div class="res-meta"><span>'+esc(asset.language||"Source audio")+'</span><small>Verified source link · actual supplied quality</small></div></div><div class="res-actions"><button class="btn-dl-server" type="button" data-vh-download="'+esc(asset.url)+'"><i class="fas fa-external-link-alt"></i> Open source</button></div></div>').join(""):"<p>No verified resolution links have been added for this title.</p>";
+    const assets=(activeItem.media_assets||[]).filter(asset=>asset.url&&(!asset.asset_type||asset.asset_type==="video"));
+    const choices=assets.length?assets.sort((a,b)=>{const ai=qualityOrder.indexOf(String(a.resolution||"").toLowerCase()),bi=qualityOrder.indexOf(String(b.resolution||"").toLowerCase());return (ai<0?999:ai)-(bi<0?999:bi);}):[{resolution:"Original",url:activeItem.video_url}].filter(asset=>asset.url);
+    const audioInfo=$("dlModalAudioInfo"),languages=[...new Set(assets.map(asset=>String(asset.language||"").trim()).filter(Boolean))];
+    if(audioInfo){audioInfo.textContent=languages.length?"Available source languages: "+languages.join(", "):"";audioInfo.style.display=languages.length?"":"none";}
+    const screenshotHost=$("dlScreenshotSlider"),dots=$("dlSliderDots"),screens=Array.isArray(activeItem.screenshots)?activeItem.screenshots:[];
+    if(screenshotHost)screenshotHost.innerHTML=screens.length?screens.map((url,index)=>'<img loading="lazy" src="'+esc(url)+'" alt="'+esc(activeItem.title)+' preview '+(index+1)+'">').join(""):"";
+    if(dots)dots.textContent=screens.length?screens.length+" preview image(s)":"";
+    host.innerHTML=choices.length?choices.map(asset=>'<div class="res-card"><div class="res-info"><span class="res-tag">'+esc(asset.resolution||"Original")+'</span><div class="res-meta"><span>'+esc(asset.language||"Source audio")+'</span><small>Verified source link · actual supplied quality</small></div></div><div class="res-actions"><button class="btn-dl-server" type="button" data-vh-download="'+esc(asset.url)+'"><i class="fas fa-external-link-alt"></i> Open source</button></div></div>').join(""):"<p>No verified video resolution links have been added for this title.</p>";
     host.querySelectorAll("[data-vh-download]").forEach(button=>button.addEventListener("click",()=>window.open(button.dataset.vhDownload,"_blank","noopener")));
     const tg=$("dlModalTelegramBtn");if(tg)tg.classList.toggle("hidden",!activeItem.telegram_url);
     modal.classList.add("open");
