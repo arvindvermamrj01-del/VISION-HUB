@@ -8,7 +8,7 @@ const BLOCK_SECONDS = 1800;
 async function failureSummary(db, ip) {
   return db.prepare(
     "SELECT COUNT(*) AS attempts, COALESCE(MAX(started_at),0) AS latest " +
-    "FROM vh_admin_login_attempts WHERE ip_address=? AND status='failed' AND started_at > unixepoch()-?"
+    "FROM vh_admin_login_attempts WHERE ip_address=? AND status IN ('failed','denied') AND started_at > unixepoch()-?"
   ).bind(ip, WINDOW_SECONDS).first();
 }
 
@@ -37,6 +37,8 @@ export async function onRequestPost({ request, env }) {
   const db = env.VH_SECURITY_DB;
 
   try {
+    await db.prepare("DELETE FROM vh_admin_login_attempts WHERE started_at < unixepoch()-7776000").run();
+    await db.prepare("DELETE FROM vh_security_events WHERE created_at < unixepoch()-7776000").run();
     if (action === "check") {
       const summary = await failureSummary(db, ip);
       const attempts = Number(summary?.attempts || 0);
@@ -48,7 +50,7 @@ export async function onRequestPost({ request, env }) {
       const created = await db.prepare(
         "INSERT INTO vh_admin_login_attempts (attempt_id,ip_address,status,started_at) " +
         "SELECT ?,?,'pending',unixepoch() " +
-        "WHERE (SELECT COUNT(*) FROM vh_admin_login_attempts WHERE ip_address=? AND status='failed' AND started_at > unixepoch()-?) < ? " +
+        "WHERE (SELECT COUNT(*) FROM vh_admin_login_attempts WHERE ip_address=? AND status IN ('failed','denied') AND started_at > unixepoch()-?) < ? " +
         "AND (SELECT COUNT(*) FROM vh_admin_login_attempts WHERE ip_address=? AND status='pending' AND started_at > unixepoch()-120) < 3"
       ).bind(attemptId, ip, ip, WINDOW_SECONDS, MAX_FAILURES, ip).run();
       if (Number(created.meta?.changes || 0) !== 1) {
@@ -85,7 +87,7 @@ export async function onRequestPost({ request, env }) {
         "WHERE attempt_id=? AND ip_address=? AND status='pending'"
       ).bind(identity.user.id, identity.user.email || null, identity.profile.role, attemptId, ip).run();
       if (Number(updated.meta?.changes || 0) !== 1) return json({ error: "Security sign-in check expired. Please sign in again." }, 409);
-      await db.prepare("DELETE FROM vh_admin_login_attempts WHERE ip_address=? AND status='failed' AND started_at > unixepoch()-?").bind(ip, WINDOW_SECONDS).run();
+      await db.prepare("DELETE FROM vh_admin_login_attempts WHERE ip_address=? AND status IN ('failed','denied') AND started_at > unixepoch()-?").bind(ip, WINDOW_SECONDS).run();
       await recordSecurityEvent(request, env, "admin_login_success", identity);
       return json({ recorded: true, role: identity.profile.role });
     }
@@ -93,7 +95,7 @@ export async function onRequestPost({ request, env }) {
     if (action === "denied") {
       const identity = await requireUser(request, env);
       await db.prepare(
-        "UPDATE vh_admin_login_attempts SET status='denied',finished_at=unixepoch(),user_id=?,account_email=?,user_role=? " +
+        "UPDATE vh_admin_login_attempts SET status='failed',finished_at=unixepoch(),user_id=?,account_email=?,user_role=? " +
         "WHERE attempt_id=? AND ip_address=? AND status='pending'"
       ).bind(identity.user.id, identity.user.email || null, identity.profile?.role || "unknown", attemptId, ip).run();
       await recordSecurityEvent(request, env, "admin_login_denied", identity);
