@@ -12,6 +12,21 @@ create table if not exists public.profiles (
   created_at timestamptz not null default now()
 );
 alter table public.profiles add column if not exists fullname text;
+-- Preserve display names from older installations that used the full_name column.
+do $vh_profile_name_compat$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'profiles' and column_name = 'full_name'
+  ) then
+    execute $copy_profile_names$
+      update public.profiles
+      set fullname = coalesce(nullif(btrim(fullname), ''), nullif(btrim(full_name), ''))
+      where fullname is null or btrim(fullname) = ''
+    $copy_profile_names$;
+  end if;
+end
+$vh_profile_name_compat$;
 alter table public.profiles add column if not exists role text not null default 'user';
 alter table public.profiles add column if not exists created_at timestamptz not null default now();
 alter table public.profiles enable row level security;
