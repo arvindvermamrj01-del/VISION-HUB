@@ -104,8 +104,8 @@
       const button=event.target.closest("button[data-vh-page],button[data-vh-action]");
       if(button)execute(button);
     });
-    document.addEventListener("visibilitychange",()=>{if(document.hidden)clearAutoSlide();else startAutoSlide(1800);});
-    window.addEventListener("resize",()=>{if(mobileQuery())startAutoSlide(1800);else clearAutoSlide();});
+    document.addEventListener("visibilitychange",()=>{if(document.hidden)clearAutoSlide();else startAutoSlide(AUTO_RESUME_DELAY);});
+    window.addEventListener("resize",()=>{if(mobileQuery())startAutoSlide(AUTO_RESUME_DELAY);else clearAutoSlide();});
     document.body.appendChild(dock);
   }
   function bindResponsiveNavClicks(){
@@ -176,7 +176,7 @@
     sidebar.addEventListener("pointerenter",revealSidebar,{passive:true});
     sidebar.addEventListener("pointermove",()=>{
       if(!document.body.classList.contains("vh-sidebar-expanded"))setSidebarExpanded(true);
-      scheduleSidebarCollapse(2000);
+      scheduleSidebarCollapse(3000);
     },{passive:true});
     sidebar.addEventListener("pointerdown",revealSidebar,{passive:true});
     sidebar.addEventListener("pointerleave",()=>scheduleSidebarCollapse(3000),{passive:true});
@@ -186,7 +186,7 @@
     });
     sidebar.addEventListener("focusout",()=>{
       requestAnimationFrame(()=>{
-        if(!sidebar.contains(document.activeElement))scheduleSidebarCollapse(2000);
+        if(!sidebar.contains(document.activeElement))scheduleSidebarCollapse(3000);
       });
     });
     sidebar.addEventListener("click",event=>{
