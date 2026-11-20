@@ -28,6 +28,17 @@
   };
   const validHttpUrl = raw => { if(!raw)return null; let url; try{url=new URL(raw);}catch(_){throw new Error("Media URL valid nahi hai.");} if(!["http:","https:"].includes(url.protocol))throw new Error("Media URL http/https hona chahiye."); return url.href; };
   const dbResolution = value => !value || String(value).toLowerCase() === "original" ? null : String(value).toLowerCase();
+  const pixeldrainId = raw => {
+    let parsed;try{parsed=new URL(String(raw||""));}catch(_){return "";}
+    if(!["pixeldrain.com","www.pixeldrain.com"].includes(parsed.hostname.toLowerCase()))return "";
+    return parsed.pathname.match(/^\/(?:u|api\/file)\/([A-Za-z0-9_-]{4,64})(?:\/|$)/)?.[1]||"";
+  };
+  const pixeldrainDirectUrl = raw => {
+    const id=pixeldrainId(raw);
+    if(!id)throw new Error("PixelDrain share URL valid nahi hai. pixeldrain.com/u/FILE_ID paste karein.");
+    return "https://pixeldrain.com/api/file/"+encodeURIComponent(id);
+  };
+  const storedProvider = provider => provider==="pixeldrain"?"direct":provider;
 
   async function requireAdmin() {
     const {data:{user},error} = await db.auth.getUser();
@@ -56,6 +67,25 @@
   async function uploadPrivate(file,user,provider) {
     if (!file) return null;
     if (!file.type.startsWith("video/")) throw new Error("Selected file video format mein nahi hai.");
+    if (provider === "pixeldrain") {
+      const maxBytes=90*1024*1024;
+      if(file.size>maxBytes)throw new Error("PixelDrain in-app upload is limited to 90 MiB by the Cloudflare request limit. Upload larger files on PixelDrain first, then paste the share link; use B2/R2 for full-size movie uploads.");
+      const {data:{session},error:sessionError}=await db.auth.getSession();
+      if(sessionError||!session?.access_token)throw new Error("Admin session expired. Sign in again.");
+      const response=await fetch("/api/media/pixeldrain-upload",{
+        method:"POST",
+        headers:{
+          "Authorization":"Bearer "+session.access_token,
+          "Content-Type":file.type,
+          "X-VH-File-Name":encodeURIComponent(file.name),
+          "X-VH-File-Size":String(file.size)
+        },
+        body:file
+      });
+      const result=await response.json().catch(()=>({}));
+      if(!response.ok||!result.id)throw new Error(result.error||"PixelDrain upload could not be prepared.");
+      return {path:"pixeldrain://"+result.id,file,storage_provider:"direct",external_provider:"pixeldrain",asset_url:result.url};
+    }
     if (provider === "cloudflare_r2" || provider === "backblaze_b2") {
       const {data:{session},error:sessionError}=await db.auth.getSession();
       if(sessionError||!session?.access_token)throw new Error("Admin session expired. Sign in again.");
@@ -81,6 +111,10 @@
     const provider = String(asset.storage_provider || "supabase").toLowerCase();
     const path = asset.storage_path || asset.video_url || "";
     if (!path) return null;
+    if(provider==="direct"&&String(path).startsWith("pixeldrain://")){
+      const id=String(path).slice("pixeldrain://".length);
+      return /^[A-Za-z0-9_-]{4,64}$/.test(id)?"https://pixeldrain.com/api/file/"+encodeURIComponent(id):null;
+    }
     if(provider==="google_drive"){
       const id=googleDriveFileId(asset.storage_path||asset.asset_url||path);
       return id?"https://drive.google.com/uc?export=download&id="+encodeURIComponent(id):(validHttpUrl(asset.asset_url||path)||null);
@@ -328,6 +362,15 @@
       for(const asset of assets||[]){
         const provider=String(asset.storage_provider||"").toLowerCase();
         const path=String(asset.storage_path||"");
+        if(provider==="direct"&&path.startsWith("pixeldrain://")){
+          const response=await fetch("/api/media/pixeldrain-delete",{
+            method:"POST",headers:{"Authorization":"Bearer "+(session?.access_token||""),"Content-Type":"application/json"},
+            body:JSON.stringify({storagePath:path})
+          });
+          const result=await response.json().catch(()=>({}));
+          if(!response.ok)throw new Error(result.error||"PixelDrain file could not be removed; content was kept.");
+          continue;
+        }
         if(!["supabase","cloudflare_r2","backblaze_b2"].includes(provider)||!path||/^https?:\/\//i.test(path))continue;
         const response=await fetch("/api/media/delete",{
           method:"POST",
@@ -367,15 +410,15 @@
     const uploads=[];
     const links=[];
     if(primaryFile){
-      if(!["supabase","cloudflare_r2","backblaze_b2"].includes(provider))throw new Error("Direct file upload ke liye Supabase, Cloudflare R2 ya Backblaze B2 choose karein. Baaki providers ke liye authorised direct URL dein.");
+      if(!["supabase","cloudflare_r2","backblaze_b2","pixeldrain"].includes(provider))throw new Error("Direct file upload ke liye Supabase, Cloudflare R2, Backblaze B2 ya configured PixelDrain choose karein. Baaki providers ke liye authorised direct URL dein.");
       uploads.push({resolution:"Original",file:primaryFile,is_primary:true});
-    } else if(primaryUrl) links.push({resolution:"Original",url:validHttpUrl(primaryUrl),is_primary:true,storage_provider:provider});
+    } else if(primaryUrl) links.push({resolution:"Original",url:provider==="pixeldrain"?pixeldrainDirectUrl(primaryUrl):validHttpUrl(primaryUrl),is_primary:true,storage_provider:storedProvider(provider)});
     if(!isShort){
       document.querySelectorAll("[data-vh-quality-file]").forEach(input=>{
         const file=input.files?.[0];if(file)uploads.push({resolution:input.dataset.vhQualityFile,file,is_primary:false});
       });
       [["180p","addDl180"],["240p","addDl240"],["420p","addDl420"],["480p","addDl480"],["720p","addDl720"],["1080p","addDl1080"],["2K","addDl2k"],["4K","addDl4k"],["8K","addDl8k"]].forEach(([resolution,id])=>{
-        const rawUrl=$(id)?.value.trim();if(rawUrl)links.push({resolution,url:validHttpUrl(rawUrl),is_primary:false,storage_provider:provider});
+        const rawUrl=$(id)?.value.trim();if(rawUrl)links.push({resolution,url:provider==="pixeldrain"?pixeldrainDirectUrl(rawUrl):validHttpUrl(rawUrl),is_primary:false,storage_provider:storedProvider(provider)});
       });
     }
     if(!uploads.length&&!links.length)throw new Error("Video file upload karein ya authorised video URL dein.");
@@ -426,6 +469,14 @@
         const {data:{session}}=await db.auth.getSession();
         for(const asset of uploaded){
           try{
+            if(asset.storage_provider==="direct"&&String(asset.path||"").startsWith("pixeldrain://")){
+              const response=await fetch("/api/media/pixeldrain-delete",{
+                method:"POST",headers:{"Authorization":"Bearer "+(session?.access_token||""),"Content-Type":"application/json"},
+                body:JSON.stringify({storagePath:asset.path})
+              });
+              if(!response.ok)console.warn("PixelDrain cleanup needs attention:",await response.text());
+              continue;
+            }
             const response=await fetch("/api/media/delete",{
               method:"POST",headers:{"Authorization":"Bearer "+(session?.access_token||""),"Content-Type":"application/json"},
               body:JSON.stringify({storagePath:asset.path,provider:asset.storage_provider||provider})
