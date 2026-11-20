@@ -92,7 +92,7 @@ export async function createAdminSessionCookie(identity, env) {
     exp: issuedAt + 3600,
     jti: crypto.randomUUID()
   };
-  const payload = btoa(unescape(encodeURIComponent(JSON.stringify(claims))))
+  const payload = btoa(JSON.stringify(claims))
     .replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
   const key = await crypto.subtle.importKey(
     "raw",
