@@ -367,7 +367,28 @@
     try{await teamRequest("DELETE",{userId});toast("Staff permissions revoked.");await loadSubAdmins();}
     catch(error){toast(error.message||"Could not revoke staff permissions.");}
   };
-  window.importFromDrive=()=>{const log=$("driveImportLog");if(log)log.textContent="Google Drive import is not connected yet. It still needs a Google OAuth client, Cloudflare server secret and provider consent flow.";toast("Drive import needs Google OAuth configuration.");};
+  window.importFromDrive=async()=>{
+    const log=$("driveImportLog"),link=$("driveLink")?.value.trim()||"",title=$("driveName")?.value.trim()||"",contentType=$("driveType")?.value||"Movie";
+    const button=document.querySelector('#tab-drive-import button[onclick="importFromDrive()"]');
+    if(!link||!title){if(log)log.textContent="Enter a Google Drive file link and a catalog title.";return;}
+    if(button)button.disabled=true;if(log)log.textContent="Verifying public Drive video and adding it to the catalog…";
+    try{
+      await requireAdmin();
+      const {data:{session},error}=await db.auth.getSession();
+      if(error||!session?.access_token)throw new Error("Admin session expired. Sign in again.");
+      const response=await fetch("/api/drive/import",{method:"POST",headers:{"Authorization":"Bearer "+session.access_token,"Content-Type":"application/json"},body:JSON.stringify({driveUrl:link,title,contentType})});
+      const result=await response.json().catch(()=>({}));
+      if(!response.ok)throw new Error(result.error||"Google Drive import failed.");
+      await window.refreshVisionHubCatalog?.();
+      try{await fetch("/api/telegram/notify-publish",{method:"POST",headers:{"Authorization":"Bearer "+session.access_token,"Content-Type":"application/json"},body:JSON.stringify({contentId:result.contentId})});}catch(_){}
+      if(log)log.textContent="Imported successfully: "+result.title+". Google Drive preview and direct download links are attached. The original Drive file is not copied into B2.";
+      $("driveLink").value="";
+      toast("Google Drive video added to Vision Hub.");
+    }catch(error){
+      if(log)log.textContent=error.message||"Google Drive import failed.";
+      toast(error.message||"Google Drive import failed.");
+    }finally{if(button)button.disabled=false;}
+  };
 
   document.addEventListener("DOMContentLoaded",()=>{
     const watchers=[["tab-users-admin",loadUsers],["tab-team-admin",loadSubAdmins],["tab-dashboard",loadDashboard],["tab-reports",loadReports],["tab-categories",loadCategories],["tab-songs",loadSongs],["tab-settings",()=>{loadWebsiteSettings();loadDonations();}],["tab-community-admin",loadFeedbackAdmin]];
