@@ -577,3 +577,24 @@ body.vh-sidebar-expanded #vhAppSidebar .vh-sidebar-toggle{opacity:1}
  #movieModal .vh-movie-compact-head{padding:10px 12px}
  #movieModal .vh-movie-compact-hint{display:none}
 }
+
+/* Animated aurora wordmark: keep the existing play-icon glow and cycle Vision Hub text colours. */
+.nav-brand .brand-name{display:inline-flex;align-items:baseline;gap:.22em;font-weight:900;letter-spacing:-.055em}
+.nav-brand .vh-brand-vision,.nav-brand .vh-brand-hub{
+ color:transparent;
+ background:linear-gradient(100deg,#48d9f4 0%,#8b79ff 24%,#f06acb 48%,#ffd166 68%,#54e2b5 86%,#48d9f4 100%);
+ background-size:300% 100%;
+ background-clip:text;
+ -webkit-background-clip:text;
+ -webkit-text-fill-color:transparent;
+ animation:vhBrandAuroraShift 8s ease-in-out infinite;
+ filter:drop-shadow(0 0 7px rgba(112,139,255,.24));
+}
+.nav-brand .vh-brand-hub{animation-delay:-4s}
+@keyframes vhBrandAuroraShift{
+ 0%,100%{background-position:0% 50%}
+ 50%{background-position:100% 50%}
+}
+@media(prefers-reduced-motion:reduce){
+ .nav-brand .vh-brand-vision,.nav-brand .vh-brand-hub{animation:none;background-position:50% 50%}
+}
