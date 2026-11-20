@@ -31,6 +31,8 @@
       window.VH_STORAGE_DEFAULT = provider;
       const defaultSelect = $("defaultStorageProvider");
       if (defaultSelect) defaultSelect.value = provider;
+      const songSelect=$("songStorageProvider");
+      if(songSelect&&["backblaze_b2","cloudflare_r2"].includes(provider))songSelect.value=provider;
       ["addStorageProvider", "shortStorageProvider"].forEach(id => {
         const select = $(id);
         if (select && !select.dataset.userChosen) select.value = provider;
@@ -57,6 +59,8 @@
       }, { onConflict: "id" });
       if (error) throw error;
       window.VH_STORAGE_DEFAULT = provider;
+      const songSelect=$("songStorageProvider");
+      if(songSelect&&["backblaze_b2","cloudflare_r2"].includes(provider))songSelect.value=provider;
       ["addStorageProvider", "shortStorageProvider"].forEach(id => {
         const select = $(id);
         if (select && !select.dataset.userChosen) select.value = provider;
