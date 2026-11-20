@@ -11,7 +11,7 @@
     if(!pay||!safeVpa(vpa))return;
     const params=new URLSearchParams({pa:vpa,pn:String(settings.donation_display_name||"Vision Hub").slice(0,80),cu:"INR",tn:"Voluntary Vision Hub support"});
     const amount=Number($("donationAmount")?.value);
-    if(Number.isFinite(amount)&&amount>=1&&amount<=100000)params.set("am",amount.toFixed(2));
+    if(Number.isFinite(amount)&&amount>=1&&amount<=999)params.set("am",amount.toFixed(2));
     pay.href="upi://pay?"+params.toString();
   }
   function applySettings(next){
@@ -101,7 +101,7 @@
     event.preventDefault();
     const name=$("donorName")?.value.trim()||"",amount=Number($("donationAmount")?.value),reference=$("donationReference")?.value.trim()||"";
     if(!safeVpa(settings.donation_upi_id)){setStatus("UPI is not configured yet. Please try again later.",true);return;}
-    if(name.length<1||name.length>80||!Number.isFinite(amount)||amount<1||amount>100000||!/^[A-Za-z0-9-]{8,64}$/.test(reference)){setStatus("Enter a valid name, amount and 8–64 character transaction reference.",true);return;}
+    if(name.length<1||name.length>80||!Number.isFinite(amount)||amount<1||amount>999||!/^[A-Za-z0-9-]{8,64}$/.test(reference)){setStatus("Enter a valid name, amount and 8–64 character transaction reference.",true);return;}
     if(!db){setStatus("Donation service is unavailable. Please try again later.",true);return;}
     const button=$("donationSubmitBtn");if(button)button.disabled=true;
     try{
