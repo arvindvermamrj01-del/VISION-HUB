@@ -68,6 +68,9 @@ function showPage(id) {
 }
 
 function showSignedOut() {
+  try { sessionStorage.removeItem("vh-admin-secret-session"); } catch (_) {}
+  window.VH_ADMIN_SECRET_SESSION_ACTIVE = false;
+  window.VH_ADMIN_LOGIN_IN_PROGRESS = false;
 window.VH_IS_ADMIN = false;
 window.VH_ROLE = "guest";
 window.VH_USER_ID = null;
@@ -135,6 +138,15 @@ if (el("statJoined")) {
 window.VH_USER_ID = user.id;
 window.VH_ROLE = profile?.role || "user";
 window.VH_IS_ADMIN = ["admin", "sub_admin", "content_editor", "moderator"].includes(window.VH_ROLE);
+const secretAdminSession = window.VH_ADMIN_SECRET_SESSION_ACTIVE === true ||
+  window.VH_ADMIN_LOGIN_IN_PROGRESS === true ||
+  (() => { try { return sessionStorage.getItem("vh-admin-secret-session") === "1"; } catch (_) { return false; } })();
+if (window.VH_IS_ADMIN && !secretAdminSession) {
+  el("userNav")?.classList.add("hidden");
+  el("adminNav")?.classList.add("hidden");
+  window.dispatchEvent(new Event("vh-auth-state-changed"));
+  return false;
+}
 window.dispatchEvent(new Event("vh-auth-state-changed"));
 const roleBadge = el("adminRoleBadge");
 if (roleBadge) roleBadge.textContent = window.VH_ROLE.replaceAll("_", " ");
@@ -289,6 +301,7 @@ window.adminLogin = async function (e) {
     }
 
     const email = username.toLowerCase() === "admin" ? "arvindvermamrj01@gmail.com" : username.toLowerCase();
+    window.VH_ADMIN_LOGIN_IN_PROGRESS = true;
     signInStarted = true;
     const { data, error } = await db.auth.signInWithPassword({ email, password });
     if (error) {
@@ -317,6 +330,9 @@ window.adminLogin = async function (e) {
       return;
     }
 
+    try { sessionStorage.setItem("vh-admin-secret-session", "1"); } catch (_) {}
+    window.VH_ADMIN_SECRET_SESSION_ACTIVE = true;
+    window.VH_ADMIN_LOGIN_IN_PROGRESS = false;
     const roleVerified = await showSignedIn(data.user);
     if (!roleVerified || !window.VH_IS_ADMIN) {
       await db.auth.signOut({ scope: "local" });
@@ -339,6 +355,7 @@ window.adminLogin = async function (e) {
     showSignedOut();
     msg(err.message || "Secure Admin sign-in could not be completed.");
   } finally {
+    window.VH_ADMIN_LOGIN_IN_PROGRESS = false;
     if (btn) btn.disabled = false;
   }
 };
@@ -402,16 +419,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
 db.auth.onAuthStateChange(async (event, session) => {
 if (session?.user) {
-setTimeout(() => showSignedIn(session.user), 0);
+setTimeout(async () => {
+  const allowed = await showSignedIn(session.user);
+  if (!allowed && !window.VH_ADMIN_LOGIN_IN_PROGRESS) {
+    await db.auth.signOut({ scope: "local" }).catch(() => null);
+    showSignedOut();
+    window.showPage?.("home");
+  }
+}, 0);
 if (event === "PASSWORD_RECOVERY") setTimeout(() => showPage("reset-password"), 0);
 } else {
 showSignedOut();
 }
 });
 
-db.auth.getSession().then(({ data }) => {
+db.auth.getSession().then(async ({ data }) => {
 if (data.session?.user) {
-showSignedIn(data.session.user);
+  const allowed = await showSignedIn(data.session.user);
+  if (!allowed && !window.VH_ADMIN_LOGIN_IN_PROGRESS) {
+    await db.auth.signOut({ scope: "local" }).catch(() => null);
+    showSignedOut();
+    window.showPage?.("home");
+  }
 } else {
 showSignedOut();
 }
