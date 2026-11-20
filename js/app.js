@@ -373,7 +373,15 @@ document.addEventListener("DOMContentLoaded",()=>{
   window.VH_SUPABASE?.auth.onAuthStateChange((_event,session)=>{if(session?.user){window.VH_USER_ID=session.user.id;window.VH_ACCOUNT_DATA?.migrateLegacy(session.user.id);loadCloudWatchlist();}else{window.VH_USER_ID=null;renderWatchlist();render();}});
   renderRequests();
   document.addEventListener("keydown",e=>{
-    if(e.key==="/"&&!["INPUT","TEXTAREA"].includes(document.activeElement.tagName)){
+    const target=e.target;
+    const typingTarget=!!target&&(target.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
+    // Keep the restricted staff sign-in separate from the public user Login/Sign Up flow.
+    if(e.ctrlKey&&e.shiftKey&&String(e.key).toLowerCase()==="a"&&!typingTarget){
+      e.preventDefault();
+      window.openHiddenAdminLogin?.();
+      return;
+    }
+    if(e.key==="/"&&!typingTarget){
       e.preventDefault();
       toggleSearch();
     }
