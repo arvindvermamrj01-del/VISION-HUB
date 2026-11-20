@@ -10,6 +10,7 @@ In Supabase Dashboard → SQL Editor, open and run:
 
 This single transaction adds:
 - Backblaze B2 and direct URL provider support to storage constraints
+- Media resolution constraint alignment for 480p through 8K upload/player options
 - UPI donation confirmations and admin verification
 - Series season/episode metadata
 - Community feedback, public roadmap and authenticated voting
