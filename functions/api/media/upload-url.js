@@ -25,7 +25,7 @@ export async function onRequestPost({ request, env }) {
     }
     if (provider !== "cloudflare_r2") return json({ error: "Unsupported upload provider." }, 400);
     const signed = await presignR2(env, "PUT", key, contentType, 900);
-    return json({ provider, key, uploadUrl: signed.url, headers: signed.headers, expiresIn: 900 });
+    return json({ provider, key, kind, uploadUrl: signed.url, headers: signed.headers, expiresIn: 900 });
   } catch (error) {
     const message = error.message || "Could not create secure upload URL.";
     const status = /Authentication|session/i.test(message) ? 401 : /permission/i.test(message) ? 403 : 503;
