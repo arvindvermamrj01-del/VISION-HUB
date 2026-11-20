@@ -28,7 +28,7 @@ export async function onRequestGet({ request, env }) {
     reportUrl.searchParams.set("limit", "7");
     reportUrl.searchParams.set("orderBy", "-DATE");
     for (const dimension of ["DATE"]) reportUrl.searchParams.append("dimensions", dimension);
-    for (const metric of ["ESTIMATED_EARNINGS", "IMPRESSIONS", "CLICKS", "PAGE_VIEWS_RPM"]) reportUrl.searchParams.append("metrics", metric);
+    for (const metric of ["ESTIMATED_EARNINGS", "IMPRESSIONS", "CLICKS", "PAGE_VIEWS", "PAGE_VIEWS_RPM"]) reportUrl.searchParams.append("metrics", metric);
 
     const reportResponse = await fetch(reportUrl, {
       headers: { Authorization: "Bearer " + token.access_token }
