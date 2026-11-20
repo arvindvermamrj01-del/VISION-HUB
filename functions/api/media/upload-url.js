@@ -7,18 +7,21 @@ export async function onRequestPost({ request, env }) {
     const { user } = await requireRole(request, env, ["admin", "sub_admin", "content_editor"]);
     const body = await request.json();
     const contentType = String(body.contentType || "").trim().toLowerCase();
-    const fileName = String(body.fileName || "video").slice(0, 180);
+    const kind = body.kind === "audio" ? "audio" : "video";
+    const fileName = String(body.fileName || kind).slice(0, 180);
     const fileSize = Number(body.fileSize || 0);
-    if (!contentType.startsWith("video/")) return json({ error: "Only video uploads are accepted." }, 400);
-    if (!Number.isFinite(fileSize) || fileSize <= 0 || fileSize > 5 * 1024 * 1024 * 1024) {
-      return json({ error: "File must be between 1 byte and 5 GB. Larger files need multipart upload." }, 400);
+    const validType = kind === "audio" ? contentType.startsWith("audio/") : contentType.startsWith("video/");
+    const maxSize = kind === "audio" ? 1024 * 1024 * 1024 : 5 * 1024 * 1024 * 1024;
+    if (!validType) return json({ error: kind === "audio" ? "Only audio uploads are accepted for this request." : "Only video uploads are accepted." }, 400);
+    if (!Number.isFinite(fileSize) || fileSize <= 0 || fileSize > maxSize) {
+      return json({ error: kind === "audio" ? "Audio file must be between 1 byte and 1 GB." : "Video file must be between 1 byte and 5 GB. Larger files need multipart upload." }, 400);
     }
-    const safeName = fileName.normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(-100) || "video";
-    const key = user.id + "/" + crypto.randomUUID() + "-" + safeName;
+    const safeName = fileName.normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(-100) || kind;
+    const key = user.id + "/" + (kind === "audio" ? "audio/" : "") + crypto.randomUUID() + "-" + safeName;
     const provider = String(body.provider || "cloudflare_r2").toLowerCase();
     if (provider === "backblaze_b2") {
       const signed = await presignB2(env, "PUT", key, contentType, 900);
-      return json({ provider, key, uploadUrl: signed.url, headers: signed.headers, expiresIn: 900 });
+      return json({ provider, key, kind, uploadUrl: signed.url, headers: signed.headers, expiresIn: 900 });
     }
     if (provider !== "cloudflare_r2") return json({ error: "Unsupported upload provider." }, 400);
     const signed = await presignR2(env, "PUT", key, contentType, 900);
