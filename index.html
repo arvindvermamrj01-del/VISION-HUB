@@ -46,7 +46,8 @@
         <a href="#hollywood" class="nav-link" onclick="filterByIndustry('Hollywood')">Hollywood</a>
         <a href="#south" class="nav-link" onclick="filterByIndustry('South')">South Indian</a>
         <a href="#movies" class="nav-link" onclick="showPage('movies')">Movies</a>
-        <a href="#series" class="nav-link" onclick="showPage('series')">TV Shows / Web Series</a>
+        <a href="#series" class="nav-link" onclick="showPage('series')">Web Series</a>
+        <a href="#shows" class="nav-link" onclick="showPage('shows')">Shows</a>
         <a href="#shorts" class="nav-link" onclick="showPage('shorts')">Shorts</a>
         <a href="#songs" class="nav-link" onclick="showPage('songs')">Songs</a>
         <a href="#watchlist" class="nav-link" onclick="showPage('watchlist')">Watchlist</a>
@@ -112,7 +113,7 @@
           <button type="button" class="vh-sidebar-button active" data-vh-nav="home" title="Home" aria-label="Home"><i class="fas fa-house"></i><span>Home</span></button>
           <button type="button" class="vh-sidebar-button" data-vh-nav="movies" title="Movies" aria-label="Movies"><i class="fas fa-clapperboard"></i><span>Movies</span></button>
           <button type="button" class="vh-sidebar-button" data-vh-nav="series" title="Web Series" aria-label="Web Series"><i class="fas fa-tv"></i><span>Web Series</span></button>
-          <button type="button" class="vh-sidebar-button" data-vh-nav="series" data-vh-label="Shows" title="Shows" aria-label="Shows"><i class="fas fa-star"></i><span>Shows</span></button>
+          <button type="button" class="vh-sidebar-button" data-vh-nav="shows" title="Shows" aria-label="Shows"><i class="fas fa-star"></i><span>Shows</span></button>
           <button type="button" class="vh-sidebar-button" data-vh-nav="songs" title="Songs" aria-label="Songs"><i class="fas fa-music"></i><span>Songs</span></button>
           <button type="button" class="vh-sidebar-button" data-vh-nav="shorts" title="Shorts" aria-label="Shorts"><i class="fas fa-bolt"></i><span>Shorts</span></button>
           <button type="button" class="vh-sidebar-button" data-vh-nav="watchlist" title="Watchlist" aria-label="Watchlist"><i class="fas fa-bookmark"></i><span>Watchlist</span></button>
@@ -332,8 +333,8 @@
     <!-- 3. WEB SERIES PAGE -->
     <div id="page-series" class="page">
       <div class="page-header-banner">
-        <h1>📺 TV Shows & Web Series</h1>
-        <p>Binge-worthy shows with multi-season and episode streaming</p>
+        <h1>📺 Web Series</h1>
+        <p>Binge-worthy web series with multi-season and episode streaming</p>
       </div>
       <section class="section">
         <div class="category-filters" id="seriesGenreFilters">
@@ -350,6 +351,17 @@
           <label>Sort <select id="seriesSortFilter" onchange="sortSeriesPage(this.value)"><option value="newest">Newest first</option><option value="rating">Top rated</option><option value="popular">Most viewed</option><option value="title">A–Z title</option></select></label>
         </div>
         <div class="movies-grid" id="allSeriesGrid"></div>
+      </section>
+    </div>
+
+    <!-- TV SHOWS PAGE — separate from Web Series -->
+    <div id="page-shows" class="page">
+      <div class="page-header-banner">
+        <h1>⭐ Shows</h1>
+        <p>Explore TV shows, standalone shows and documentaries — separate from Web Series</p>
+      </div>
+      <section class="section">
+        <div class="movies-grid" id="allShowsGrid"></div>
       </section>
     </div>
 
@@ -417,6 +429,7 @@
                 <select id="reqType">
                   <option value="Movie">Movie</option>
                   <option value="Web Series">Web Series</option>
+                  <option value="TV Show">TV Show / Shows</option>
                   <option value="Documentary">Documentary</option>
                 </select>
               </div>
@@ -781,7 +794,7 @@
 
           <!-- TAB 2: Add Movie / Series (With Multi-Resolution Downloads & Telegram Integration) -->
           <div id="tab-add-movie" class="admin-tab">
-            <h2>➕ Add New Movie / Web Series</h2>
+            <h2>➕ Add New Movie / Web Series / Show</h2>
             <form class="admin-form" onsubmit="addMovie(event)">
               <div class="form-row">
                 <div class="form-group">
@@ -793,6 +806,7 @@
                   <select id="addType">
                     <option value="Movie">Movie</option>
                     <option value="Web Series">Web Series</option>
+                    <option value="TV Show">TV Show / Shows</option>
                     <option value="Documentary">Documentary</option>
                   </select>
                 </div>
