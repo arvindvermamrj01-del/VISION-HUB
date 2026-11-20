@@ -1,4 +1,4 @@
-import { json, requireUser, requireRole, recordSecurityEvent } from "../../_shared/auth.js";
+import { json, requireUser, requireRole, recordSecurityEvent, clientIp } from "../../_shared/auth.js";
 
 const authenticatedTypes = new Set([
   "authenticated_visit",
@@ -35,6 +35,7 @@ export async function onRequestGet({ request, env }) {
   try {
     const { profile } = await requireRole(request, env, ["admin"]);
     if (!env.VH_SECURITY_DB) return json({ error: "Security activity storage is not configured." }, 503);
+    await cleanup(env.VH_SECURITY_DB);
     const url = new URL(request.url);
     const limit = Math.max(1, Math.min(500, Number.parseInt(url.searchParams.get("limit") || "250", 10) || 250));
     const result = await env.VH_SECURITY_DB.prepare(
@@ -81,6 +82,11 @@ export async function onRequestPost({ request, env }) {
       return json({ error: "Authenticated session required." }, 401);
     }
 
+    if (eventType === "unauthorized_admin_page_access" || eventType === "admin_login_wrong_entry") {
+      await env.VH_SECURITY_DB.prepare(
+        "INSERT INTO vh_admin_login_attempts (attempt_id,ip_address,status,started_at) VALUES (?,?, 'failed',unixepoch())"
+      ).bind(crypto.randomUUID(), clientIp(request)).run();
+    }
     await recordSecurityEvent(request, env, eventType, identity, {
       pagePath: path,
       sessionId,
