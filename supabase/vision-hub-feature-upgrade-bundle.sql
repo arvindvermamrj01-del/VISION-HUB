@@ -222,6 +222,9 @@ alter table public.vh_feedback_votes enable row level security;
 revoke all on public.vh_feedback from anon,authenticated;
 revoke all on public.vh_feedback_votes from anon,authenticated;
 
+-- Explicit Data API grants are required in addition to RLS policies.
+grant select on public.vh_feedback to anon,authenticated;
+grant insert,update on public.vh_feedback to authenticated;
 grant select on public.vh_feedback_votes to authenticated;
 grant usage,select on sequence public.vh_feedback_id_seq,public.vh_feedback_votes_id_seq to authenticated;
 
@@ -517,3 +520,5 @@ create policy "vh_private_media_admin_read" on storage.objects
   using (bucket_id = 'vh-private-media' and public.vh_can_manage_private_media_object(name));
 
 commit;
+
+notify pgrst, 'reload schema';
