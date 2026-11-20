@@ -75,10 +75,13 @@
       if(!old)return;
       const dx=old.left-now.left,dy=old.top-now.top;
       if(!dx&&!dy)return;
-      try{button.animate([
-        {transform:`translate(${dx}px,${dy}px) rotate(${Math.sign(dy||1)*5}deg) scale(.97)`},
-        {transform:"translate(0,0) rotate(0deg) scale(1)"}
-      ],{duration:420,easing:"cubic-bezier(.2,.82,.25,1)"});}catch(_){}
+      try{
+        const isSelected=button===selected;
+        button.animate([
+          {transform:`translate(${dx}px,${dy}px) scale(${isSelected?.98:1})`},
+          {transform:"translate(0,0) scale(1)"}
+        ],{duration:isSelected?560:460,easing:"cubic-bezier(.16,1,.3,1)"});
+      }catch(_){}
     });
   }
   function execute(button){
