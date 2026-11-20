@@ -45,6 +45,9 @@
     setPanelOpen(!el.classList.contains("open"));
   };
   document.addEventListener("DOMContentLoaded",()=>{
+    /* Render the appearance chooser as a body-level popup so desktop fixed positioning is viewport-relative. */
+    const appearancePanel=panel();
+    if(appearancePanel&&appearancePanel.parentElement!==document.body)document.body.appendChild(appearancePanel);
     let saved="coloros";
     try{
       const migrationKey="vh_theme_coloros_default_migrated";
