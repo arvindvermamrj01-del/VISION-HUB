@@ -9,10 +9,10 @@
     const host=$("communityFeedbackList");if(!host||!db||loading)return;
     loading=true;
     try{
-      const {data,error}=await db.from("vh_feedback").select("id,category,title,description,status,upvotes,created_at").in("status",["planned","in_progress","completed"]).order("upvotes",{ascending:false}).order("created_at",{ascending:false}).limit(50);
+      const {data,error}=await db.from("vh_feedback").select("id,category,title,description,status,admin_response,upvotes,created_at").in("status",["planned","in_progress","completed"]).order("upvotes",{ascending:false}).order("created_at",{ascending:false}).limit(50);
       if(error)throw error;
       if(!data?.length){host.innerHTML="<p>No public roadmap items yet. Approved ideas will appear here.</p>";return;}
-      host.innerHTML=data.map(item=>'<article class="community-feedback-card"><div class="community-feedback-meta"><span>'+esc(item.category.replace("_"," "))+'</span><span>'+esc(item.status.replace("_"," "))+'</span></div><h3>'+esc(item.title)+'</h3><p>'+esc(item.description)+'</p><div class="community-feedback-actions"><button type="button" onclick="voteCommunityFeedback('+Number(item.id)+')"><i class="fas fa-arrow-up"></i> Vote · '+Number(item.upvotes||0)+'</button><small>'+new Date(item.created_at).toLocaleDateString()+'</small></div></article>').join("");
+      host.innerHTML=data.map(item=>'<article class="community-feedback-card"><div class="community-feedback-meta"><span>'+esc(item.category.replace("_"," "))+'</span><span>'+esc(item.status.replace("_"," "))+'</span></div><h3>'+esc(item.title)+'</h3><p>'+esc(item.description)+'</p>'+(item.admin_response?'<blockquote class="community-admin-response"><strong>Vision Hub team:</strong> '+esc(item.admin_response)+'</blockquote>':'')+'<div class="community-feedback-actions"><button type="button" onclick="voteCommunityFeedback('+Number(item.id)+')"><i class="fas fa-arrow-up"></i> Vote · '+Number(item.upvotes||0)+'</button><small>'+new Date(item.created_at).toLocaleDateString()+'</small></div></article>').join("");
     }catch(error){host.textContent=error.message||"Community board is unavailable. Apply the feature upgrade SQL first.";}
     finally{loading=false;}
   }
