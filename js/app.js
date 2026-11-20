@@ -184,17 +184,9 @@ window.filterUsersList=()=>{};
 
 
 function initTheme(){
-  let theme="dark";
-  try{theme=localStorage.getItem("vh_theme")==="light"?"light":"dark"}catch(_){}
-  document.documentElement.dataset.theme=theme;
-  const host=document.querySelector(".nav-actions");
-  if(!host||$("vhThemeToggle"))return;
-  const button=document.createElement("button");
-  button.type="button";button.id="vhThemeToggle";button.className="vh-theme-toggle";
-  button.setAttribute("aria-label","Switch colour theme");
-  const paint=()=>{const light=document.documentElement.dataset.theme==="light";button.innerHTML=light?'<i class="fas fa-moon"></i>':'<i class="fas fa-sun"></i>';button.title=light?"Switch to dark theme":"Switch to light theme";};
-  button.addEventListener("click",()=>{const next=document.documentElement.dataset.theme==="light"?"dark":"light";document.documentElement.dataset.theme=next;try{localStorage.setItem("vh_theme",next)}catch(_){}paint();});
-  host.appendChild(button);paint();
+  // The dedicated theme manager owns appearance selection and persistence.
+  // Keep the legacy entry point so existing startup flow remains compatible.
+  if(typeof window.setVHTheme==="function")return;
 }
 
 document.addEventListener("DOMContentLoaded",()=>{
