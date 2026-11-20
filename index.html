@@ -1325,6 +1325,42 @@
             </div>
           </div>
         </div>
+        <section class="detail-playback-panel" id="detailPlaybackPanel" aria-label="Movie video player">
+          <div class="detail-player-heading">
+            <div><span class="detail-player-kicker">VISION HUB PLAYER</span><h3><i class="fas fa-play-circle"></i> Watch this title</h3></div>
+            <span class="detail-player-status" id="detailPlayerStatus">Choose an available source</span>
+          </div>
+          <div class="detail-player-stage">
+            <video id="detailVideo" controls playsinline preload="metadata" controlsList="nodownload"
+              disablePictureInPicture poster="" aria-label="Movie video player">
+              Your browser does not support HTML video playback.
+            </video>
+            <iframe id="detailPlayerIframe" class="hidden" src="" title="Authorised media preview"
+              allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen
+              referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            <div class="detail-player-empty hidden" id="detailPlayerEmpty" role="status">
+              No verified video source has been published for this title yet.
+            </div>
+          </div>
+          <div class="detail-player-toolbar">
+            <label class="detail-quality-control"><span><i class="fas fa-sliders-h"></i> Video quality</span>
+              <select id="detailQualitySelect" aria-label="Choose video quality" disabled>
+                <option>No verified source</option>
+              </select>
+            </label>
+            <label class="detail-subtitle-control hidden" id="detailSubtitleWrap"><span>Subtitles</span>
+              <select id="detailPlayerSubtitle" aria-label="Choose subtitles" disabled><option value="-1">Off</option></select>
+            </label>
+            <label class="detail-speed-control"><span>Speed</span>
+              <select id="detailPlayerSpeed" aria-label="Playback speed">
+                <option value="0.5">0.5×</option><option value="0.75">0.75×</option>
+                <option value="1" selected>1×</option><option value="1.25">1.25×</option>
+                <option value="1.5">1.5×</option><option value="2">2×</option>
+              </select>
+            </label>
+            <span class="detail-player-source-note"><i class="fas fa-shield-alt"></i> Verified published sources only</span>
+          </div>
+        </section>
         <section class="series-episodes-panel hidden" id="seriesEpisodesPanel">
           <h3>Seasons & Episodes</h3>
           <div id="seriesEpisodesList"></div>
@@ -1361,7 +1397,7 @@
         <div class="player-controls">
           <div style="display: flex; align-items: center; gap: 12px;">
             <span style="color: var(--success); font-size: 0.85rem;"><i class="fas fa-shield-alt"></i> Secure Stream</span>
-            <span style="color: var(--text-muted); font-size: 0.82rem;">1080p Full HD</span>
+            <span id="playerResolutionStatus" style="color: var(--text-muted); font-size: 0.82rem;">Choose an available quality</span>
           </div>
           <div style="display: flex; gap: 8px;">
             <button class="btn-telegram-sm" onclick="openTelegram()">
@@ -1379,7 +1415,7 @@
     <div class="download-modal-overlay" id="downloadModal" onclick="if(event.target===this)closeDownloadModal()">
       <div class="download-modal-box">
         <div class="download-header">
-          <h3><i class="fas fa-download" style="color:var(--accent);"></i> Download in All Resolutions</h3>
+          <h3><i class="fas fa-download" style="color:var(--accent);"></i> Download Available Resolutions</h3>
           <button class="modal-close" onclick="closeDownloadModal()" aria-label="Close download dialog" style="position:static; width:36px; height:36px;">
             <i class="fas fa-times"></i>
           </button>
@@ -1389,8 +1425,8 @@
         <div class="download-movie-info">
           <img id="dlModalPoster" src="" alt="Poster" />
           <div class="download-movie-details">
-            <h4 id="dlModalTitle">Movie Title</h4>
-            <p id="dlModalMeta">2024 • Action • Hindi • 2h 15m</p>
+            <h4 id="dlModalTitle">Selected title</h4>
+            <p id="dlModalMeta"></p>
             <span id="dlModalAudioInfo" style="display:none;font-size:0.75rem;color:var(--muted);font-weight:600;"></span>
           </div>
         </div>
@@ -1401,69 +1437,9 @@
           <div id="dlSliderDots"></div>
         </div>
 
-        <!-- Resolution Cards List (480p, 720p, 1080p, 4K) -->
-        <div class="res-list">
-          
-          <!-- 480p SD -->
-          <div class="res-card">
-            <div class="res-info">
-              <span class="res-tag res-480">480p SD</span>
-              <div class="res-meta">
-                <span>Mobile Data Saver Quality</span>
-                <small>Size: ~420 MB • MP4 • Fast Download</small>
-              </div>
-            </div>
-            <div class="res-actions">
-              <button class="btn-dl-server" onclick="triggerDownload('480p', 'Fast Cloud Server')"><i class="fas fa-bolt"></i> Server 1</button>
-              <button class="btn-dl-server" onclick="triggerDownload('480p', 'Google Drive Direct')"><i class="fab fa-google-drive"></i> Drive</button>
-            </div>
-          </div>
-
-          <!-- 720p HD -->
-          <div class="res-card">
-            <div class="res-info">
-              <span class="res-tag res-720">720p HD</span>
-              <div class="res-meta">
-                <span>Standard High Definition (Balanced)</span>
-                <small>Size: ~950 MB • Crisp Visuals • Dual Audio</small>
-              </div>
-            </div>
-            <div class="res-actions">
-              <button class="btn-dl-server" onclick="triggerDownload('720p', 'Fast Cloud Server')"><i class="fas fa-bolt"></i> Server 1</button>
-              <button class="btn-dl-server" onclick="triggerDownload('720p', 'Google Drive Direct')"><i class="fab fa-google-drive"></i> Drive</button>
-            </div>
-          </div>
-
-          <!-- 1080p FHD -->
-          <div class="res-card">
-            <div class="res-info">
-              <span class="res-tag res-1080">1080p FHD</span>
-              <div class="res-meta">
-                <span>Full HD 1080p (Crystal Clear)</span>
-                <small>Size: ~1.9 GB • 60fps Theater Quality • 5.1 Surround</small>
-              </div>
-            </div>
-            <div class="res-actions">
-              <button class="btn-dl-server" onclick="triggerDownload('1080p', 'Fast Cloud Server')"><i class="fas fa-bolt"></i> Server 1</button>
-              <button class="btn-dl-server" onclick="triggerDownload('1080p', 'Google Drive Direct')"><i class="fab fa-google-drive"></i> Drive</button>
-            </div>
-          </div>
-
-          <!-- 4K UHD -->
-          <div class="res-card">
-            <div class="res-info">
-              <span class="res-tag res-4k">4K UHD</span>
-              <div class="res-meta">
-                <span>Ultra HD 2160p HDR (Master Print)</span>
-                <small>Size: ~4.6 GB • High Bitrate • Dolby Atmos</small>
-              </div>
-            </div>
-            <div class="res-actions">
-              <button class="btn-dl-server" onclick="triggerDownload('4K', 'High-Speed Cloud Server')"><i class="fas fa-bolt"></i> Ultra Server</button>
-              <button class="btn-dl-server" onclick="triggerDownload('4K', 'Google Drive Direct')"><i class="fab fa-google-drive"></i> Drive</button>
-            </div>
-          </div>
-
+        <!-- Real resolution choices are inserted only after a movie is opened and its verified sources are loaded. -->
+        <div class="res-list" aria-live="polite">
+          <p class="res-empty-state">Choose a movie to view its available download resolutions.</p>
         </div>
 
         <!-- Telegram Direct File Option Callout -->
