@@ -129,7 +129,7 @@ window.loginUser = async function (event) {
   event?.preventDefault();
   const email = el("userLoginEmail")?.value?.trim().toLowerCase();
   const password = el("userLoginPassword")?.value || "";
-  const button = event?.currentTarget?.querySelector('[type="submit"]');
+  const button = form?.querySelector('[type="submit"]');
   if (!email || !password) return msg("Email and password are required.");
   if (button) button.disabled = true;
   try {
@@ -144,6 +144,7 @@ window.loginUser = async function (event) {
 };
 
 window.registerUser = async function (event) {
+  const form=event?.currentTarget;
   event?.preventDefault();
   const name = el("userRegisterName")?.value?.trim();
   const email = el("userRegisterEmail")?.value?.trim().toLowerCase();
@@ -159,7 +160,7 @@ window.registerUser = async function (event) {
       email, password, options: { data: { full_name: name } }
     });
     if (error) throw error;
-    event.currentTarget.reset();
+    form?.reset();
     if (data.session?.user) {
       await showSignedIn(data.user);
       showPage("home");
@@ -266,17 +267,18 @@ window.adminLogout = function () {
 };
 
 window.completePasswordReset = async function (event) {
+  const form=event?.currentTarget;
   event?.preventDefault();
   const password = el("resetNewPassword")?.value || "";
   const confirm = el("resetConfirmPassword")?.value || "";
-  const button = event?.currentTarget?.querySelector('[type="submit"]');
+  const button = form?.querySelector('[type="submit"]');
   if (password.length < 12) return msg("Use a password with at least 12 characters.");
   if (password !== confirm) return msg("The two passwords do not match.");
   if (button) button.disabled = true;
   try {
     const { error } = await db.auth.updateUser({ password });
     if (error) throw error;
-    event.currentTarget.reset();
+    form?.reset();
     showPage("home");
     msg("Your password has been reset successfully.");
   } catch (error) {
