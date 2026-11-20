@@ -8,6 +8,9 @@ Supabase provides authentication, PostgreSQL, Row Level Security and metadata.
 Backblaze B2 is the preferred private media store for new video uploads.
 Cloudflare R2 and legacy private Supabase Storage remain supported.
 Cloudflare Pages Functions hold provider secrets and expose protected APIs.
+The legacy Cloudflare Worker named "online" is a method-preserving redirect to
+the canonical Pages site; application code and production deployments belong
+to the "vision-hub" Pages project connected to GitHub main.
 
 Publish only media, music, trailers and artwork that you own or are authorised
 to distribute.
