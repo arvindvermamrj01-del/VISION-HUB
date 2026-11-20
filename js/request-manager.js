@@ -50,8 +50,11 @@
     const button = event?.submitter || event?.currentTarget?.querySelector('[type="submit"]');
     if (button) button.disabled = true;
     try {
-      const { data: createdRequest, error } = await db.from("vh_requests").insert(request).select("id").single();
-      if (error) throw error;
+      let createdRequest=null,insertResult;
+      const insertQuery=db.from("vh_requests").insert(request);
+      insertResult=request.requester_id?await insertQuery.select("id").single():await insertQuery;
+      if(insertResult.error)throw insertResult.error;
+      createdRequest=insertResult.data;
       // Notify the admin chat only for authenticated requests; notification failure never blocks submission.
       if (request.requester_id && createdRequest?.id) {
         try {
