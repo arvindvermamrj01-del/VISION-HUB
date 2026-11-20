@@ -901,3 +901,38 @@ body.vh-movie-detail-open{overflow:hidden}
 .theme-swatch-oxygen {background:linear-gradient(135deg,#bd2937,#ee654f 55%,#f4b5a4)}
 .theme-swatch-hydrogen {background:linear-gradient(135deg,#00a9b0,#3c837d 55%,#ff956d)}
 
+
+
+/* Desktop-only: compact viewport-anchored appearance popover.
+   The panel is portalled to body by theme-manager.js so it cannot move with navbar/page layout. */
+@media (min-width:761px) {
+  body > #themePanel.theme-panel {
+    position:fixed!important;
+    top:78px!important;
+    right:24px!important;
+    left:auto!important;
+    width:min(318px,calc(100vw - 40px))!important;
+    max-height:min(72vh,610px)!important;
+    padding:13px!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior:contain!important;
+    z-index:2500!important;
+    border-radius:18px!important;
+    box-shadow:0 18px 52px rgba(0,0,0,.42)!important;
+  }
+  body > #themePanel .theme-panel-head strong {font-size:.92rem!important}
+  body > #themePanel .theme-panel-head small {font-size:.66rem!important}
+  body > #themePanel .theme-current {margin:9px 0 8px!important;font-size:.7rem!important}
+  body > #themePanel .theme-options {gap:6px!important}
+  body > #themePanel .theme-options>button {
+    min-height:48px!important;
+    grid-template-columns:30px minmax(0,1fr) 15px!important;
+    gap:8px!important;
+    padding:7px 9px!important;
+    border-radius:12px!important;
+  }
+  body > #themePanel .theme-swatch {width:28px!important;height:28px!important;border-radius:9px!important}
+  body > #themePanel .theme-options>button strong {font-size:.72rem!important}
+  body > #themePanel .theme-options>button small {font-size:.61rem!important;margin-top:2px!important}
+}
