@@ -299,3 +299,16 @@ body.vh-modal-open{overflow:hidden}
 .vh-adsense-table{width:100%;border-collapse:collapse;min-width:500px}
 .vh-adsense-table th,.vh-adsense-table td{padding:9px;border-bottom:1px solid var(--vh-line);text-align:left;font-size:.78rem;white-space:nowrap}
 .vh-adsense-table th{color:var(--muted);background:var(--vh-glass)}
+
+/* ===== Series seasons and episode catalogue ===== */
+.series-episodes-panel{margin:22px 0 8px;padding:20px;border:1px solid var(--vh-line);border-radius:20px;background:var(--vh-glass)}
+.series-episodes-panel h3{margin:0 0 16px;font-size:1.12rem}
+.vh-season-group{margin:14px 0}.vh-season-group h4{margin:0 0 9px;color:var(--accent2);font-size:.92rem}
+.vh-episode-list{display:grid;gap:9px}
+.vh-episode-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:13px;border:1px solid var(--vh-line);border-radius:14px;background:rgba(255,255,255,.025)}
+.vh-episode-row>div{min-width:0}.vh-episode-row strong{display:block;font-size:.88rem}.vh-episode-row small{display:block;margin-top:4px;color:var(--muted);font-size:.75rem}.vh-episode-row p{margin:7px 0 0;color:var(--muted);font-size:.8rem;line-height:1.5}
+.vh-episode-row .btn-play{flex-shrink:0;padding:9px 13px;border-radius:999px}
+#page-admin #tab-episodes>p{margin:-8px 0 18px;color:var(--muted)}
+#page-admin #episodePublishStatus{min-height:20px;margin-top:10px}
+@media(max-width:520px){.series-episodes-panel{padding:14px}.vh-episode-row{align-items:flex-start;flex-direction:column}.vh-episode-row .btn-play{width:100%}}
+:root[data-vh-theme="light"] .vh-episode-row{background:rgba(255,255,255,.78)}
