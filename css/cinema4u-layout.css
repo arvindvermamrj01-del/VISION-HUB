@@ -233,3 +233,149 @@
  .detail-player-heading{gap:8px}
  .detail-player-status{max-width:45%;font-size:.6rem}
 }
+
+
+/* Full-page movie detail experience, based on the verified watch.cinema4u.online
+   reference flow while retaining Vision Hub's authorised-source safeguards. */
+body.vh-movie-detail-open{overflow:hidden}
+#movieModal.vh-movie-detail-overlay{
+ position:fixed;inset:0;z-index:1800;align-items:flex-start;justify-content:center;
+ overflow-x:hidden;overflow-y:auto;padding:0;background:var(--bg,#080d17);
+ -webkit-backdrop-filter:none;backdrop-filter:none;overscroll-behavior:contain;
+}
+#movieModal .vh-movie-detail-page{
+ position:relative;width:min(100%,1240px);max-width:1240px;min-height:100dvh;
+ max-height:none;margin:0 auto;overflow:visible;border:0;border-radius:0;
+ background:var(--bg,#080d17);box-shadow:none;
+}
+#movieModal .vh-detail-topbar{
+ position:sticky;top:0;z-index:12;min-height:68px;display:flex;align-items:center;
+ justify-content:space-between;gap:12px;padding:12px clamp(15px,3.5vw,42px) 12px 18px;
+ border-bottom:1px solid var(--vh-glass-line);
+ background:color-mix(in srgb,var(--bg,#080d17) 82%,transparent);
+ -webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);
+}
+#movieModal .vh-detail-topbar button{
+ min-height:38px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+ padding:8px 13px;border:1px solid var(--vh-glass-line);border-radius:999px;
+ background:var(--vh-glass);color:var(--text);font-size:.72rem;font-weight:850;
+ transition:background .18s ease,border-color .18s ease,transform .18s ease;
+}
+#movieModal .vh-detail-topbar button:hover{transform:translateY(-1px);border-color:color-mix(in srgb,var(--accent) 55%,var(--vh-glass-line));background:var(--vh-surface-strong)}
+#movieModal .vh-detail-back{white-space:nowrap}
+#movieModal .vh-detail-back i{color:var(--accent2)}
+#movieModal .vh-detail-jumps{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap}
+#movieModal .vh-detail-jumps button{background:transparent}
+#movieModal .vh-detail-lights{white-space:nowrap;color:#ffd27f!important;border-color:rgba(255,194,93,.25)!important;background:rgba(255,187,74,.09)!important}
+#movieModal .vh-detail-topbar .vh-detail-lights[aria-pressed="true"]{background:rgba(255,187,74,.19)!important}
+#movieModal .modal-close{
+ z-index:14;position:absolute;top:15px;right:15px;width:36px;height:36px;
+ display:grid;place-items:center;border:1px solid var(--vh-glass-line);
+ border-radius:50%;background:var(--vh-surface-strong);color:var(--text);
+}
+#movieModal .vh-detail-heading{
+ padding:clamp(23px,4vw,42px) clamp(17px,4vw,48px) 13px;
+ border-bottom:1px solid color-mix(in srgb,var(--vh-glass-line) 75%,transparent);
+}
+#movieModal .vh-detail-eyebrow{
+ display:inline-flex;align-items:center;gap:8px;margin-bottom:10px;
+ color:var(--accent2);font-size:.65rem;font-weight:950;letter-spacing:.15em;
+}
+#movieModal #modalTitle{
+ margin:0 48px 8px 0;color:var(--text);font-size:clamp(1.9rem,4vw,3.25rem);
+ font-weight:950;line-height:1.04;letter-spacing:-.055em;overflow-wrap:anywhere;
+}
+#movieModal .modal-meta{margin:0 0 12px;color:var(--muted);font-size:.82rem;font-weight:750;line-height:1.7}
+#movieModal .cinema-modal-badges{display:flex;flex-wrap:wrap;gap:7px;margin:0}
+#movieModal .cinema-modal-badges .cinema-badge{padding:7px 10px;font-size:.65rem}
+#movieModal .modal-body{
+ display:grid;grid-template-columns:minmax(190px,285px) minmax(0,1fr);
+ align-items:start;gap:clamp(20px,3.4vw,42px);padding:clamp(22px,3.5vw,38px) clamp(17px,4vw,48px);
+}
+#movieModal .modal-left{min-width:0}
+#movieModal .vh-detail-poster-frame{
+ width:100%;overflow:hidden;border:1px solid var(--vh-glass-line);border-radius:22px;
+ background:var(--vh-surface);box-shadow:0 22px 48px rgba(0,0,0,.26);
+}
+#movieModal .modal-poster{
+ display:block;float:none;width:100%;height:auto;max-height:440px;aspect-ratio:2/3;
+ object-fit:cover;margin:0;border:0;border-radius:0;box-shadow:none;
+}
+#movieModal .vh-detail-poster-note{display:flex;align-items:center;gap:7px;margin:10px 2px 0;color:var(--muted);font-size:.65rem;font-weight:750;line-height:1.5}
+#movieModal .vh-detail-poster-note i{color:#67d9b0}
+#movieModal .modal-right{min-width:0;padding-top:3px}
+#movieModal .vh-detail-section-kicker{
+ margin:0 0 10px;color:var(--accent2);font-size:.66rem;font-weight:950;letter-spacing:.13em;
+}
+#movieModal .modal-desc{max-width:760px;margin:0;color:var(--text);font-size:.94rem;line-height:1.85}
+#movieModal .modal-detail-row,#movieModal .modal-cast{
+ margin-top:12px;color:var(--muted);font-size:.8rem;line-height:1.7;overflow-wrap:anywhere;
+}
+#movieModal .modal-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px}
+#movieModal .modal-actions button{min-height:43px;padding:10px 15px;border-radius:999px;font-size:.73rem;font-weight:850}
+#movieModal .vh-detail-screenshots{
+ margin:0 clamp(17px,4vw,48px) 25px;padding:19px 20px 21px;
+ border:1px solid var(--vh-glass-line);border-radius:22px;background:var(--vh-glass);
+ scroll-margin-top:86px;
+}
+#movieModal .vh-detail-screenshots:empty{display:none}
+#movieModal .vh-detail-screenshots h3{margin:0 0 12px;font-size:1rem;font-weight:900}
+#movieModal .vh-screenshot-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+#movieModal .vh-screenshot-grid a{display:block;min-width:0;overflow:hidden;border:1px solid var(--vh-glass-line);border-radius:13px;background:var(--vh-surface)}
+#movieModal .vh-screenshot-grid img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;margin:0;transition:transform .25s ease,filter .25s ease}
+#movieModal .vh-screenshot-grid a:hover img{transform:scale(1.04);filter:saturate(1.12)}
+#movieModal .detail-playback-panel{scroll-margin-top:86px}
+#movieModal .series-episodes-panel,#movieModal .trailer-section{
+ margin:0 clamp(17px,4vw,48px) 22px;padding:clamp(15px,2.5vw,23px);
+ border:1px solid var(--vh-glass-line);border-radius:22px;background:var(--vh-glass);
+}
+#movieModal .modal-box>*:last-child{margin-bottom:32px}
+#movieModal.vh-lights-out{background:#020307}
+#movieModal.vh-lights-out .vh-movie-detail-page{background:#020307}
+#movieModal.vh-lights-out .vh-detail-heading,
+#movieModal.vh-lights-out .modal-body{background:#020307}
+#movieModal.vh-lights-out .vh-detail-screenshots,
+#movieModal.vh-lights-out .series-episodes-panel,
+#movieModal.vh-lights-out .trailer-section{background:#05070d;border-color:rgba(255,255,255,.07)}
+:root[data-vh-theme="light"] #movieModal .vh-detail-heading,
+:root[data-vh-theme="light"] #movieModal .modal-desc{color:#24324a}
+@media(max-width:760px){
+ #movieModal .vh-detail-topbar{min-height:60px;padding:9px 58px 9px 12px;gap:7px}
+ #movieModal .vh-detail-topbar button{min-height:35px;padding:7px 9px;font-size:.64rem}
+ #movieModal .vh-detail-back span{display:none}
+ #movieModal .vh-detail-back{width:36px;min-width:36px;padding:0!important}
+ #movieModal .vh-detail-jumps{gap:5px}
+ #movieModal .vh-detail-lights span{font-size:.62rem}
+ #movieModal .modal-close{top:12px;right:11px;width:33px;height:33px}
+ #movieModal .vh-detail-heading{padding:23px 16px 13px}
+ #movieModal #modalTitle{font-size:clamp(1.55rem,7vw,2.2rem);margin-right:40px}
+ #movieModal .modal-meta{font-size:.72rem}
+ #movieModal .cinema-modal-badges .cinema-badge{font-size:.58rem;padding:6px 8px}
+ #movieModal .modal-body{grid-template-columns:112px minmax(0,1fr);gap:14px;padding:18px 16px 20px}
+ #movieModal .modal-poster{max-height:175px;border-radius:0}
+ #movieModal .vh-detail-poster-frame{border-radius:14px}
+ #movieModal .vh-detail-poster-note{font-size:.57rem}
+ #movieModal .modal-desc{font-size:.8rem;line-height:1.68}
+ #movieModal .vh-detail-section-kicker{font-size:.59rem}
+ #movieModal .modal-detail-row,#movieModal .modal-cast{font-size:.68rem;margin-top:8px}
+ #movieModal .modal-actions{grid-column:1/-1;gap:7px;margin-top:15px}
+ #movieModal .modal-actions button{min-height:37px;padding:8px 10px;font-size:.63rem}
+ #movieModal .vh-detail-screenshots{margin:0 12px 18px;padding:14px;border-radius:17px}
+ #movieModal .vh-screenshot-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ #movieModal .series-episodes-panel,#movieModal .trailer-section{margin:0 12px 15px;padding:14px}
+ #movieModal .detail-playback-panel{margin:0 12px 18px;padding:14px;border-radius:18px}
+}
+@media(max-width:420px){
+ #movieModal .vh-detail-topbar{padding-left:9px;padding-right:52px}
+ #movieModal .vh-detail-jumps button{font-size:0;gap:0;width:34px;padding:7px}
+ #movieModal .vh-detail-jumps button i{font-size:.76rem}
+ #movieModal .vh-detail-lights span{display:none}
+ #movieModal .vh-detail-lights{width:34px;padding:7px!important}
+ #movieModal .modal-body{grid-template-columns:92px minmax(0,1fr);gap:11px;padding:16px 12px 18px}
+ #movieModal .modal-poster{max-height:145px}
+ #movieModal .modal-actions button{font-size:.59rem;padding:7px 8px}
+ #movieModal .vh-detail-screenshots{margin-left:10px;margin-right:10px}
+}
+@media(prefers-reduced-motion:reduce){
+ #movieModal .vh-detail-topbar button,#movieModal .vh-screenshot-grid img{transition:none}
+}
