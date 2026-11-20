@@ -29,12 +29,12 @@ jobs:
           set -e
           find supabase -type f -name '*.sql' -print0 | while IFS= read -r -d '' file; do
             echo "Checking $file"
-            dollar_count=$(grep -o '\$\ "$file" | wc -l)
+            dollar_count=$(grep -o '\$\$' "$file" | wc -l)
             if [ $((dollar_count % 2)) -ne 0 ]; then
               echo "Unbalanced dollar-quoted SQL body in $file"
               exit 1
             fi
-            if grep -Eq '^[[:space:]]*as[[:space:]]+\$[[:space:]]*$|^[[:space:]]*\$;[[:space:]]* "$file"; then
+            if grep -Eq '^[[:space:]]*as[[:space:]]+\$[[:space:]]*$|^[[:space:]]*\$;[[:space:]]*$' "$file"; then
               echo "Malformed SQL dollar delimiter in $file"
               exit 1
             fi
