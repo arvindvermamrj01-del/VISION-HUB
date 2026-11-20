@@ -276,3 +276,10 @@ body.vh-modal-open{overflow:hidden}
 :root[data-vh-theme="light"] .donation-panel{background:rgba(255,255,255,.98);color:#172338}
 :root[data-vh-theme="light"] .donation-form input{background:#f8faff;color:#172338}
 @media(max-width:480px){.donation-overlay{padding:8px}.donation-panel{padding:22px 16px;border-radius:22px}.donation-qr,.donation-qr-fallback{width:160px;height:160px}.donation-amounts{gap:6px}.vh-donation-row{align-items:flex-start;flex-direction:column}}
+
+/* AdSense reserved placements: remain hidden until valid publisher and slot IDs exist. */
+.vh-ad-section{width:min(100% - 40px,1100px);min-height:0;margin:24px auto;padding:0;text-align:center;overflow:hidden}
+.vh-ad-section:not([hidden]){min-height:90px;padding:10px;border:1px solid var(--vh-line);border-radius:16px;background:var(--vh-glass)}
+.vh-ad-section ins.adsbygoogle{display:block;min-height:90px}
+.vh-ad-footer{margin-top:36px;margin-bottom:10px}
+@media(max-width:520px){.vh-ad-section{width:calc(100% - 24px);margin:18px auto}.vh-ad-section:not([hidden]){padding:6px}}
