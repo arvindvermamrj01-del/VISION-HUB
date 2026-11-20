@@ -147,3 +147,21 @@ Suggested minimum test dataset:
 6. **UI safety:** preserve the approved homepage, popup details, desktop left sidebar and mobile bottom dock. Any major redesign requires a preview and explicit approval first.
 
 **Completion definition:** every checklist item is marked PASS, FAIL (with fix), or BLOCKED (with the exact external dependency). Do not call the platform complete while a critical storage, auth, RLS, playback or mobile test remains unverified.
+
+
+## 9. Security activity and Admin-session hardening (20 Nov 2026)
+
+The following work was added without replacing the approved public layout:
+
+- The public member menu no longer exposes a Control Center link. Admin/staff sessions are not shown the public U/A avatar menu; the Secure Admin panel remains the only supported Admin sign-in path.
+- User Login rejects staff roles. A legacy staff session without a secret-panel session marker is signed out.
+- Production Cloudflare Pages now has a D1 security database named `vision-hub-security`, bound as `VH_SECURITY_DB`; the table/index definition is versioned at `cloudflare/d1-security-schema.sql`.
+- The Pages secret `VH_ADMIN_SESSION_SECRET` signs a one-hour HttpOnly, Secure, SameSite=Strict cookie. Every staff-protected Pages Function checks the Supabase role and this cookie.
+- Five failed Admin sign-in or unauthorised staff/API attempts from one source IP in a rolling 30-minute window cause a 30-minute temporary block.
+- Security events include guest visits, authenticated visits, user sign-in/signup/logout, Admin attempts, blocked attempts and protected-area access. IP is read from Cloudflare's server-provided `CF-Connecting-IP` header.
+- Raw IP/user-agent records are retained for up to 90 days. Only `profiles.role = 'admin'` can read the activity API; staff roles cannot.
+- Privacy Policy now discloses the security activity fields and retention.
+
+**Verification gate:** the D1 database, schema, Production binding and secret are provisioned. The latest code still requires its Production deployment and live checks for: cookie issuance/expiry, role-only API access, 5-attempt blocking, guest IP capture, Main Admin-only activity retrieval and user-menu absence for all staff roles.
+
+See [VISION HUB Feature Portfolio & Completion Chart](VISION-HUB-FEATURE-PORTFOLIO.md) for the consolidated remaining-work register and priorities.
