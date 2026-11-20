@@ -542,3 +542,10 @@ body.vh-modal-open .telegram-fab{visibility:hidden!important;pointer-events:none
 .pixeldrain-admin-note i{color:var(--accent2);margin-right:5px}
 :root[data-vh-theme="light"] .feedback-page-intro{background:linear-gradient(120deg,rgba(35,143,196,.08),rgba(84,205,180,.08),rgba(141,115,255,.04));border-color:#d7e0ee}
 :root[data-vh-theme="light"] .feedback-form-card{background:#fff;border-color:#d7e0ee}
+
+
+/* The resolution picker is a true popup, never a page section. */
+#downloadModal.download-modal-overlay{display:none;position:fixed;inset:0;z-index:2000;align-items:center;justify-content:center;padding:clamp(10px,3vw,28px);overflow-y:auto;overscroll-behavior:contain;background:rgba(3,7,15,.78);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+#downloadModal.download-modal-overlay.open{display:flex}
+#downloadModal .download-modal-box{width:min(920px,100%);max-height:min(90dvh,920px);overflow:auto;overscroll-behavior:contain}
+@media(max-width:560px){#downloadModal.download-modal-overlay{padding:8px;align-items:flex-end}#downloadModal .download-modal-box{max-height:92dvh;border-radius:22px 22px 12px 12px}}
