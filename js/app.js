@@ -2,7 +2,7 @@
 (()=>{
 "use strict";
 const $=id=>document.getElementById(id), data=window.VISION_HUB_DATA||[];
-let industry="All",genre="All",movieGenre="All",movieYear="All",movieLanguage="All",movieSort="newest",seriesGenre="All",seriesYear="All",seriesLanguage="All",seriesSort="newest",heroIndex=0,current=null,catalogCategories=[];
+let industry="All",genre="All",movieGenre="All",movieYear="All",movieLanguage="All",movieSort="newest",seriesGenre="All",seriesYear="All",seriesLanguage="All",seriesSort="newest",heroIndex=0,current=null,catalogCategories=[],lastBrowseHash="#home",initialDeepLinkId="";
 const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const getList=k=>{try{return JSON.parse(localStorage.getItem(k)||"[]")}catch{return []}};
 const setList=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
@@ -17,7 +17,29 @@ const meta=[m.year,m.genre,m.rating?'★ '+m.rating:'',m.view_count?'🔥 '+Numb
 return '<article class="movie-card"><button class="poster-button" onclick="openMovie(&quot;'+safe(m.id)+'&quot;)" aria-label="View '+safe(m.title)+'">'+poster+'<span class="poster-play"><i class="fas fa-play"></i></span></button><div class="movie-info"><h3>'+safe(m.title)+'</h3><p>'+safe(meta)+'</p><div class="card-actions"><button onclick="openMovie(&quot;'+safe(m.id)+'&quot;)">Details</button><button onclick="toggleItem(&quot;'+safe(m.id)+'&quot;)" aria-label="Add to watchlist">♡</button></div></div></article>';
 }
 function grid(id,items){const el=$(id);if(el)el.innerHTML=items.length?items.map(card).join(""):'<div class="empty-state"><h3>No titles found</h3><p>Try another filter or search.</p></div>'}
-function hero(){const featured=data.filter(item=>item.is_featured&&item.type!=="Short"&&item.type!=="Episode"),catalog=data.filter(item=>item.type!=="Episode"),pool=featured.length?featured:catalog;const m=pool[heroIndex%pool.length];if(!m)return;current=m;if($("heroBg"))$("heroBg").style.backgroundImage=(m.backdrop||m.poster)?`url("${m.backdrop||m.poster}")`:"none";if($("heroTitle"))$("heroTitle").textContent=m.title;if($("heroDesc"))$("heroDesc").textContent=m.description;if($("heroMeta"))$("heroMeta").textContent=`${m.year} · ${m.duration} · ★ ${m.rating}`;if($("heroPlayBtn"))$("heroPlayBtn").onclick=()=>openMovie(m.id);if($("heroListBtn"))$("heroListBtn").onclick=()=>toggleItem(m.id)}
+function hero(){
+ const featured=data.filter(item=>item.is_featured&&item.type!=="Short"&&item.type!=="Episode");
+ const catalog=data.filter(item=>item.type!=="Episode"&&item.type!=="Short");
+ const pool=featured.length?featured:catalog;
+ const m=pool[heroIndex%pool.length];
+ if(!m){
+  current=null;
+  if($("heroBg"))$("heroBg").style.backgroundImage="none";
+  if($("heroTitle"))$("heroTitle").textContent="No movies or series published yet";
+  if($("heroDesc"))$("heroDesc").textContent="Vision Hub is online. Movies and series will appear here after authorised titles are published in the Control Center.";
+  if($("heroMeta"))$("heroMeta").textContent="Catalogue is currently empty";
+  ["heroPlayBtn","heroListBtn"].forEach(id=>{const button=$(id);if(button){button.disabled=true;button.setAttribute("aria-disabled","true");}});
+  return;
+ }
+ current=m;
+ if($("heroBg"))$("heroBg").style.backgroundImage=(m.backdrop||m.poster)?`url("${m.backdrop||m.poster}")`:"none";
+ if($("heroTitle"))$("heroTitle").textContent=m.title;
+ if($("heroDesc"))$("heroDesc").textContent=m.description||"";
+ if($("heroMeta"))$("heroMeta").textContent=[m.year,m.duration,m.rating?"★ "+m.rating:""].filter(Boolean).join(" · ");
+ ["heroPlayBtn","heroListBtn"].forEach(id=>{const button=$(id);if(button){button.disabled=false;button.removeAttribute("aria-disabled");}});
+ if($("heroPlayBtn"))$("heroPlayBtn").onclick=()=>openMovie(m.id);
+ if($("heroListBtn"))$("heroListBtn").onclick=()=>toggleItem(m.id);
+}
 function fillCatalogSelect(id,values,allLabel){
  const select=$(id);if(!select)return;
  const current=select.value||"All";
@@ -136,11 +158,15 @@ window.openHiddenAdminLogin=()=>window.showPage("admin-login");
 const publicPageHashes=new Set(["home","movies","series","shorts","songs","watchlist","request","community","privacy","terms","copyright","profile","login","register","reset-password","admin-login","admin"]);
 window.addEventListener("hashchange",()=>{
   const target=location.hash.replace(/^#/,"");
+  const movieMatch=target.match(/^movie-(.+)$/);
   if(target==="control-center")window.openHiddenAdminLogin();
+  else if(movieMatch){window.showPage("home");window.openMovie(decodeURIComponent(movieMatch[1]));}
   else if(publicPageHashes.has(target))window.showPage(target);
 });
 const initialHash=location.hash.replace(/^#/,"");
+const initialMovieMatch=initialHash.match(/^movie-(.+)$/);
 if(initialHash==="control-center"||location.pathname.replace(/\/+$/,"")==="/control-center")window.openHiddenAdminLogin();
+else if(initialMovieMatch){initialDeepLinkId=decodeURIComponent(initialMovieMatch[1]);window.showPage("home");}
 else if(publicPageHashes.has(initialHash))window.showPage(initialHash);
 window.filterByIndustry=(v,el)=>{industry=v;el?.parentElement?.querySelectorAll(".filter-btn").forEach(b=>b.classList.toggle("active",b===el));render()};
 window.filterByGenre=(v,el)=>{genre=v;el?.parentElement?.querySelectorAll(".filter-btn").forEach(b=>b.classList.toggle("active",b===el));render()};
@@ -194,8 +220,36 @@ async function loadCloudWatchlist(){
   }catch(error){console.warn("Cloud watchlist load unavailable:",error.message);renderWatchlist();}
 }
 function renderWatchlist(){const ids=getWatchlist().map(String),a=data.filter(x=>ids.includes(String(x.id)));grid("watchlistGrid",a);grid("profileWatchlistGrid",a);$("watchlistEmpty")?.classList.toggle("hidden",a.length>0);if($("statWatchlist"))$("statWatchlist").textContent=a.length}
-window.openMovie=id=>{const m=data.find(x=>String(x.id)===String(id));if(!m)return;current=m;document.title=m.title+" ("+(m.year||"")+") | Vision Hub";const description=document.querySelector('meta[name="description"]');if(description)description.content=String(m.description||("Discover "+m.title+" on Vision Hub.")).slice(0,300);const ogTitle=document.querySelector('meta[property="og:title"]');if(ogTitle)ogTitle.content=m.title+" | Vision Hub";const ogDescription=document.querySelector('meta[property="og:description"]');if(ogDescription)ogDescription.content=String(m.description||("Discover "+m.title+" on Vision Hub.")).slice(0,300);if($("modalTitle"))$("modalTitle").textContent=m.title;if($("modalDesc"))$("modalDesc").textContent=m.description;if($("modalMeta"))$("modalMeta").textContent=`${m.year} · ${m.genre} · ${m.language} · ★ ${m.rating}`;if($("modalPoster")){ $("modalPoster").style.display=m.poster?"":"none"; if(m.poster)$("modalPoster").src=m.poster; else $("modalPoster").removeAttribute("src"); }if($("modalCast"))$("modalCast").textContent=m.cast?"Cast: "+m.cast:"";if($("modalDirector"))$("modalDirector").textContent=m.director?"Director: "+m.director:"";const shots=$("modalScreenshots");if(shots){const list=Array.isArray(m.screenshots)?m.screenshots:String(m.screenshots||"").split(",").map(x=>x.trim()).filter(Boolean);shots.innerHTML=list.length?'<h3>Preview Screenshots</h3><div class="vh-screenshot-grid">'+list.map((url,i)=>'<a href="'+safe(url)+'" target="_blank" rel="noopener"><img loading="lazy" src="'+safe(url)+'" alt="'+safe(m.title)+' screenshot '+(i+1)+'"></a>').join("")+'</div>':"";}const trailer=$("trailerEmbed");if(trailer){const raw=String(m.trailer||"");let videoId="";try{const u=new URL(raw);if(u.hostname.includes("youtu.be"))videoId=u.pathname.slice(1);else if(u.hostname.includes("youtube.com"))videoId=u.searchParams.get("v")||u.pathname.split("/").filter(Boolean).pop()||"";}catch(_){}trailer.innerHTML=videoId?'<iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/'+safe(videoId)+'" title="Official trailer" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>':""; $("trailerSection")?.classList.toggle("hidden",!videoId);} $("movieModal")?.classList.add("open");if($("modalPlayBtn"))$("modalPlayBtn").onclick=()=>m.trailer?window.open(m.trailer,"_blank","noopener"):toast("Official trailer not available");if($("modalWatchBtn"))$("modalWatchBtn").onclick=()=>toggleItem(id)};
-window.closeModal=()=> $("movieModal")?.classList.remove("open");window.closeModalBtn=window.closeModal;window.playMovie=()=>current?.trailer?window.open(current.trailer,"_blank","noopener"):toast("Official trailer unavailable");window.toggleWatchlist=()=>current&&toggleItem(current.id);
+window.openMovie=id=>{const m=data.find(x=>String(x.id)===String(id));if(!m)return;current=m;const activeHash=location.hash||"#home";if(!activeHash.startsWith("#movie-"))lastBrowseHash=activeHash;const movieHash="#movie-"+encodeURIComponent(String(m.id));if(location.hash!==movieHash)history.replaceState(null,"",location.pathname+location.search+movieHash);document.title=m.title+" ("+(m.year||"")+") | Vision Hub";const description=document.querySelector('meta[name="description"]');if(description)description.content=String(m.description||("Discover "+m.title+" on Vision Hub.")).slice(0,300);const ogTitle=document.querySelector('meta[property="og:title"]');if(ogTitle)ogTitle.content=m.title+" | Vision Hub";const ogDescription=document.querySelector('meta[property="og:description"]');if(ogDescription)ogDescription.content=String(m.description||("Discover "+m.title+" on Vision Hub.")).slice(0,300);if($("modalTitle"))$("modalTitle").textContent=m.title;if($("modalDesc"))$("modalDesc").textContent=m.description;if($("modalMeta"))$("modalMeta").textContent=`${m.year} · ${m.genre} · ${m.language} · ★ ${m.rating}`;if($("modalPoster")){ $("modalPoster").style.display=m.poster?"":"none"; if(m.poster)$("modalPoster").src=m.poster; else $("modalPoster").removeAttribute("src"); }if($("modalCast"))$("modalCast").textContent=m.cast?"Cast: "+m.cast:"";if($("modalDirector"))$("modalDirector").textContent=m.director?"Director: "+m.director:"";const shots=$("modalScreenshots");if(shots){const list=Array.isArray(m.screenshots)?m.screenshots:String(m.screenshots||"").split(",").map(x=>x.trim()).filter(Boolean);shots.innerHTML=list.length?'<h3>Preview Screenshots</h3><div class="vh-screenshot-grid">'+list.map((url,i)=>'<a href="'+safe(url)+'" target="_blank" rel="noopener"><img loading="lazy" src="'+safe(url)+'" alt="'+safe(m.title)+' screenshot '+(i+1)+'"></a>').join("")+'</div>':"";}const trailer=$("trailerEmbed");if(trailer){const raw=String(m.trailer||"");let videoId="";try{const u=new URL(raw);if(u.hostname.includes("youtu.be"))videoId=u.pathname.slice(1);else if(u.hostname.includes("youtube.com"))videoId=u.searchParams.get("v")||u.pathname.split("/").filter(Boolean).pop()||"";}catch(_){}trailer.innerHTML=videoId?'<iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/'+safe(videoId)+'" title="Official trailer" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>':""; $("trailerSection")?.classList.toggle("hidden",!videoId);} $("movieModal")?.classList.add("open");if($("modalPlayBtn"))$("modalPlayBtn").onclick=()=>m.trailer?window.open(m.trailer,"_blank","noopener"):toast("Official trailer not available");if($("modalWatchBtn"))$("modalWatchBtn").onclick=()=>toggleItem(id)};
+function movieShareUrl(){return window.location.origin+window.location.pathname+window.location.search+"#movie-"+encodeURIComponent(String(current?.id??""));}
+async function shareCurrentMovie(){
+ if(!current)return;
+ const url=movieShareUrl(),shareData={title:current.title+" | Vision Hub",text:current.description||"View this title on Vision Hub.",url};
+ try{
+  if(typeof navigator!=="undefined"&&typeof navigator.share==="function"){await navigator.share(shareData);return;}
+  if(typeof navigator!=="undefined"&&navigator.clipboard?.writeText){await navigator.clipboard.writeText(url);toast("Movie link copied.");return;}
+  window.prompt("Copy this Vision Hub movie link",url);
+ }catch(error){
+  if(error?.name==="AbortError")return;
+  try{await navigator.clipboard.writeText(url);toast("Movie link copied.");}
+  catch(_){window.prompt("Copy this Vision Hub movie link",url);}
+ }
+}
+function ensureModalShareButton(){
+ const actions=document.querySelector("#movieModal .modal-actions");
+ if(!actions||$("modalShareBtn"))return;
+ const button=document.createElement("button");
+ button.type="button";button.id="modalShareBtn";button.className="btn-add-list";
+ button.innerHTML='<i class="fas fa-share-alt"></i> Share';
+ button.addEventListener("click",shareCurrentMovie);
+ const downloadButton=actions.querySelector(".btn-download");
+ if(downloadButton?.nextSibling)actions.insertBefore(button,downloadButton.nextSibling);
+ else actions.appendChild(button);
+}
+window.closeModal=()=>{
+ $("movieModal")?.classList.remove("open");
+ if(location.hash.startsWith("#movie-"))history.replaceState(null,"",location.pathname+location.search+(lastBrowseHash||"#home"));
+};window.closeModalBtn=window.closeModal;window.playMovie=()=>current?.trailer?window.open(current.trailer,"_blank","noopener"):toast("Official trailer unavailable");window.toggleWatchlist=()=>current&&toggleItem(current.id);
 window.downloadMovie=()=>toast("Only official trailers and authorised viewing links are supported.");window.openTelegram=()=>{const link=document.querySelector("a.telegram-target-link")?.href||"https://t.me/visionhub_official";window.open(link,"_blank","noopener");};window.triggerDownload=()=>toast("Unverified downloads are disabled. Use an authorised provider.");window.closePlayer=()=>{ $("playerOverlay")?.classList.remove("open");if($("playerIframe"))$("playerIframe").src=""};window.closeDownloadModal=()=> $("downloadModal")?.classList.remove("open");
 window.toggleSearch=()=>{const o=$("searchOverlay");o?.classList.toggle("open");if(o?.classList.contains("open"))$("searchInput")?.focus()};
 window.liveSearch=q=>{
@@ -246,9 +300,13 @@ function initTheme(){
 document.addEventListener("DOMContentLoaded",()=>{
   initTheme();
   render();
+  ensureModalShareButton();
   loadPopularContent();
   loadPublicCategories();
-  document.addEventListener("visionhub:content-loaded",loadPopularContent);
+  document.addEventListener("visionhub:content-loaded",()=>{
+    loadPopularContent();
+    if(initialDeepLinkId){const id=initialDeepLinkId;initialDeepLinkId="";window.openMovie(id);}
+  });
   document.addEventListener("visionhub:categories-updated",loadPublicCategories);
   loadCloudWatchlist();
   window.VH_SUPABASE?.auth.onAuthStateChange((_event,session)=>{if(session?.user){window.VH_USER_ID=session.user.id;window.VH_ACCOUNT_DATA?.migrateLegacy(session.user.id);loadCloudWatchlist();}else{window.VH_USER_ID=null;renderWatchlist();render();}});
