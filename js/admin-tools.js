@@ -259,6 +259,26 @@
     }catch(error){if(status)status.textContent=error.message||"Telegram bot connection failed.";toast(error.message||"Telegram bot connection failed.");}
   };
 
+  window.loadAdSenseRevenue=async()=>{
+    const host=$("adsenseRevenueList");if(!host)return;
+    host.textContent="Loading secure AdSense report…";
+    try{
+      await requireAdmin();
+      const {data:{session},error}=await db.auth.getSession();
+      if(error||!session?.access_token)throw new Error("Admin session expired. Sign in again.");
+      const response=await fetch("/api/adsense/report",{headers:{"Authorization":"Bearer "+session.access_token}});
+      const result=await response.json().catch(()=>({}));
+      if(!response.ok)throw new Error(result.error||"AdSense report unavailable.");
+      const headers=result.headers||[],rows=result.rows||[];
+      if(!headers.length||!rows.length){host.textContent="No AdSense report data is available for the last 7 days yet.";return;}
+      const names=headers.map(item=>item.name||"");
+      const index=key=>names.indexOf(key);
+      const money=value=>"₹"+(Number(value)||0).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});
+      const body=rows.map(row=>'<tr>'+names.map((name,i)=>'<td>'+esc(name==="ESTIMATED_EARNINGS"?money(row[i]):name==="PAGE_VIEWS_RPM"?money(row[i]):row[i]??"—")+'</td>').join("")+'</tr>').join("");
+      host.innerHTML='<div class="vh-adsense-summary"><strong>Last 7 days</strong><span>Estimated earnings: '+money((result.totals?.cells||[])[index("ESTIMATED_EARNINGS")]?.value||0)+'</span></div><div class="vh-adsense-table-wrap"><table class="vh-adsense-table"><thead><tr>'+names.map(name=>'<th>'+esc(name.replaceAll("_"," "))+'</th>').join("")+'</tr></thead><tbody>'+body+'</tbody></table></div><small>Estimated earnings may be adjusted by Google for invalid traffic and finalisation.</small>';
+    }catch(error){host.textContent=error.message||"AdSense report could not be loaded.";}
+  };
+
   window.updateAdminCredentials=async event=>{
     event?.preventDefault();const current=$("changeCurrPass")?.value||"",next=$("changeNewPass")?.value||"",confirm=$("changeConfirmPass")?.value||"";
     if(next.length<12)return toast("New password must be at least 12 characters.");
