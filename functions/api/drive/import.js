@@ -80,7 +80,6 @@ export async function onRequestPost({ request, env }) {
         asset_url: directUrl,
         storage_path: fileId,
         storage_provider: "google_drive",
-        resolution: "Original",
         is_primary: true
       })
     });
