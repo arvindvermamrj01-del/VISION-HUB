@@ -12,6 +12,4 @@
   50%{background-position:100% 50%;filter:hue-rotate(24deg);box-shadow:0 0 16px rgba(67,224,208,.42),0 0 32px rgba(235,104,204,.3),0 8px 22px rgba(0,0,0,.2)}
 }
 .vh-sidebar-brand-icon{filter:drop-shadow(0 0 9px rgba(112,139,255,.3))}
-@media(prefers-reduced-motion:reduce){
-  .nav-brand .brand-icon,.vh-sidebar-brand-icon{animation:none;background-position:50% 50%;filter:none}
-}
+/* Brand aurora remains animated continuously by design, including reduced-motion preference. */
