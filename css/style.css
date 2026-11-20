@@ -478,3 +478,65 @@ body{padding-top:0}
 :root[data-vh-theme="amoled"] .admin-login-shell{background:radial-gradient(ellipse at 12% 5%,rgba(125,110,255,.16),transparent 42%),#080808}
 @media(max-width:760px){.admin-login-shell{width:calc(100% - 20px);margin:18px auto;padding:12px;grid-template-columns:1fr;gap:12px;border-radius:24px}.admin-login-aside{padding:15px 12px 8px}.admin-login-aside h1{margin:12px 0 8px;font-size:2rem}.admin-login-highlights{grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}.admin-login-highlights>div{padding:10px;align-items:flex-start}.admin-login-highlights>div>i{width:32px;height:32px;flex:0 0 32px}.admin-login-highlights small{font-size:.7rem}.admin-login-secure{padding:0 3px}.admin-auth-box{padding:22px 18px}}
 @media(max-width:420px){.admin-login-highlights{grid-template-columns:1fr}.admin-login-shell{margin:12px auto}}
+
+
+/* Donation dialog: viewport-locked backdrop, independently scrollable payment panel. */
+.donation-overlay{
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-gutter:stable;
+}
+.donation-panel{
+  max-height:min(calc(100dvh - 32px),900px);
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+  scrollbar-color:var(--vh-line) transparent;
+}
+.donation-panel:focus{outline:none}
+body.vh-modal-open{overscroll-behavior:none;touch-action:pan-x}
+body.vh-modal-open .vh-mobile-dock,
+body.vh-modal-open .telegram-fab{visibility:hidden!important;pointer-events:none!important}
+@media(max-width:760px){
+  .donation-overlay.open{
+    align-items:flex-start;
+    justify-content:center;
+    padding:calc(8px + env(safe-area-inset-top)) 8px calc(8px + env(safe-area-inset-bottom));
+    overflow-y:auto;
+    overflow-x:hidden;
+  }
+  .donation-panel{
+    width:100%;
+    max-width:620px;
+    max-height:calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    margin:0 auto;
+    padding:22px 16px max(22px,env(safe-area-inset-bottom));
+    border-radius:22px;
+  }
+  .donation-close{right:12px;top:10px}
+  .donation-panel h2{padding-right:34px}
+  .donation-pay-area{padding:15px;margin:16px 0}
+}
+@media(prefers-reduced-motion:reduce){
+  .donation-overlay,.donation-panel{scroll-behavior:auto}
+}
+
+.feedback-page-shell{width:min(920px,100%);margin:0 auto;padding-top:12px}
+.feedback-page-intro{margin:0 0 18px;padding:clamp(18px,3vw,30px);border:1px solid var(--vh-line);border-radius:24px;background:linear-gradient(120deg,rgba(35,143,196,.12),rgba(84,205,180,.08),rgba(141,115,255,.06))}
+.feedback-page-kicker{display:inline-flex;align-items:center;gap:8px;color:var(--accent2);font-size:.68rem;font-weight:900;letter-spacing:.14em}
+.feedback-page-intro h2{margin:12px 0 6px;font-size:clamp(1.45rem,3vw,2rem);letter-spacing:-.04em}
+.feedback-page-intro p,.feedback-privacy-note{color:var(--muted);font-size:.84rem;line-height:1.65}
+.feedback-form-card{padding:clamp(18px,3vw,28px);border-radius:24px}
+.feedback-form-card h2{margin-top:0}
+.feedback-privacy-note{display:flex;align-items:flex-start;gap:8px;margin:14px 0 0}
+.feedback-privacy-note i{margin-top:3px;color:var(--accent2)}
+.community-roadmap-page{max-width:1100px;margin:0 auto}
+.community-roadmap-page .section-header{align-items:center;gap:12px;flex-wrap:wrap}
+.community-roadmap-page .section-header a{color:var(--accent2);font-size:.8rem;font-weight:800}
+.community-board .community-feedback-card{padding:17px;margin:10px 0;border:1px solid var(--vh-line);border-radius:18px;background:var(--vh-glass)}
+.pixeldrain-admin-note{display:block;margin-top:8px;color:var(--muted);font-size:.74rem;line-height:1.55}
+.pixeldrain-admin-note i{color:var(--accent2);margin-right:5px}
+:root[data-vh-theme="light"] .feedback-page-intro{background:linear-gradient(120deg,rgba(35,143,196,.08),rgba(84,205,180,.08),rgba(141,115,255,.04));border-color:#d7e0ee}
+:root[data-vh-theme="light"] .feedback-form-card{background:#fff;border-color:#d7e0ee}
