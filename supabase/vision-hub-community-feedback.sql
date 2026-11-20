@@ -103,3 +103,6 @@ revoke all on function public.vh_vote_feedback(bigint) from public;
 grant execute on function public.vh_vote_feedback(bigint) to authenticated;
 
 commit;
+
+-- Ensure newly created public feedback tables are visible to the Data API.
+notify pgrst, 'reload schema';
