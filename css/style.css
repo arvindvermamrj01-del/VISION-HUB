@@ -312,3 +312,10 @@ body.vh-modal-open{overflow:hidden}
 #page-admin #episodePublishStatus{min-height:20px;margin-top:10px}
 @media(max-width:520px){.series-episodes-panel{padding:14px}.vh-episode-row{align-items:flex-start;flex-direction:column}.vh-episode-row .btn-play{width:100%}}
 :root[data-vh-theme="light"] .vh-episode-row{background:rgba(255,255,255,.78)}
+
+/* Catalog refinement controls */
+.catalog-refine-bar{display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin:14px 0 20px;padding:14px;border:1px solid var(--vh-line);border-radius:18px;background:var(--vh-glass)}
+.catalog-refine-bar label{display:flex;flex-direction:column;gap:6px;min-width:150px;color:var(--muted);font-size:.78rem;font-weight:700}
+.catalog-refine-bar select{min-height:42px;min-width:150px;padding:9px 12px;border:1px solid var(--vh-line);border-radius:12px;background:var(--panel);color:var(--text)}
+:root[data-vh-theme="light"] .catalog-refine-bar select{background:#fff;color:#172338}
+@media(max-width:520px){.catalog-refine-bar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:11px}.catalog-refine-bar label,.catalog-refine-bar select{min-width:0;width:100%}}
