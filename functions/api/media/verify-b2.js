@@ -36,11 +36,21 @@ export async function onRequestPost({ request, env }) {
       const get = await presignB2(env, "GET", key, "", 300);
       const getResponse = await fetch(get.url);
       if (!getResponse.ok) {
-        return json({ verified: false, stage, httpStatus: getResponse.status, cleanupRequired: true, error: "B2 accepted the test upload but the test object could not be read. Check key read permissions." }, 502);
+        try {
+          const cleanup = await presignB2(env, "DELETE", key, "", 300);
+          const cleanupResponse = await fetch(cleanup.url, { method: "DELETE" });
+          uploaded = !cleanupResponse.ok;
+        } catch (_) { uploaded = true; }
+        return json({ verified: false, stage, httpStatus: getResponse.status, cleanupRequired: uploaded, error: "B2 accepted the test upload but the test object could not be read. Check key read permissions." }, 502);
       }
       const actual = await getResponse.text();
       if (actual !== probe) {
-        return json({ verified: false, stage, cleanupRequired: true, error: "B2 returned unexpected test-object content." }, 502);
+        try {
+          const cleanup = await presignB2(env, "DELETE", key, "", 300);
+          const cleanupResponse = await fetch(cleanup.url, { method: "DELETE" });
+          uploaded = !cleanupResponse.ok;
+        } catch (_) { uploaded = true; }
+        return json({ verified: false, stage, cleanupRequired: uploaded, error: "B2 returned unexpected test-object content." }, 502);
       }
 
       stage = "delete";
