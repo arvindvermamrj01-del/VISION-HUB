@@ -22,7 +22,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link rel="stylesheet" href="css/style.css?v=20261120-5"/>
-  <link rel="stylesheet" href="css/vision-hyper-ui.css?v=20261120-8"/>
+  <link rel="stylesheet" href="css/vision-hyper-ui.css?v=20261120-9"/>
   <link rel="stylesheet" href="css/cinema4u-layout.css?v=20261120-6"/>
 </head>
 <body>
@@ -31,8 +31,8 @@
     <!-- ===== NAVBAR ===== -->
     <nav class="navbar" id="navbar">
       <div class="nav-brand" onclick="showPage('home')" style="cursor: pointer;">
-        <span class="brand-icon">🎬</span>
-        <span class="brand-name">Vision<span class="brand-accent">Hub</span></span>
+        <span class="brand-icon"><i class="fas fa-play"></i></span>
+        <span class="brand-name"><span class="vh-brand-vision">Vision</span><span class="vh-brand-hub">Hub</span></span>
       </div>
 
       <!-- Public Navigation Links -->
@@ -99,9 +99,10 @@
 
     <!-- VISION HUB compact desktop side navigation -->
     <nav class="vh-sidebar" id="vhAppSidebar" aria-label="Main navigation">
-      <div class="vh-sidebar-brand" aria-hidden="true">
-        <span class="vh-sidebar-brand-icon"><i class="fas fa-play"></i></span>
+      <div class="vh-sidebar-brand">
+        <span class="vh-sidebar-brand-icon" aria-hidden="true"><i class="fas fa-play"></i></span>
         <span class="vh-sidebar-brand-copy"><strong>VISION HUB</strong><small>DISCOVER MORE</small></span>
+        <button type="button" class="vh-sidebar-toggle" id="vhSidebarToggle" aria-label="Expand navigation" aria-expanded="false" title="Expand navigation"><i class="fas fa-angles-right"></i></button>
       </div>
       <div class="vh-sidebar-scroll">
         <div class="vh-sidebar-section-label">EXPLORE</div>
@@ -1405,7 +1406,7 @@
         <section class="detail-playback-panel" id="detailPlaybackPanel" aria-label="Movie video player">
           <div class="detail-player-heading">
             <div><span class="detail-player-kicker">VISION HUB PLAYER</span><h3><i class="fas fa-play-circle"></i> Watch this title</h3></div>
-            <span class="detail-player-status" id="detailPlayerStatus">Choose an available source</span>
+            <div class="vh-player-heading-actions"><span class="detail-player-status" id="detailPlayerStatus">Choose an available source</span><button type="button" id="detailPlayerMinimize" class="vh-player-minimize" aria-expanded="true" aria-label="Minimise video player" title="Minimise player"><i class="fas fa-minus"></i></button></div>
           </div>
           <div class="detail-player-stage">
             <video id="detailVideo" controls playsinline preload="metadata" controlsList="nodownload"
@@ -1548,7 +1549,7 @@
         <div class="donation-amounts" aria-label="Suggested donation amounts">
           <button type="button" data-donation-amount="51">₹51</button><button type="button" data-donation-amount="101">₹101</button><button type="button" data-donation-amount="251">₹251</button><button type="button" data-donation-amount="501">₹501</button>
         </div>
-        <div class="form-group"><label for="donationAmount">Amount (INR)</label><input id="donationAmount" type="number" min="1" max="100000" step="1" required placeholder="Enter amount"/></div>
+        <div class="form-group"><label for="donationAmount">Amount (INR)</label><input id="donationAmount" type="number" min="1" max="999" step="1" required placeholder="Enter amount"/></div>
         <div class="form-group"><label for="donationReference">UPI transaction reference / UTR</label><input id="donationReference" minlength="8" maxlength="64" pattern="[A-Za-z0-9-]{8,64}" required placeholder="Enter transaction reference"/></div>
         <button id="donationSubmitBtn" type="submit" class="btn-primary full-width" disabled>Submit for verification</button>
         <p id="donationStatus" class="donation-status" role="status">Configure a UPI ID in Admin → Platform Settings to accept contributions.</p>
@@ -1638,9 +1639,9 @@
 <script src="js/supabase-auth.js?v=20261120-2"></script>
 <script src="js/account-data.js"></script>
 <script src="js/account-portal.js"></script>
-<script src="js/app.js?v=20261120-6"></script>
+<script src="js/app.js?v=20261120-7"></script>
 <script src="js/analytics.js"></script>
-<script src="js/content-admin.js?v=20261120-8"></script>
+<script src="js/content-admin.js?v=20261120-9"></script>
 <script src="js/storage-manager.js?v=20261120-2"></script>
 <script src="js/request-manager.js"></script>
 <script src="js/admin-tools.js"></script>
@@ -1648,12 +1649,12 @@
 <script src="js/maintenance-mode.js"></script>
 <script src="js/public-settings.js"></script>
 <script src="js/theme-manager.js?v=20261120-2"></script>
-<script src="js/donation-manager.js?v=20261120-2"></script>
+<script src="js/donation-manager.js?v=20261120-3"></script>
 <script src="js/ads-manager.js"></script>
 <script src="js/episode-manager.js"></script>
 <script src="js/song-library.js"></script>
 <script src="js/community.js"></script>
-<script src="js/experience-ui.js?v=20261120-3"></script>
+<script src="js/experience-ui.js?v=20261120-4"></script>
 <script src="js/cinema-home.js?v=20261120-3"></script>
 </body>
 </html>
