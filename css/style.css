@@ -319,3 +319,24 @@ body.vh-modal-open{overflow:hidden}
 .catalog-refine-bar select{min-height:42px;min-width:150px;padding:9px 12px;border:1px solid var(--vh-line);border-radius:12px;background:var(--panel);color:var(--text)}
 :root[data-vh-theme="light"] .catalog-refine-bar select{background:#fff;color:#172338}
 @media(max-width:520px){.catalog-refine-bar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:11px}.catalog-refine-bar label,.catalog-refine-bar select{min-width:0;width:100%}}
+
+/* ===== Community feedback and roadmap ===== */
+.community-layout{display:grid;grid-template-columns:minmax(260px,.8fr) minmax(0,1.5fr);gap:22px;align-items:start}
+.community-submit-card,.community-board{padding:22px;border:1px solid var(--vh-line);border-radius:22px;background:var(--vh-glass)}
+.community-submit-card h2,.community-board h2{margin:0 0 9px}
+.community-submit-card>p,.community-board .section-header span{color:var(--muted);font-size:.84rem;line-height:1.6}
+.community-feedback-card{padding:18px;margin:12px 0;border:1px solid var(--vh-line);border-radius:17px;background:var(--panel)}
+.community-feedback-meta{display:flex;gap:8px;flex-wrap:wrap}
+.community-feedback-meta span{padding:5px 9px;border-radius:999px;background:var(--vh-glass);color:var(--accent2);font-size:.7rem;font-weight:800;text-transform:capitalize}
+.community-feedback-card h3{margin:12px 0 7px;font-size:1rem}
+.community-feedback-card>p{color:var(--muted);font-size:.85rem;line-height:1.6}
+.community-feedback-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}
+.community-feedback-actions button{padding:8px 12px;border:1px solid var(--vh-line);border-radius:999px;background:var(--vh-glass);color:var(--text);font-weight:750}
+.community-feedback-actions small{color:var(--muted)}
+.vh-admin-feedback{display:grid;grid-template-columns:1fr minmax(230px,.8fr);gap:18px;padding:16px 0;border-bottom:1px solid var(--vh-line)}
+.vh-admin-feedback>div:first-child>small{display:block;margin:6px 0;color:var(--muted);font-size:.76rem}
+.vh-admin-feedback>div:first-child>p{color:var(--muted);font-size:.85rem;line-height:1.55}
+.vh-admin-feedback .form-row{display:grid;gap:8px}
+.vh-admin-feedback label{display:grid;gap:5px;font-size:.78rem;color:var(--muted)}
+.vh-admin-feedback select,.vh-admin-feedback textarea{width:100%;background:var(--panel);color:var(--text);border:1px solid var(--vh-line);border-radius:10px;padding:8px}
+@media(max-width:800px){.community-layout{grid-template-columns:1fr}.vh-admin-feedback{grid-template-columns:1fr}}
