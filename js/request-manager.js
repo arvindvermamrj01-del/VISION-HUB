@@ -43,11 +43,11 @@
       status: "pending",
       requester_id: null
     };
+    if (!db) return notify("Request service is not connected yet. Please try again later.");
     try {
       const {data:{user}} = await db.auth.getUser();
       if (user) request.requester_id = user.id;
     } catch (_) { /* Guest requests remain supported. */ }
-    if (!db) return notify("Request service is not connected yet. Please try again later.");
     const button = submitter || form?.querySelector('[type="submit"]');
     if (button) button.disabled = true;
     try {
