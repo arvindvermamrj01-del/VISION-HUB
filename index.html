@@ -48,6 +48,7 @@
         <a href="#watchlist" class="nav-link" onclick="showPage('watchlist')">Watchlist</a>
         <a href="#request" class="nav-link" onclick="showPage('request')">Request Movie</a>
         <a href="#community" class="nav-link" onclick="showPage('community')">Community</a>
+        <a href="#feedback" class="nav-link" onclick="showPage('feedback')">Feedback</a>
       </div>
 
       <!-- User & Auth Actions (NO Admin Button in Public Navbar - Admin is Protected via #control-center) -->
@@ -414,26 +415,42 @@
       </section>
     </div>
 
-    <!-- Community suggestions, bug reports and voting -->
+    <!-- Community roadmap and public changelog remain separate from feedback submission. -->
     <div id="page-community" class="page">
       <div class="page-header-banner">
         <h1>💬 Vision Hub Community</h1>
-        <p>Share ideas, report problems and vote on improvements.</p>
+        <p>Follow the platform roadmap, vote on approved ideas and see completed improvements.</p>
       </div>
-      <section class="section community-layout">
-        <form id="communityFeedbackForm" class="admin-form community-submit-card">
-          <h2>Share feedback</h2>
-          <p>Sign in to submit suggestions, bug reports or complaints. Submissions are reviewed before appearing publicly.</p>
-          <div class="form-group"><label for="communityCategory">Feedback type</label><select id="communityCategory"><option value="suggestion">Feature suggestion</option><option value="bug">Report a bug</option><option value="complaint">Complaint</option></select></div>
-          <div class="form-group"><label for="communityTitle">Title</label><input id="communityTitle" maxlength="120" minlength="4" required placeholder="Short summary"/></div>
-          <div class="form-group"><label for="communityDescription">Details</label><textarea id="communityDescription" maxlength="3000" minlength="10" rows="4" required placeholder="Explain the idea or issue clearly…"></textarea></div>
-          <button type="submit" class="btn-primary full-width">Submit feedback</button>
-          <p id="communitySubmitStatus" role="status"></p>
-        </form>
-        <div class="community-board">
-          <div class="section-header"><h2>Community Roadmap & Changelog</h2><span>Vote on planned work and review completed improvements</span></div>
-          <div id="communityFeedbackList"><p>Loading community feedback…</p></div>
+      <section class="section">
+        <div class="community-board community-roadmap-page">
+          <div class="section-header"><div><h2>Community Roadmap & Changelog</h2><span>Approved suggestions, work in progress and shipped improvements</span></div><a href="#feedback" onclick="showPage('feedback')">Share feedback <i class="fas fa-arrow-right"></i></a></div>
+          <div id="communityFeedbackList"><p>Loading community roadmap…</p></div>
         </div>
+      </section>
+    </div>
+
+    <!-- Dedicated feedback page: suggestions, bug reports and complaints. -->
+    <div id="page-feedback" class="page">
+      <div class="page-header-banner">
+        <h1>✉️ Feedback & Support</h1>
+        <p>Tell us what is working, report a problem or suggest the next Vision Hub feature.</p>
+      </div>
+      <section class="section feedback-page-shell">
+        <div class="feedback-page-intro">
+          <span class="feedback-page-kicker"><i class="fas fa-comments"></i> YOUR VOICE MATTERS</span>
+          <h2>Help us make Vision Hub better.</h2>
+          <p>Feedback is private until reviewed by the team. Approved ideas can later appear on the Community Roadmap.</p>
+        </div>
+        <form id="communityFeedbackForm" class="admin-form community-submit-card feedback-form-card">
+          <h2>Send feedback</h2>
+          <p>Sign in to submit suggestions, bug reports or complaints. Please include enough detail for the team to investigate.</p>
+          <div class="form-group"><label for="communityCategory">Feedback type</label><select id="communityCategory"><option value="suggestion">Feature suggestion</option><option value="bug">Report a bug</option><option value="complaint">Complaint</option></select></div>
+          <div class="form-group"><label for="communityTitle">Title</label><input type="text" id="communityTitle" maxlength="120" minlength="4" required placeholder="Short summary"/></div>
+          <div class="form-group"><label for="communityDescription">Details</label><textarea id="communityDescription" maxlength="3000" minlength="10" rows="6" required placeholder="Explain the idea or issue clearly…"></textarea></div>
+          <button type="submit" class="btn-primary full-width"><i class="fas fa-paper-plane"></i> Submit feedback</button>
+          <p id="communitySubmitStatus" role="status"></p>
+          <p class="feedback-privacy-note"><i class="fas fa-lock"></i> Your submission is only visible to you and authorised Vision Hub staff until it is approved for the public roadmap.</p>
+        </form>
       </section>
     </div>
 
@@ -780,6 +797,7 @@
                   <option value="backblaze_b2">Backblaze B2 (Default — private cloud upload)</option>
                   <option value="cloudflare_r2">Cloudflare R2 (direct cloud upload — server setup required)</option>
                   <option value="supabase">Supabase (legacy / existing uploads)</option>
+                  <option value="pixeldrain">PixelDrain (API key required · in-app upload up to 90 MiB)</option>
                   <option value="terabox">TeraBox (authorised URL only — API connector pending)</option>
                   <option value="mega">MEGA (authorised URL only — API connector pending)</option>
                   <option value="degoo">Degoo (authorised URL only — API connector pending)</option>
@@ -793,6 +811,7 @@
                   <option value="telegram">Telegram (authorised post link only)</option>
                 </select>
                 <input type="file" id="addVideoFile" accept="video/*" autocomplete="off"/>
+                <small class="pixeldrain-admin-note"><i class="fas fa-cloud"></i> PixelDrain needs a server-side API key. In-app uploads are limited by Cloudflare request size; upload larger files on PixelDrain first, then paste its share link above. Premium is needed for reliable in-page hotlink playback.</small>
               </div>
 
               <!-- Multi-Resolution Download Link Inputs -->
@@ -1572,6 +1591,7 @@
         <a href="#series" onclick="showPage('series')">Web Series</a>
         <a href="#request" onclick="showPage('request')">Request Movie</a>
         <a href="#community" onclick="showPage('community')">Community</a>
+        <a href="#feedback" onclick="showPage('feedback')">Feedback</a>
         <a href="/privacy.html">Privacy Policy</a>
         <a href="/terms.html">Terms of Use</a>
         <a href="/copyright.html">Copyright & Content Policy</a>
