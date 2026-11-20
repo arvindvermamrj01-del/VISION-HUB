@@ -383,3 +383,19 @@ body.vh-modal-open{overflow:hidden}
 :root[data-vh-theme="light"] #page-admin .manage-item{border-bottom-color:#e0e7f1;color:#20304a}
 :root[data-vh-theme="light"] #page-admin .drive-import-box{background:#fff;border-color:#d7e0ee;color:#20304a}
 :root[data-vh-theme="light"] #page-admin .drive-log{background:#f3f6fc;color:#33445e}
+
+/* Public music library */
+.songs-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 20px}
+.songs-toolbar label{font-weight:700;color:var(--text)}
+.songs-toolbar input{width:min(100%,420px);background:var(--panel);color:var(--text);border:1px solid var(--vh-line);border-radius:12px;padding:12px 14px}
+.songs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.song-card{display:grid;grid-template-columns:88px minmax(0,1fr);gap:14px;align-items:center;padding:14px;border:1px solid var(--vh-line);border-radius:18px;background:var(--vh-glass);box-shadow:0 10px 28px #0002}
+.song-cover{width:88px;height:88px;display:grid;place-items:center;overflow:hidden;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;font-size:2.2rem}
+.song-cover img{width:100%;height:100%;object-fit:cover}
+.song-card-body{min-width:0}
+.song-card h3{margin:0 0 4px;color:var(--text);font-size:.98rem;overflow-wrap:anywhere}
+.song-artist{margin:0 0 10px;color:var(--muted);font-size:.82rem}
+.song-card audio{display:block;width:100%;height:38px;max-width:100%}
+:root[data-vh-theme="light"] .song-card{background:rgba(255,255,255,.92);border-color:#d7e0ee}
+:root[data-vh-theme="light"] .songs-toolbar input{background:#fff;color:#172338;border-color:#d7e0ee}
+@media(max-width:420px){.songs-grid{grid-template-columns:1fr}.song-card{grid-template-columns:72px minmax(0,1fr);gap:11px;padding:11px}.song-cover{width:72px;height:72px}}
