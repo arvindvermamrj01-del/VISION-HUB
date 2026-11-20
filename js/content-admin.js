@@ -92,7 +92,7 @@
     const mappedAssets = (assets || []).map(asset => ({...asset,url:asset.resolved_url || asset.url || null}));
     const primary = mappedAssets.find(asset => asset.is_primary) || mappedAssets[0];
     const item = {
-      id: row.id, isSupabaseContent:true, title:row.title, type:row.content_type, parent_series_id:row.parent_series_id||null, season_number:row.season_number||null, episode_number:row.episode_number||null,
+      id: row.id, isSupabaseContent:true, title:row.title, type:row.content_type, created_at:row.created_at||null, parent_series_id:row.parent_series_id||null, season_number:row.season_number||null, episode_number:row.episode_number||null,
       industry:row.industry || "All", genre:row.genre || "Uncategorised",
       year:row.release_year || "", rating:row.rating ?? "", language:row.language || "",
       duration:row.duration || "", poster:row.poster_url || "", backdrop:row.poster_url || "",
