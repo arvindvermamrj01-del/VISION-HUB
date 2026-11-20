@@ -3,7 +3,8 @@
   "use strict";
   const db=window.VH_SUPABASE,$=id=>document.getElementById(id);
   const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-  const notify=message=>typeof window.toast==="function"?window.toast(message):window.alert(message);\n  let loading=false;
+  const notify=message=>typeof window.toast==="function"?window.toast(message):window.alert(message);
+  let loading=false;
   async function loadBoard(){
     const host=$("communityFeedbackList");if(!host||!db||loading)return;
     loading=true;
