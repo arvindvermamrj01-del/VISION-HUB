@@ -42,12 +42,18 @@ create policy "vh_donations_public_submit" on public.vh_donations
 drop policy if exists "vh_donations_owner_or_admin_read" on public.vh_donations;
 create policy "vh_donations_owner_or_admin_read" on public.vh_donations
   for select to authenticated
-  using (user_id = (select auth.uid()) or public.vh_is_admin());
+  using (
+    user_id = (select auth.uid())
+    or exists (
+      select 1 from public.profiles p
+      where p.id = (select auth.uid()) and p.role = 'admin'
+    )
+  );
 
 drop policy if exists "vh_donations_admin_update" on public.vh_donations;
 create policy "vh_donations_admin_update" on public.vh_donations
   for update to authenticated
-  using (public.vh_is_admin())
-  with check (public.vh_is_admin());
+  using (exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role = 'admin'))
+  with check (exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role = 'admin'));
 
 commit;
