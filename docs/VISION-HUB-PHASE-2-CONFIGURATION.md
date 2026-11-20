@@ -57,9 +57,9 @@ The public Support Vision Hub panel creates a UPI payment intent and lets a dono
 ## 6. AdSense
 
 Enable ads only after Google approves the site and its content/policies:
-- Publisher ID: `ca-pub-...`
+- Publisher ID: `ca-pub-...` (save it in Admin → Platform Settings; `ADSENSE_PUBLISHER_ID` in Cloudflare Pages is the fallback)
 - Homepage and footer ad slot IDs from AdSense
-- Set Cloudflare Pages variable `ADSENSE_PUBLISHER_ID` (accepts `pub-...` or `ca-pub-...`) so `/ads.txt` can be served.
+- The `/ads.txt` route reads the saved publisher ID securely, then falls back to the Cloudflare variable if needed.
 
 For live earnings over 7 days, 30 days, this month or last month in Admin → Analytics & Reports, configure these Cloudflare Pages secrets:
 - `ADSENSE_CLIENT_ID`
