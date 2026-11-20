@@ -1188,3 +1188,15 @@ body.vh-sidebar-expanded #vhAppSidebar .vh-sidebar-toggle{opacity:1}
   }
 }
 
+/* Keep the Shows action visually distinct on both responsive navigation rails. */
+.vh-sidebar-button[data-vh-nav="shows"] i,
+.vh-mobile-nav-item[data-vh-page="shows"] i {
+  background-image:linear-gradient(145deg,#fff0b3 0%,#f5b45f 48%,#ce765c 100%)!important;
+}
+@media(max-width:760px){
+  .nav-brand .vh-brand-motto{font-size:.42rem!important;letter-spacing:.06em!important}
+}
+@media(max-width:420px){
+  .nav-brand .vh-brand-motto{font-size:.37rem!important;letter-spacing:.035em!important}
+}
+
