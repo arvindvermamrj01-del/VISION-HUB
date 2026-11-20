@@ -142,11 +142,11 @@
     } catch(e){host.textContent=e.message||"Categories unavailable.";}
   }
   window.addCategory=async event=>{
-    event?.preventDefault();const name=$("catName")?.value.trim();const description=$("catDesc")?.value.trim()||null;
+    const form=event?.currentTarget;event?.preventDefault();const name=$("catName")?.value.trim();const description=$("catDesc")?.value.trim()||null;
     if(!name)return toast("Category name is required.");
     const button=event?.currentTarget?.querySelector('[type="submit"]');if(button)button.disabled=true;
     try{const user=await requireAdmin();const {error}=await db.from("vh_categories").insert({name,description});if(error)throw error;
-      event.currentTarget.reset();toast("Category saved.");await loadCategories();}
+      form?.reset();toast("Category saved.");await loadCategories();}
     catch(e){toast(e.message||"Category could not be saved.");}finally{if(button)button.disabled=false;}
   };
   window.deleteCategory=async id=>{
@@ -162,13 +162,13 @@
     }catch(e){host.textContent=e.message||"Songs unavailable.";}
   }
   window.addSong=async event=>{
-    event?.preventDefault();const title=$("songTitle")?.value.trim(),artist=$("songArtist")?.value.trim(),audio=$("songFileUrl")?.value.trim(),poster=$("songPoster")?.value.trim()||null;
+    const form=event?.currentTarget;event?.preventDefault();const title=$("songTitle")?.value.trim(),artist=$("songArtist")?.value.trim(),audio=$("songFileUrl")?.value.trim(),poster=$("songPoster")?.value.trim()||null;
     if(!title||!audio)return toast("Song title and authorised audio URL are required.");
     let audioUrl,posterUrl=null;
     try{audioUrl=new URL(audio);if(audioUrl.protocol!=="https:")throw new Error();if(poster){posterUrl=new URL(poster);if(posterUrl.protocol!=="https:")throw new Error();}}catch(_){return toast("Use valid HTTPS audio and poster URLs.");}
     const button=event?.currentTarget?.querySelector('[type="submit"]');if(button)button.disabled=true;
     try{const user=await requireAdmin();const {error}=await db.from("vh_songs").insert({title,artist,audio_url:audioUrl.href,poster_url:posterUrl?.href||null,is_published:true,created_by:user.id});if(error)throw error;
-      event.currentTarget.reset();toast("Song added.");await loadSongs();await window.refreshSongLibrary?.();}
+      form?.reset();toast("Song added.");await loadSongs();await window.refreshSongLibrary?.();}
     catch(e){toast(e.message||"Song could not be added.");}finally{if(button)button.disabled=false;}
   };
   window.deleteSong=async id=>{
@@ -313,13 +313,13 @@
   };
 
   window.updateAdminCredentials=async event=>{
-    event?.preventDefault();const current=$("changeCurrPass")?.value||"",next=$("changeNewPass")?.value||"",confirm=$("changeConfirmPass")?.value||"";
+    const form=event?.currentTarget;event?.preventDefault();const current=$("changeCurrPass")?.value||"",next=$("changeNewPass")?.value||"",confirm=$("changeConfirmPass")?.value||"";
     if(next.length<12)return toast("New password must be at least 12 characters.");
     if(next!==confirm)return toast("New password and confirmation do not match.");
     const button=event?.currentTarget?.querySelector('[type="submit"]');if(button)button.disabled=true;
     try{const user=await requireAdmin();if(!user.email)throw new Error("Admin email unavailable; use Supabase password reset.");
       const {error:reauthError}=await db.auth.signInWithPassword({email:user.email,password:current});if(reauthError)throw new Error("Current password is incorrect.");
-      const {error:updateError}=await db.auth.updateUser({password:next});if(updateError)throw updateError;event.currentTarget.reset();toast("Admin password updated.");
+      const {error:updateError}=await db.auth.updateUser({password:next});if(updateError)throw updateError;form?.reset();toast("Admin password updated.");
     }catch(e){toast(e.message||"Password update failed.");}finally{if(button)button.disabled=false;}
   };
 
