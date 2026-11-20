@@ -63,6 +63,27 @@
       button.classList.toggle("active",active);button.setAttribute("aria-current",active?"page":"false");
     });
   }
+  function animateReorder(group,selected){
+    if(!group||!selected)return;
+    const buttons=[...group.querySelectorAll(":scope > .vh-sidebar-button")];
+    const index=buttons.indexOf(selected);if(index<=0)return;
+    const before=new Map(buttons.map(button=>[button,button.getBoundingClientRect()]));
+    const reordered=[selected,...buttons.filter(button=>button!==selected)];
+    reordered.forEach(button=>group.appendChild(button));
+    reordered.forEach(button=>{
+      const old=before.get(button),now=button.getBoundingClientRect();
+      if(!old)return;
+      const dx=old.left-now.left,dy=old.top-now.top;
+      if(!dx&&!dy)return;
+      try{
+        const isSelected=button===selected;
+        button.animate([
+          {transform:`translate(${dx}px,${dy}px) scale(${isSelected ? .98 : 1})`},
+          {transform:"translate(0,0) scale(1)"}
+        ],{duration:isSelected?560:460,easing:"cubic-bezier(.16,1,.3,1)"});
+      }catch(_){}
+    });
+  }
   function execute(button){
     const page=button.dataset.vhPage,action=button.dataset.vhAction;
     const donationModal=document.getElementById("donationModal");
@@ -77,6 +98,8 @@
     if(mobileQuery()){
       try{button.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});}catch(_){}
       pauseAutoSlide(2200);
+    }else if(button.classList.contains("vh-sidebar-button")){
+      animateReorder(button.closest("[data-vh-nav-group]"),button);
     }
     if(action==="donate"){window.openDonationPanel?.();return;}
     if(action==="settings"){window.toggleThemePanel?.();return;}
