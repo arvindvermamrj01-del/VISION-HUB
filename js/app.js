@@ -300,6 +300,7 @@ function ensureModalShareButton(){
  if(downloadButton?.nextSibling)actions.insertBefore(button,downloadButton.nextSibling);
  else actions.appendChild(button);
 }
+window.shareCurrentMovie=shareCurrentMovie;
 window.closeModal=(event)=>{
  if(event&&event.target!==$("movieModal"))return;
  $("movieModal")?.classList.remove("open","vh-lights-out");
