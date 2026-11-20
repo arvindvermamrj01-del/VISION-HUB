@@ -101,7 +101,7 @@
     block.innerHTML += '<div class="vh-storage-health" id="vhStorageHealth" role="status" aria-live="polite">Checking media provider connections…</div>';
     const submit = form.querySelector('[type="submit"]');
     form.insertBefore(block, submit || null);
-    refreshStorageHealth();
+    if (window.VH_SECURE_ADMIN_SESSION_READY) refreshStorageHealth();
   }
 
   async function uploadPrivate(file,user,provider) {
@@ -948,5 +948,6 @@
     ensureQualityFields();
     loadPublished();
   });
-  db.auth.onAuthStateChange((_event,session)=>{if(session?.user){loadPublished();refreshStorageHealth();}});
+  db.auth.onAuthStateChange((_event,session)=>{if(session?.user){loadPublished();}});
+  window.addEventListener("vh-secure-admin-session-ready",()=>refreshStorageHealth());
 })();
