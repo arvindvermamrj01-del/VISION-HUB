@@ -88,7 +88,7 @@ alter table public.vh_content
 alter table public.vh_content drop constraint if exists vh_content_storage_provider_check;
 alter table public.vh_content add constraint vh_content_storage_provider_check
   check (storage_provider in (
-    'supabase','cloudflare_r2','terabox','mega','degoo','google_drive',
+    'supabase','cloudflare_r2','backblaze_b2','terabox','mega','degoo','google_drive',
     'mediafire','pcloud','box','icedrive','koofr','internxt','telegram','direct'
   ));
 
