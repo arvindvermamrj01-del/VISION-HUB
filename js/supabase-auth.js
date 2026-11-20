@@ -142,6 +142,7 @@ const secretAdminSession = window.VH_ADMIN_SECRET_SESSION_ACTIVE === true ||
   window.VH_ADMIN_LOGIN_IN_PROGRESS === true ||
   (() => { try { return sessionStorage.getItem("vh-admin-secret-session") === "1"; } catch (_) { return false; } })();
 if (window.VH_IS_ADMIN && !secretAdminSession) {
+  window.VH_REJECTED_STAFF_ROLE = window.VH_ROLE;
   el("userNav")?.classList.add("hidden");
   el("adminNav")?.classList.add("hidden");
   window.dispatchEvent(new Event("vh-auth-state-changed"));
@@ -152,6 +153,7 @@ const roleBadge = el("adminRoleBadge");
 if (roleBadge) roleBadge.textContent = window.VH_ROLE.replaceAll("_", " ");
 
 if (window.VH_IS_ADMIN) {
+  window.VH_REJECTED_STAFF_ROLE = null;
   // Staff accounts use the hidden Secure Admin panel; never display a public account avatar or menu.
   el("userNav")?.classList.add("hidden");
   el("adminNav")?.classList.remove("hidden");
@@ -186,6 +188,7 @@ return true;
 window.loginUser = async function (event) {
   const form = event?.currentTarget;
   event?.preventDefault();
+  window.VH_REJECTED_STAFF_ROLE = null;
   const email = el("userLoginEmail")?.value?.trim().toLowerCase();
   const password = el("userLoginPassword")?.value || "";
   const button = form?.querySelector('[type="submit"]');
@@ -198,9 +201,13 @@ window.loginUser = async function (event) {
     authSucceeded = true;
     const roleVerified = await showSignedIn(data.user);
     if (!roleVerified) {
+      const staffAccount = ["admin", "sub_admin", "content_editor", "moderator"].includes(window.VH_REJECTED_STAFF_ROLE);
       await db.auth.signOut({ scope: "local" });
       showSignedOut();
-      msg("Your account role could not be verified. Please try again later.");
+      msg(staffAccount
+        ? "Admin and staff accounts must use the separate Secure Admin Sign-in panel (Ctrl + Shift + A)."
+        : "Your account role could not be verified. Please try again later.");
+      window.VH_REJECTED_STAFF_ROLE = null;
       return;
     }
     if (window.VH_IS_ADMIN) {
@@ -270,6 +277,7 @@ window.resetUserPassword = async function () {
 
 window.adminLogin = async function (e) {
   e?.preventDefault();
+  window.VH_REJECTED_STAFF_ROLE = null;
   const username = el("adminUser")?.value?.trim() || "";
   const password = el("adminPass")?.value || "";
   const btn = el("adminSubmitBtn");
