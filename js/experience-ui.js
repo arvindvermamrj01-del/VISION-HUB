@@ -122,7 +122,8 @@
     if(mobileQuery()||document.hidden)return;
     sidebarCollapseTimer=setTimeout(()=>{
       const sidebar=document.getElementById("vhAppSidebar");
-      if(sidebar?.contains(document.activeElement)){
+      const focused=document.activeElement;
+      if(sidebar?.contains(focused)&&focused?.matches?.(":focus-visible")){
         scheduleSidebarCollapse(2000);
         return;
       }
