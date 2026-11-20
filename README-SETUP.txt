@@ -85,6 +85,38 @@ If applying individual migrations instead, use the relevant files:
 Initial setup only (if the database has not already been created):
   supabase/vision-hub-master-setup.sql
 
+PARTIAL / LEGACY DATABASE RECOVERY
+----------------------------------
+If the database already has legacy tables such as movies, profiles, requests
+and watchlist, but has no public tables whose names begin with vh_, do not run
+the feature bundle first. Use this order after taking a database backup:
+
+1. Confirm the Supabase project in the Dashboard matches the production URL in
+   js/supabase-config.js and the Cloudflare Pages SUPABASE_URL. The current
+   production configuration in this repository points to project ref
+   bmtbsguwbbeuvmvdfdyb.
+2. Before running vision-hub-master-setup.sql, verify that the owner UUID
+   hard-coded near the end of that file exists in auth.users and belongs to
+   the site owner. If it does not, stop and replace it with the verified owner
+   UUID before running the script. The setup deliberately aborts rather than
+   silently promoting a missing or unverified account.
+3. Run supabase/vision-hub-master-setup.sql. It is additive, reuses the
+   existing profiles table and keeps legacy movies/requests/watchlist tables.
+4. Run supabase/vision-hub-platform-upgrade.sql to add staff roles, private
+   media metadata and the private Supabase bucket.
+5. Run supabase/vision-hub-feature-upgrade-bundle.sql for episodes, B2,
+   donations, community voting, analytics, audio metadata and data-access
+   hardening.
+6. Run the user watchlist, watch progress and request workflow migrations only
+   if those tables/columns are not already present:
+   vision-hub-user-watchlist.sql
+   vision-hub-watch-progress.sql
+   vision-hub-request-workflow-upgrade.sql
+
+Do not run the legacy content-setup.sql or security-and-storage-fix.sql on top
+of this recovery sequence. The latter is retained for historical installations;
+the current B2/R2 provider allow-list is in the feature upgrade bundle.
+
 Previously applied account/request upgrades should not need to be repeated:
   supabase/vision-hub-request-workflow-upgrade.sql
   supabase/vision-hub-user-watchlist.sql

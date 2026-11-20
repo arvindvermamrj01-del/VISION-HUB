@@ -110,11 +110,22 @@ window.VH_ROLE = "user";
 window.VH_IS_ADMIN = false;
 window.dispatchEvent(new Event("vh-auth-state-changed"));
 
-const { data: profile, error } = await db
+let profileResult = await db
   .from("profiles")
   .select("id, role, fullname, created_at")
   .eq("id", user.id)
   .maybeSingle();
+
+// Older installations used full_name. Fall back only when the newer column is absent.
+if (profileResult.error && /fullname|PGRST204|42703/i.test(profileResult.error.message || "")) {
+  profileResult = await db
+    .from("profiles")
+    .select("id, role, full_name, created_at")
+    .eq("id", user.id)
+    .maybeSingle();
+}
+const { data: profile, error } = profileResult;
+if (profile && !profile.fullname) profile.fullname = profile.full_name || null;
 
 if (error) {
   console.warn("Profile lookup unavailable; hiding account controls until the role can be verified:", error.message);

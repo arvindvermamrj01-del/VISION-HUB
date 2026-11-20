@@ -20,9 +20,12 @@
     if (!body) return;
     try {
       await requireAdmin();
-      const { data, error } = await db.from("profiles").select("id,fullname,role,created_at").order("created_at",{ascending:false}).limit(500);
-      if (error) throw error;
-      users = data || [];
+      let result = await db.from("profiles").select("id,fullname,role,created_at").order("created_at",{ascending:false}).limit(500);
+      if (result.error && /fullname|PGRST204|42703/i.test(result.error.message || "")) {
+        result = await db.from("profiles").select("id,full_name,role,created_at").order("created_at",{ascending:false}).limit(500);
+      }
+      if (result.error) throw result.error;
+      users = (result.data || []).map(profile => ({ ...profile, fullname: profile.fullname || profile.full_name || "" }));
       renderUsers($("userManageSearch")?.value || "");
     } catch (error) {
       body.innerHTML = '<tr><td colspan="7">' + esc(error.message || "Users could not be loaded.") + '</td></tr>';

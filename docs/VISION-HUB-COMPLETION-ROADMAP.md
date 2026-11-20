@@ -2,18 +2,18 @@
 
 **Purpose:** finish the existing VISION HUB application without replacing its approved layout, while preserving existing database rows, media objects, user accounts and RLS.
 
-## 1. Verified production baseline (20 Nov 2026)
+## 1. Verified production baseline (21 Nov 2026)
 
 | Check | Observed result | Interpretation |
 |---|---|---|
 | Cloudflare Pages | `vision-hub` project, GitHub `main`, automatic production deployment | Connected and deploying |
-| Latest production deployment | `439fdcf5`, commit `068f19e1`, deploy stage succeeded | Current baseline |
+| Latest production deployment | `030a7537`, commit `92cec0e6`, deploy stage succeeded at 2026-11-20 19:58:15 UTC (2026-11-21 01:28:15 IST) | Cloudflare Pages Production deployment is successful; this is not a browser/E2E pass |
 | Pages Function `/api/media/status` | Supabase client + service-role configured; Backblaze B2 configured; R2 and PixelDrain not configured | B2 and Supabase server variables are present; this endpoint does not prove a real object upload works |
 | Public homepage | Renders without maintenance overlay; catalogue sections show empty states | UI is present; published catalogue is empty |
 | Main homepage rails | Trending, catalogue, series, latest, top-rated, shorts and genres render | Needs lawful sample records |
 | GitHub Actions | `Validate Vision Hub` run #463 succeeded for commit `068f19e1` | Existing JS syntax and SQL-structure checks passed |
 | Real upload / playback | Not yet tested end-to-end | Must verify with a signed-in admin and a small authorised media file |
-| Supabase schema state | Not verified against the production database | The connected Supabase integration exposes project `rcpofawscmxtayrvuqzn`, but the website is configured for `bmtbsguwbbeuvmvdfdyb`. Do not run migrations against the mismatched project. |
+| Supabase schema state | Not verified against the production database | Both frontend `js/supabase-config.js` and Pages `SUPABASE_URL` point to `bmtbsguwbbeuvmvdfdyb`. The connected Supabase integration exposes only `rcpofawscmxtayrvuqzn`. User-provided SQL inventory lists only legacy public tables (`movies`, `profiles`, `requests`, `watchlist`) and no `vh_*` tables, despite an earlier publish constraint error referencing `vh_content`. Treat this as a project/schema mismatch until the SQL Editor project ref is reconciled. Do not run migrations against the mismatched connector project. |
 
 ## 2. Target architecture
 
@@ -147,6 +147,12 @@ Suggested minimum test dataset:
 6. **UI safety:** preserve the approved homepage, popup details, desktop left sidebar and mobile bottom dock. Any major redesign requires a preview and explicit approval first.
 
 **Completion definition:** every checklist item is marked PASS, FAIL (with fix), or BLOCKED (with the exact external dependency). Do not call the platform complete while a critical storage, auth, RLS, playback or mobile test remains unverified.
+
+## 10. Production schema recovery notes (21 Nov 2026)
+
+The legacy `profiles` table currently reports `id`, `full_name`, `role` and `created_at`. Current application code historically expected `fullname`. A compatibility patch now reads/writes either spelling, and the Master Setup migration backfills `fullname` from `full_name` where needed without deleting the legacy column.
+
+For a partial database that contains legacy tables but no `vh_*` tables, the setup order is documented in `README-SETUP.txt`: verify the owner Auth UUID, run Master Setup, run the platform upgrade, then the feature-upgrade bundle, followed only by missing watchlist/progress/request migrations. This order must be executed only against the confirmed Production Supabase ref. No schema migration has been executed through the currently connected Supabase integration because it exposes a different project.
 
 
 ## 9. Security activity and Admin-session hardening (20 Nov 2026)

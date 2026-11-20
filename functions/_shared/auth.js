@@ -24,17 +24,23 @@ export async function requireUser(request, env) {
 
   // The user's JWT can read their own profiles row under the existing profiles RLS policy.
   // Do not require a service-role key just to validate an authenticated staff member.
-  const profileUrl = new URL(base + "/rest/v1/profiles");
-  profileUrl.search = new URLSearchParams({
-    id: "eq." + user.id,
-    select: "id,fullname,role"
-  }).toString();
-  const profileResponse = await fetch(profileUrl, {
-    headers: { apikey: env.SUPABASE_ANON_KEY, Authorization: "Bearer " + token }
-  });
+  const readProfile = async nameField => {
+    const profileUrl = new URL(base + "/rest/v1/profiles");
+    profileUrl.search = new URLSearchParams({
+      id: "eq." + user.id,
+      select: "id," + nameField + ",role"
+    }).toString();
+    return fetch(profileUrl, {
+      headers: { apikey: env.SUPABASE_ANON_KEY, Authorization: "Bearer " + token }
+    });
+  };
+  let profileResponse = await readProfile("fullname");
+  if (!profileResponse.ok) profileResponse = await readProfile("full_name");
   if (!profileResponse.ok) throw new Error("Could not verify your Vision Hub role. Check profile read permissions.");
   const rows = await profileResponse.json();
-  return { user, profile: rows[0] || null, token };
+  const profile = rows[0] || null;
+  if (profile && !profile.fullname) profile.fullname = profile.full_name || null;
+  return { user, profile, token };
 }
 
 
