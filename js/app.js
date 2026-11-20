@@ -2,7 +2,7 @@
 (()=>{
 "use strict";
 const $=id=>document.getElementById(id), data=window.VISION_HUB_DATA||[];
-let industry="All",genre="All",movieGenre="All",movieYear="All",movieLanguage="All",movieSort="newest",seriesGenre="All",seriesYear="All",seriesLanguage="All",seriesSort="newest",heroIndex=0,current=null;
+let industry="All",genre="All",movieGenre="All",movieYear="All",movieLanguage="All",movieSort="newest",seriesGenre="All",seriesYear="All",seriesLanguage="All",seriesSort="newest",heroIndex=0,current=null,catalogCategories=[];
 const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const getList=k=>{try{return JSON.parse(localStorage.getItem(k)||"[]")}catch{return []}};
 const setList=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
@@ -54,6 +54,32 @@ async function loadPopularContent(){
   console.debug("Popular content rail unavailable:",error.message);
  }
 }
+function getCategoryNames(){
+ const fromContent=[...new Set(data.filter(item=>item.type!=="Episode"&&item.type!=="Short").map(item=>String(item.genre||"").trim()).filter(name=>name&&name!=="Uncategorised"))];
+ return catalogCategories.length?catalogCategories:fromContent.sort((a,b)=>a.localeCompare(b));
+}
+function renderCategoryButtons(hostId,selected,allLabel,onChoose){
+ const host=$(hostId);if(!host)return;
+ host.replaceChildren();
+ const names=[allLabel,...getCategoryNames()];
+ names.forEach((name,index)=>{
+  const value=index===0?"All":name;
+  const button=document.createElement("button");
+  button.type="button";button.className="filter-btn"+(selected===value?" active":"");
+  button.textContent=index===0?allLabel:name;
+  button.addEventListener("click",()=>onChoose(value));
+  host.appendChild(button);
+ });
+}
+async function loadPublicCategories(){
+ const db=window.VH_SUPABASE;if(!db)return;
+ try{
+  const {data:rows,error}=await db.from("vh_categories").select("name").eq("is_active",true).order("name");
+  if(error)throw error;
+  catalogCategories=[...new Set((rows||[]).map(row=>String(row.name||"").trim()).filter(Boolean))];
+  render();
+ }catch(error){console.debug("Public categories unavailable:",error.message);}
+}
 function render(){
 const f=data.filter(m=>(industry==="All"||m.industry===industry)&&(genre==="All"||m.genre===genre));
 grid("trendingGrid",f.filter(x=>x.type==="Movie").slice(0,6));
@@ -69,8 +95,18 @@ grid("allMoviesGrid",sortCatalog(movies,movieSort));
 const series=data.filter(x=>x.type==="Web Series"&&(seriesGenre==="All"||x.genre===seriesGenre)&&(seriesYear==="All"||String(x.year)===seriesYear)&&(seriesLanguage==="All"||String(x.language||"").toLowerCase().split(/[,/]+/).map(v=>v.trim()).includes(seriesLanguage.toLowerCase())));
 grid("allSeriesGrid",sortCatalog(series,seriesSort));
 grid("shortsGrid",data.filter(x=>x.type==="Short"));
+renderCategoryButtons("movieGenreFilters",movieGenre,"All",value=>window.filterMoviesPage(value));
+renderCategoryButtons("seriesGenreFilters",seriesGenre,"All genres",value=>window.filterSeriesGenre(value));
 const genreHost=$("popularGenreLinks");
-if(genreHost){const counts=new Map();data.filter(item=>item.type!=="Episode"&&item.type!=="Short").forEach(item=>{if(item.genre&&item.genre!=="Uncategorised")counts.set(item.genre,(counts.get(item.genre)||0)+1)});genreHost.innerHTML=[...counts].sort((a,b)=>b[1]-a[1]).slice(0,12).map(([name,count])=>'<button class="filter-btn" onclick="filterByGenre(\''+safe(name)+'\')">'+safe(name)+' · '+count+'</button>').join("")||'<p>Genres will appear as the catalog grows.</p>';}
+if(genreHost){
+ const counts=new Map();data.filter(item=>item.type!=="Episode"&&item.type!=="Short").forEach(item=>{if(item.genre&&item.genre!=="Uncategorised")counts.set(item.genre,(counts.get(item.genre)||0)+1)});
+ genreHost.replaceChildren();
+ [...counts].sort((a,b)=>b[1]-a[1]).slice(0,12).forEach(([name,count])=>{
+  const button=document.createElement("button");button.type="button";button.className="filter-btn";button.textContent=name+" · "+count;
+  button.addEventListener("click",()=>window.filterByGenre(name));genreHost.appendChild(button);
+ });
+ if(!counts.size){const empty=document.createElement("p");empty.textContent="Genres will appear as the catalog grows.";genreHost.appendChild(empty);}
+}
 renderWatchlist();hero();
 }
 window.renderVisionHub=render;
@@ -208,7 +244,9 @@ document.addEventListener("DOMContentLoaded",()=>{
   initTheme();
   render();
   loadPopularContent();
+  loadPublicCategories();
   document.addEventListener("visionhub:content-loaded",loadPopularContent);
+  document.addEventListener("visionhub:categories-updated",loadPublicCategories);
   loadCloudWatchlist();
   window.VH_SUPABASE?.auth.onAuthStateChange((_event,session)=>{if(session?.user){window.VH_USER_ID=session.user.id;window.VH_ACCOUNT_DATA?.migrateLegacy(session.user.id);loadCloudWatchlist();}else{window.VH_USER_ID=null;renderWatchlist();render();}});
   renderRequests();
