@@ -373,7 +373,6 @@ ALTER TABLE public.vh_media_assets
 
 -- ===== Content-editor ownership and private-storage isolation =====
 -- Admins and sub-admins retain full management access. Editors can manage only their own non-Short content.
-begin;
 
 create or replace function public.vh_can_manage_content_item(p_content_id bigint)
 returns boolean
