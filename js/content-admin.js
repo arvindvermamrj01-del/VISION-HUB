@@ -547,6 +547,8 @@
         iframe.src="https://drive.google.com/file/d/"+encodeURIComponent(id)+"/preview";
         iframe.classList.remove("hidden");
         $("detailPlayerStatus").textContent="Google Drive preview";
+        $("detailSpeedWrap")?.classList.add("hidden");
+        $("detailSubtitleWrap")?.classList.add("hidden");
         return;
       }
       if(!id||!iframe){window.open(asset.url,"_blank","noopener");toast("Google Drive preview could not be embedded; opening the shared file.");return;}
@@ -567,6 +569,8 @@
         $("detailPlayerEmpty").textContent="This provider does not support secure in-page playback. Use its authorised source link.";
         $("detailPlayerEmpty")?.classList.remove("hidden");
         $("detailPlayerStatus").textContent="External provider source";
+        $("detailSpeedWrap")?.classList.add("hidden");
+        $("detailSubtitleWrap")?.classList.add("hidden");
         return;
       }
       window.open(asset.url,"_blank","noopener");
@@ -576,6 +580,7 @@
     if(inline){
       if(!targetVideo)return;
       activeVideo=targetVideo;
+      $("detailSpeedWrap")?.classList.remove("hidden");
       targetVideo.classList.remove("hidden");
       $("detailPlayerIframe")?.classList.add("hidden");
       if($("detailPlayerIframe"))$("detailPlayerIframe").src="";
@@ -701,6 +706,8 @@
       $("detailSubtitleWrap")?.classList.toggle("hidden",!tracks.length);
       subtitleSelect.onchange=()=>setSubtitleMode(Number(subtitleSelect.value));
     }
+    const speedWrap=$("detailSpeedWrap");
+    if(speedWrap)speedWrap.classList.toggle("hidden",!choices.length);
     const speed=$("detailPlayerSpeed");
     if(speed){
       let saved="1";try{saved=localStorage.getItem("vh_playback_speed")||"1";}catch(_){}
