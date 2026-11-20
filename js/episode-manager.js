@@ -66,7 +66,7 @@
     event?.preventDefault();
     const form=event?.currentTarget,button=form?.querySelector('[type="submit"]'),status=$("episodePublishStatus");
     if(button)button.disabled=true;if(status)status.textContent="Publishing episode…";
-    let uploaded=null,createdId=null;
+    let uploaded=null,createdId=null,published=false;
     try{
       const user=await requireStaff();
       const seriesId=Number($("episodeSeriesId")?.value),season=Number($("episodeSeasonNumber")?.value),episode=Number($("episodeNumber")?.value);
@@ -90,7 +90,7 @@
         const url=validUrl(rawUrl);
         primaryAsset={resolution:primaryResolution,asset_url:url,storage_path:url,storage_provider:"direct",asset_type:"video",language:language||series.language||"",is_primary:true};
       }else if(extraAssets.length){
-        primaryAsset=extraAssets.shift();primaryAsset.is_primary=true;
+        primaryAsset=extraAssets.shift();primaryAsset.asset_url=primaryAsset.url;primaryAsset.is_primary=true;
       }else{
         throw new Error("Upload a primary video or provide at least one authorised quality URL.");
       }
@@ -111,6 +111,7 @@
       const assetRows=allAssets.map(asset=>({content_id:created.id,asset_type:"video",asset_url:asset.asset_url||asset.url,storage_path:asset.storage_path||asset.url,storage_provider:asset.storage_provider||"direct",resolution:asset.resolution||null,is_primary:!!asset.is_primary,language:asset.language||""}));
       const {error:assetError}=await db.from("vh_media_assets").insert(assetRows);
       if(assetError)throw assetError;
+      published=true;
       await notifyTelegramPublish(created.id);
       form?.reset();$("episodeSeasonNumber").value="1";
       if(status)status.textContent="Episode published successfully.";
@@ -118,10 +119,10 @@
       await loadEpisodeList(seriesId);
       await window.refreshVisionHubCatalog?.();
     }catch(error){
-      if(createdId)await db.from("vh_content").delete().eq("id",createdId);
-      if(uploaded?.path)await cleanupUploaded(uploaded.path,uploaded.provider);
-      if(status)status.textContent=error.message||"Episode could not be published.";
-      toast(error.message||"Episode publish failed.");
+      if(createdId&&!published)await db.from("vh_content").delete().eq("id",createdId);
+      if(uploaded?.path&&!published)await cleanupUploaded(uploaded.path,uploaded.provider);
+      if(status)status.textContent=published?"Episode was published, but the page refresh needs retry: "+(error.message||"refresh failed"):(error.message||"Episode could not be published.");
+      toast(published?"Episode published. Reload the catalog if it does not appear.":(error.message||"Episode publish failed."));
     }finally{if(button)button.disabled=false;}
   };
   window.deleteEpisode=async(id,seriesId)=>{
