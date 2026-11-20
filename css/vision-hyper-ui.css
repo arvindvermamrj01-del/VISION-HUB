@@ -598,3 +598,19 @@ body.vh-sidebar-expanded #vhAppSidebar .vh-sidebar-toggle{opacity:1}
 @media(prefers-reduced-motion:reduce){
  .nav-brand .vh-brand-vision,.nav-brand .vh-brand-hub{animation:none;background-position:50% 50%}
 }
+
+/* Mobile dock: reveal the selected icon label above its own button, never beside it. */
+@media(max-width:760px){
+ .vh-mobile-dock>.vh-mobile-nav-item span{display:none!important}
+ .vh-mobile-dock>.vh-mobile-nav-item.active::after{
+   content:attr(aria-label);
+   position:absolute;left:50%;right:auto;top:auto;bottom:calc(100% + 9px);
+   transform:translateX(-50%);
+   padding:8px 13px;border:1px solid rgba(145,177,242,.26);border-radius:12px;
+   color:#f7f9ff;background:rgba(13,22,42,.94);
+   box-shadow:0 12px 32px rgba(0,0,0,.36),0 0 18px rgba(100,113,255,.12);
+   -webkit-backdrop-filter:blur(20px) saturate(160%);backdrop-filter:blur(20px) saturate(160%);
+   font-size:.75rem;font-weight:800;letter-spacing:.01em;line-height:1.1;white-space:nowrap;
+   pointer-events:none;z-index:2
+ }
+}
