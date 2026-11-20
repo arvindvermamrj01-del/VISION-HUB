@@ -660,10 +660,16 @@
     modal.classList.add("open");
   };
 
-  window.triggerDownload=(resolution,provider)=>{
-    const asset=(activeItem?.media_assets||[]).find(item=>String(item.resolution).toLowerCase()===String(resolution).toLowerCase());
-    if(asset?.url){window.open(asset.url,"_blank","noopener");return;}
-    toast("Is resolution ka verified download link available nahi hai.");
+  window.triggerDownload=async(resolution,provider)=>{
+    const asset=(activeItem?.media_assets||[]).find(item=>String(item.resolution).toLowerCase()===String(resolution).toLowerCase()&&(!provider||item.storage_provider===provider));
+    if(!asset?.url){toast("Is resolution ka verified download link available nahi hai.");return;}
+    const popup=window.open("about:blank","_blank");if(popup)popup.opener=null;
+    try{
+      const source=String(asset.storage_path||asset.asset_url||"").split("?")[0];
+      const extension=(source.match(/\.([a-z0-9]{2,5})$/i)||[])[1]||"mp4";
+      const url=await signedAsset({...asset,content_id:activeItem.id},slug(activeItem.title)+"-"+slug(asset.resolution||"original")+"."+extension);
+      if(popup)popup.location.href=url||asset.url;else window.location.href=url||asset.url;
+    }catch(error){popup?.close();toast(error.message||"Download could not be prepared.");}
   };
   window.playMovie=()=>{if(activeItem){$("movieModal")?.classList.remove("open");$("playerTitle").textContent="▶ "+activeItem.title;$("playerOverlay")?.classList.add("open");ensurePlayerQualityControl(activeItem);}};
   window.closePlayer=()=>{
