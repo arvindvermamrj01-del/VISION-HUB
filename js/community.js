@@ -3,7 +3,7 @@
   "use strict";
   const db=window.VH_SUPABASE,$=id=>document.getElementById(id);
   const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-  let loading=false;
+  const notify=message=>typeof window.toast==="function"?window.toast(message):window.alert(message);\n  let loading=false;
   async function loadBoard(){
     const host=$("communityFeedbackList");if(!host||!db||loading)return;
     loading=true;
@@ -19,11 +19,11 @@
     if(!db)return;
     try{
       const {data:{user},error:authError}=await db.auth.getUser();
-      if(authError||!user){window.toast?.("Sign in to vote on community improvements.");window.showPage?.("login");return;}
+      if(authError||!user){notify("Sign in to vote on community improvements.");window.showPage?.("login");return;}
       const {error}=await db.rpc("vh_vote_feedback",{p_feedback_id:Number(id)});
       if(error)throw error;
       await loadBoard();
-    }catch(error){window.toast?.(error.message||"Your vote could not be saved.");}
+    }catch(error){notify(error.message||"Your vote could not be saved.");}
   };
   async function submitFeedback(event){
     event.preventDefault();
