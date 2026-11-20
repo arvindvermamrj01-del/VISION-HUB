@@ -32,6 +32,10 @@ This is the working completion ledger. “Implemented” means code/schema is pr
 | SEO / Performance | Metadata, WebSite JSON-LD, robots, sitemap, CDN preconnect and lazy poster images | Final Lighthouse/performance and crawl checks |
 | Security | Server-side provider secrets, role-checked APIs, RLS and signed private media | Final security review and authorization tests |
 
+## Main-admin login activity
+
+The web interface records successful user and staff sign-ins in `vh_login_activity`. It stores only the account UUID and timestamp. Apply `supabase/vision-hub-login-activity.sql` in Supabase SQL Editor before expecting rows to appear. Row-level security allows each signed-in user to insert only their own event and permits only the main administrator role to read events. The feature remains unavailable until that migration is applied and its policies are verified in the target Supabase project.
+
 ## Final-stage verification gate
 
 Do not mark the platform complete until the following have been run against the deployed Production site:
