@@ -46,19 +46,19 @@
   async function uploadPrivate(file,user,provider) {
     if (!file) return null;
     if (!file.type.startsWith("video/")) throw new Error("Selected file video format mein nahi hai.");
-    if (provider === "cloudflare_r2") {
+    if (provider === "cloudflare_r2" || provider === "backblaze_b2") {
       const {data:{session},error:sessionError}=await db.auth.getSession();
       if(sessionError||!session?.access_token)throw new Error("Admin session expired. Sign in again.");
       const response=await fetch("/api/media/upload-url",{
         method:"POST",
         headers:{"Authorization":"Bearer "+session.access_token,"Content-Type":"application/json"},
-        body:JSON.stringify({contentType:file.type,fileName:file.name,fileSize:file.size})
+        body:JSON.stringify({contentType:file.type,fileName:file.name,fileSize:file.size,provider})
       });
       const signed=await response.json().catch(()=>({}));
-      if(!response.ok||!signed.uploadUrl)throw new Error(signed.error||"Cloudflare R2 upload could not be prepared.");
+      if(!response.ok||!signed.uploadUrl)throw new Error(signed.error||"Cloud storage upload could not be prepared.");
       const uploadResponse=await fetch(signed.uploadUrl,{method:"PUT",headers:signed.headers||{"Content-Type":file.type},body:file});
-      if(!uploadResponse.ok)throw new Error("R2 upload failed with HTTP "+uploadResponse.status+". Check bucket CORS and credentials.");
-      return {path:signed.key,file,storage_provider:"cloudflare_r2"};
+      if(!uploadResponse.ok)throw new Error("Cloud storage upload failed with HTTP "+uploadResponse.status+". Check bucket CORS and credentials.");
+      return {path:signed.key,file,storage_provider:provider};
     }
     if(provider!=="supabase")throw new Error("Is provider ke liye direct upload connector abhi configure nahi hai. Supabase/R2 upload choose karein ya authorised direct URL dein.");
     const path = user.id + "/" + crypto.randomUUID() + "-" + slug(file.name);
@@ -71,7 +71,7 @@
     const provider = String(asset.storage_provider || "supabase").toLowerCase();
     const path = asset.storage_path || asset.video_url || "";
     if (!path) return null;
-    if (["supabase","cloudflare_r2"].includes(provider) && !/^https?:\/\//i.test(path)) {
+    if (["supabase","cloudflare_r2","backblaze_b2"].includes(provider) && !/^https?:\/\//i.test(path)) {
       try {
         const response=await fetch("/api/media/access",{
           method:"POST",headers:{"Content-Type":"application/json"},
@@ -467,7 +467,7 @@
   function playAsset(item,asset) {
     if(!asset?.url){toast("Is quality ka playable URL available nahi hai.");return;}
     const provider=String(asset.storage_provider||"supabase").toLowerCase();
-    if(provider!=="supabase" && provider!=="cloudflare_r2" && provider!=="direct"){
+    if(provider!=="supabase" && provider!=="cloudflare_r2" && provider!=="backblaze_b2" && provider!=="direct"){
       window.open(asset.url,"_blank","noopener");
       toast("Ye external provider link hai; playback provider ke page par khulega.");
       return;
