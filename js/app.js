@@ -37,13 +37,13 @@ function sortCatalog(items,sort){
  const list=[...items];
  if(sort==="rating")return list.sort((a,b)=>Number(b.rating||0)-Number(a.rating||0)||String(a.title).localeCompare(String(b.title)));
  if(sort==="title")return list.sort((a,b)=>String(a.title).localeCompare(String(b.title)));
- return list.sort((a,b)=>Number(b.year||0)-Number(a.year||0)||String(a.title).localeCompare(String(b.title)));
+ return list.sort((a,b)=>(new Date(b.created_at||0).getTime()-new Date(a.created_at||0).getTime())||Number(b.year||0)-Number(a.year||0)||String(a.title).localeCompare(String(b.title)));
 }
 function render(){
 const f=data.filter(m=>(industry==="All"||m.industry===industry)&&(genre==="All"||m.genre===genre));
 grid("trendingGrid",f.filter(x=>x.type==="Movie").slice(0,6));
 grid("seriesGrid",data.filter(x=>x.type==="Web Series"));
-grid("newGrid",[...data].filter(x=>x.type!=="Episode").sort((a,b)=>Number(b.year||0)-Number(a.year||0)).slice(0,6));
+grid("newGrid",[...data].filter(x=>x.type!=="Episode").sort((a,b)=>(new Date(b.created_at||0).getTime()-new Date(a.created_at||0).getTime())||Number(b.year||0)-Number(a.year||0)).slice(0,6));
 grid("topRatedGrid",[...data].filter(x=>x.type!=="Episode"&&x.rating!==""&&x.rating!=null).sort((a,b)=>Number(b.rating)-Number(a.rating)).slice(0,6));
 let progressItems=[];try{progressItems=data.filter(item=>Number(localStorage.getItem(progressStorageKey(item.id))||0)>5).sort((a,b)=>Number(localStorage.getItem(progressStorageKey(b.id))||0)-Number(localStorage.getItem(progressStorageKey(a.id))||0)).slice(0,6);}catch(_){}
 grid("continueWatchingGrid",progressItems);$("continueWatchingSection")?.classList.toggle("hidden",!progressItems.length);
