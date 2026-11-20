@@ -46,7 +46,20 @@
         select?.addEventListener("change", () => { select.dataset.userChosen = "1"; });
       });
       const status = $("storageSettingsStatus");
-      if (status) status.textContent = "Current default: " + provider.replace("_", " ");
+      if (status) {
+        const missingServiceRole = !capabilities?.supabase?.serviceRoleConfigured;
+        const b2Missing = provider === "backblaze_b2" && capabilities && !capabilities.backblazeB2?.configured;
+        const r2Missing = provider === "cloudflare_r2" && capabilities && !capabilities.cloudflareR2?.configured;
+        const providerWarning = b2Missing
+          ? " B2 secrets missing: add B2_KEY_ID and B2_APPLICATION_KEY in Cloudflare Pages."
+          : r2Missing
+            ? " R2 secrets missing: add the R2 account, bucket and access key secrets in Cloudflare Pages."
+            : "";
+        const signingWarning = missingServiceRole
+          ? " SUPABASE_SERVICE_ROLE_KEY is missing; private media signing, playback, deletion and secure downloads are unavailable."
+          : "";
+        status.textContent = "Current default: " + provider.replace("_", " ") + "." + providerWarning + signingWarning;
+      }
     } catch (error) {
       const status = $("storageSettingsStatus");
       if (status) status.textContent = /vh_storage_settings_default_provider_check|check constraint/i.test(error.message || "") ? "Database migration required: run supabase/vision-hub-backblaze-b2-provider-upgrade.sql in Supabase SQL Editor, then save again." : (error.message || "Storage settings could not be loaded.");
