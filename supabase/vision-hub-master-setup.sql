@@ -238,7 +238,7 @@ alter table public.vh_analytics_events enable row level security;
 drop policy if exists "vh_analytics_public_insert" on public.vh_analytics_events;
 drop policy if exists "vh_analytics_admin_read" on public.vh_analytics_events;
 create policy "vh_analytics_public_insert" on public.vh_analytics_events
-for insert to anon, authenticated with check (event_type in ('page_view','content_view','play_click','request_submit'));
+for insert to anon, authenticated with check (event_type in ('page_view','content_view','play_click','download_click','request_submit'));
 create policy "vh_analytics_admin_read" on public.vh_analytics_events
 for select to authenticated using (public.vh_is_admin());
 grant insert on public.vh_analytics_events to anon, authenticated;
