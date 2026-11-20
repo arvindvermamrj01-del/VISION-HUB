@@ -230,6 +230,36 @@
         </div>
         <div class="cinema-catalog-grid" id="homeCatalogGrid" aria-live="polite"></div>
       </section>
+
+      <!-- Additional Vision Hub discovery rails retained from the original platform. -->
+      <section class="section cinema-legacy-rail" id="continueWatchingSection">
+        <div class="cinema-section-heading"><div><h2>▶️ Continue Watching</h2><p>Pick up where you left off</p></div></div>
+        <div class="movies-grid" id="continueWatchingGrid"></div>
+      </section>
+      <section class="section cinema-legacy-rail">
+        <div class="cinema-section-heading"><div><h2>📺 Popular Web Series</h2><p>Series published to your Vision Hub library</p></div><a onclick="showPage('series')" class="see-all">See all →</a></div>
+        <div class="movies-grid" id="seriesGrid"></div>
+      </section>
+      <section class="section cinema-legacy-rail">
+        <div class="cinema-section-heading"><div><h2>⚡ Latest Releases</h2><p>Recently published titles</p></div><a onclick="showPage('movies')" class="see-all">Browse all →</a></div>
+        <div class="movies-grid" id="newGrid"></div>
+      </section>
+      <section class="section cinema-legacy-rail hidden" id="popularContentSection">
+        <div class="cinema-section-heading"><div><h2>🔥 Most Popular · Last 30 Days</h2><p>Based on real content-detail views</p></div></div>
+        <div class="movies-grid" id="popularGrid"></div>
+      </section>
+      <section class="section cinema-legacy-rail">
+        <div class="cinema-section-heading"><div><h2>⭐ Top Rated</h2><p>Highest rated published titles</p></div><a onclick="showPage('movies')" class="see-all">Explore →</a></div>
+        <div class="movies-grid" id="topRatedGrid"></div>
+      </section>
+      <section class="section cinema-legacy-rail">
+        <div class="cinema-section-heading"><div><h2>📱 Featured Shorts</h2><p>Short-form videos from Vision Hub</p></div><a onclick="showPage('shorts')" class="see-all">See all →</a></div>
+        <div class="movies-grid" id="homeShortsGrid"></div>
+      </section>
+      <section class="section cinema-legacy-rail">
+        <div class="cinema-section-heading"><div><h2>🎭 Explore Popular Genres</h2><p>Discover by category</p></div></div>
+        <div class="category-filters" id="popularGenreLinks"></div>
+      </section>
     </div>
 
     <!-- 2. ALL MOVIES PAGE -->
