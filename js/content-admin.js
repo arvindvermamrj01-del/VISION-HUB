@@ -38,7 +38,7 @@
       qualityOrder.map(q => '<label class="vh-quality-field"><span>'+q+' file</span><input type="file" accept="video/*" data-vh-quality-file="'+q+'"></label>').join("") +
       '</div><div class="vh-quality-links">' +
       [["180p","addDl180"],["240p","addDl240"],["420p","addDl420"],["480p","addDl480"],["720p","addDl720"],["1080p","addDl1080"],["2K","addDl2k"],["4K","addDl4k"],["8K","addDl8k"]].map(([q,id]) => '<label class="vh-quality-field"><span>'+q+' authorised link</span><input type="url" id="'+id+'" placeholder="Optional direct media URL"></label>').join("") +
-      '</div><label class="vh-quality-field vh-language-field"><span>Audio languages (optional)</span><input id="vhMediaLanguages" type="text" placeholder="Hindi, English, Tamil"></label><label class="vh-quality-field vh-language-field"><span>Subtitle tracks — one per line: Label|language|HTTPS .vtt URL</span><textarea id="vhSubtitleTracks" rows="3" placeholder="Hindi|hi|https://cdn.example.com/subtitles/movie-hi.vtt"></textarea></label>';
+      '</div><label class="vh-quality-field vh-language-field"><span>Source language label (for this video source)</span><input id="vhMediaLanguages" type="text" placeholder="Hindi"></label><label class="vh-quality-field vh-language-field"><span>Subtitle tracks — one per line: Label|language|HTTPS .vtt URL</span><textarea id="vhSubtitleTracks" rows="3" placeholder="Hindi|hi|https://cdn.example.com/subtitles/movie-hi.vtt"></textarea></label>';
     const submit = form.querySelector('[type="submit"]');
     form.insertBefore(block, submit || null);
   }
