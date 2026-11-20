@@ -377,7 +377,6 @@ document.addEventListener("DOMContentLoaded",()=>{
       e.preventDefault();
       toggleSearch();
     }
-    if(e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==="a"){e.preventDefault();window.openHiddenAdminLogin()}
     if(e.key==="Escape"){
       closeModal();
       closePlayer();
