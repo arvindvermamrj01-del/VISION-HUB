@@ -177,6 +177,8 @@
     if(directAudio){try{directUrl=new URL(directAudio);if(directUrl.protocol!=="https:"||directUrl.username||directUrl.password)throw new Error();}catch(_){return toast("Audio URL must be a valid HTTPS URL.");}}
     if(file&&(!file.type.startsWith("audio/")||file.size<=0||file.size>1024*1024*1024))return toast("Choose a valid audio file up to 1 GB.");
     const button=form?.querySelector('[type="submit"]');if(button)button.disabled=true;
+    const status=$("songUploadStatus"),setStatus=message=>{if(status)status.textContent=message;};
+    setStatus(file?"Preparing secure audio upload…":"Saving song link…");
     let uploaded=null,sessionToken="";
     try{
       const user=await requireAdmin();
@@ -194,11 +196,13 @@
         const signedResponse=await fetch("/api/media/upload-url",{method:"POST",headers:{"Authorization":"Bearer "+sessionToken,"Content-Type":"application/json"},body:JSON.stringify({provider:storageProvider,kind:"audio",contentType,fileName:file.name,fileSize:file.size})});
         const signed=await signedResponse.json().catch(()=>({}));
         if(!signedResponse.ok)throw new Error(signed.error||"Could not prepare secure audio upload.");
+        setStatus("Uploading audio file to "+storageProvider.replace("_"," ")+"…");
         const uploadResponse=await fetch(signed.uploadUrl,{method:"PUT",headers:signed.headers||{"Content-Type":contentType},body:file});
         if(!uploadResponse.ok)throw new Error("Audio upload to cloud storage failed.");
         uploaded={provider:storageProvider,path:signed.key};
         storagePath=signed.key;audioUrl="private://"+signed.key;
       }
+      setStatus("Saving song details…");
       const songRow={title,artist,audio_url:audioUrl,poster_url:posterUrl?.href||null,storage_provider:storageProvider,storage_path:storagePath,is_published:true,created_by:user.id};
       let {error}=await db.from("vh_songs").insert(songRow);
       if(error&&!file&&/storage_provider|storage_path|column/i.test(error.message||"")){
@@ -207,12 +211,13 @@
       }
       if(error&&file&&/storage_provider|storage_path|column/i.test(error.message||""))throw new Error("Apply supabase/vision-hub-song-storage.sql (or the feature upgrade bundle) before uploading private song audio.");
       if(error)throw error;
-      form?.reset();toast(file?"Song uploaded to private cloud storage.":"Song added.");
+      form?.reset();setStatus(file?"Song uploaded and published.":"Song added to the public music library.");toast(file?"Song uploaded to private cloud storage.":"Song added.");
       await loadSongs();await window.refreshSongLibrary?.();
     }catch(error){
       if(uploaded&&sessionToken){
         try{await fetch("/api/media/delete",{method:"POST",headers:{"Authorization":"Bearer "+sessionToken,"Content-Type":"application/json"},body:JSON.stringify({provider:uploaded.provider,storagePath:uploaded.path})});}catch(_){}
       }
+      setStatus(error.message||"Song could not be added.");
       toast(error.message||"Song could not be added.");
     }finally{if(button)button.disabled=false;}
   };
