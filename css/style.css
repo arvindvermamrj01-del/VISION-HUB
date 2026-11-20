@@ -241,3 +241,38 @@ body{background:radial-gradient(ellipse at 8% -12%,rgba(88,111,220,.15),transpar
 :root[data-vh-theme="light"] .hero-overlay{background:linear-gradient(90deg,#111827e8 5%,#111827a8 48%,transparent),linear-gradient(0deg,#111827,transparent 50%)}
 @media(max-width:760px){.theme-panel{top:76px;right:12px}.btn-theme-toggle{width:39px;height:39px}}
 @media(prefers-reduced-motion:reduce){.theme-panel.open{animation:none}*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important}}
+
+/* ===== VISION HUB COMMUNITY SUPPORT / UPI DONATIONS ===== */
+.footer-donate-btn{border:1px solid var(--vh-line);border-radius:999px;padding:9px 15px;background:linear-gradient(110deg,var(--accent),#287cae);color:#fff;font-weight:700}
+.donation-overlay{display:none;position:fixed;inset:0;z-index:150;background:rgba(2,6,15,.78);backdrop-filter:blur(16px);align-items:center;justify-content:center;padding:16px;overflow:auto}
+.donation-overlay.open{display:flex}
+.donation-panel{position:relative;width:min(620px,100%);max-height:min(92vh,900px);overflow:auto;padding:clamp(20px,4vw,32px);border:1px solid var(--vh-line);border-radius:28px;background:var(--panel);color:var(--text);box-shadow:0 28px 100px #0009}
+.donation-close{position:absolute;right:16px;top:14px;width:36px;height:36px;border:1px solid var(--vh-line);border-radius:50%;background:var(--vh-glass);color:var(--text);font-size:1.35rem}
+.donation-kicker{display:inline-flex;align-items:center;gap:8px;padding:7px 11px;border-radius:999px;background:var(--vh-glass);color:var(--accent2);font-size:.78rem;font-weight:750}
+.donation-panel h2{margin:14px 0 8px;font-size:clamp(1.6rem,4vw,2.2rem);letter-spacing:-.04em}
+.donation-intro{color:var(--muted);line-height:1.65;font-size:.9rem}
+.donation-pay-area{display:grid;justify-items:center;gap:12px;margin:20px 0;padding:20px;border:1px solid var(--vh-line);border-radius:22px;background:var(--vh-glass)}
+.donation-qr{width:190px;height:190px;object-fit:contain;border-radius:14px;background:#fff;padding:8px}
+.donation-qr-fallback{width:190px;height:190px;display:grid;place-items:center;align-content:center;gap:12px;padding:20px;border:1px dashed var(--vh-line);border-radius:16px;color:var(--muted);text-align:center}
+.donation-qr-fallback i{font-size:3rem;color:var(--accent2)}
+.donation-upi-label{margin:0;font-size:.88rem;font-weight:750;overflow-wrap:anywhere}
+.donation-pay-btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;text-align:center;text-decoration:none}
+.donation-form h3,.my-donation-history h3{margin:18px 0 12px;font-size:1rem}
+.donation-form .form-group{margin-bottom:12px}
+.donation-form input{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--vh-line);border-radius:12px}
+.donation-amounts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:8px 0 14px}
+.donation-amounts button{padding:10px 6px;border:1px solid var(--vh-line);border-radius:12px;background:var(--vh-glass);color:var(--text);font-weight:750}
+.donation-amounts button:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--panel))}
+.donation-status{min-height:40px;margin:12px 0 0;color:var(--muted);font-size:.82rem;line-height:1.55}
+.donation-status.error{color:#f59a9a}
+.my-donation-history{margin-top:18px;padding-top:16px;border-top:1px solid var(--vh-line)}
+.donation-history-row{padding:8px 0;border-bottom:1px solid var(--vh-line);font-size:.82rem;color:var(--muted)}
+.vh-donation-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--vh-line)}
+.vh-donation-row small{display:block;margin-top:5px;color:var(--muted);overflow-wrap:anywhere}
+.vh-donation-actions{display:flex;gap:7px;flex-wrap:wrap}
+.vh-donation-actions button{padding:8px 11px;border-radius:10px}
+.vh-donation-verified{padding:7px 10px;border-radius:999px;background:rgba(34,197,94,.12);color:#43cf8c;font-size:.78rem;font-weight:750}
+body.vh-modal-open{overflow:hidden}
+:root[data-vh-theme="light"] .donation-panel{background:rgba(255,255,255,.98);color:#172338}
+:root[data-vh-theme="light"] .donation-form input{background:#f8faff;color:#172338}
+@media(max-width:480px){.donation-overlay{padding:8px}.donation-panel{padding:22px 16px;border-radius:22px}.donation-qr,.donation-qr-fallback{width:160px;height:160px}.donation-amounts{gap:6px}.vh-donation-row{align-items:flex-start;flex-direction:column}}
