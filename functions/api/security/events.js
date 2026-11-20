@@ -46,7 +46,8 @@ export async function onRequestGet({ request, env }) {
     const total = await env.VH_SECURITY_DB.prepare("SELECT COUNT(*) AS total FROM vh_security_events").first();
     return json({ events: result.results || [], total: Number(total?.total || 0), offset, limit, retentionDays: 90, viewerRole: profile.role });
   } catch (error) {
-    return json({ error: error.message || "Main administrator access required." }, 403);
+    const status = error.status || (/Authentication|required/i.test(error.message || "") ? 401 : 403);
+    return json({ error: error.message || "Main administrator access required." }, status);
   }
 }
 
