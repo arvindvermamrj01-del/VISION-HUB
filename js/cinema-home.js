@@ -222,12 +222,6 @@
       window.showPage?.("watchlist");
       return;
     }
-    if (activeCategory === "series") {
-      activeCategory = "all";
-      renderAll();
-      window.showPage?.("series");
-      return;
-    }
     if (activeCategory === "bollywood" || activeCategory === "hollywood" || activeCategory === "south") {
       window.filterByIndustry?.(activeCategory === "south" ? "South" : activeCategory[0].toUpperCase() + activeCategory.slice(1));
     }
