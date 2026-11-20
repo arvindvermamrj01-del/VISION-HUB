@@ -30,6 +30,7 @@
     } catch (_) { /* Local preview is optional; Supabase is the source of truth. */ }
   };
   window.submitRequest = async event => {
+    const form=event?.currentTarget,submitter=event?.submitter;
     event?.preventDefault();
     const title = $("reqTitle")?.value.trim();
     if (!title) return notify("Please enter the movie or series title.");
@@ -47,7 +48,7 @@
       if (user) request.requester_id = user.id;
     } catch (_) { /* Guest requests remain supported. */ }
     if (!db) return notify("Request service is not connected yet. Please try again later.");
-    const button = event?.submitter || event?.currentTarget?.querySelector('[type="submit"]');
+    const button = submitter || form?.querySelector('[type="submit"]');
     if (button) button.disabled = true;
     try {
       let createdRequest=null,insertResult;
