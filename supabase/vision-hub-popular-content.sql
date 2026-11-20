@@ -15,6 +15,7 @@ as $$
     and e.content_id is not null
     and e.created_at >= now() - interval '30 days'
     and c.published = true
+    and c.content_type <> 'Episode'
   group by e.content_id
   order by count(*) desc, max(e.created_at) desc
   limit greatest(1, least(coalesce(p_limit, 10), 50));
