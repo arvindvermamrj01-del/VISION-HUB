@@ -50,6 +50,7 @@ async function loadPopularContent(){
   if(!items.length){section.classList.add("hidden");return;}
   grid("popularGrid",items);
   section.classList.remove("hidden");
+  render();
  }catch(error){
   section.classList.add("hidden");
   console.debug("Popular content rail unavailable:",error.message);
