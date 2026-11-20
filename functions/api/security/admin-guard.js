@@ -1,4 +1,4 @@
-import { json, requireUser, requireRole, clientIp, recordSecurityEvent } from "../../_shared/auth.js";
+import { json, requireUser, requireRole, clientIp, recordSecurityEvent, createAdminSessionCookie, clearAdminSessionCookie } from "../../_shared/auth.js";
 
 const STAFF_ROLES = ["admin", "sub_admin", "content_editor", "moderator"];
 const MAX_FAILURES = 5;
@@ -39,6 +39,10 @@ export async function onRequestPost({ request, env }) {
   try {
     await db.prepare("DELETE FROM vh_admin_login_attempts WHERE started_at < unixepoch()-7776000").run();
     await db.prepare("DELETE FROM vh_security_events WHERE created_at < unixepoch()-7776000").run();
+    if (action === "logout") {
+      return json({ cleared: true }, 200, { "Set-Cookie": clearAdminSessionCookie() });
+    }
+
     if (action === "check") {
       const summary = await failureSummary(db, ip);
       const attempts = Number(summary?.attempts || 0);
@@ -81,7 +85,13 @@ export async function onRequestPost({ request, env }) {
     }
 
     if (action === "success") {
-      const identity = await requireRole(request, env, STAFF_ROLES);
+      // Password was accepted by Supabase Auth in the secret panel. Re-check the live staff role before minting the HttpOnly session.
+      const identity = await requireUser(request, env);
+      if (!identity.profile || !STAFF_ROLES.includes(identity.profile.role)) {
+        await recordSecurityEvent(request, env, "admin_login_denied", identity);
+        return json({ error: "This account is not authorised for the Secure Admin panel." }, 403);
+      }
+      const cookie = await createAdminSessionCookie(identity, env);
       const updated = await db.prepare(
         "UPDATE vh_admin_login_attempts SET status='success',finished_at=unixepoch(),user_id=?,account_email=?,user_role=? " +
         "WHERE attempt_id=? AND ip_address=? AND status='pending'"
@@ -89,7 +99,7 @@ export async function onRequestPost({ request, env }) {
       if (Number(updated.meta?.changes || 0) !== 1) return json({ error: "Security sign-in check expired. Please sign in again." }, 409);
       await db.prepare("DELETE FROM vh_admin_login_attempts WHERE ip_address=? AND status IN ('failed','denied') AND started_at > unixepoch()-?").bind(ip, WINDOW_SECONDS).run();
       await recordSecurityEvent(request, env, "admin_login_success", identity);
-      return json({ recorded: true, role: identity.profile.role });
+      return json({ recorded: true, role: identity.profile.role }, 200, { "Set-Cookie": cookie });
     }
 
     if (action === "denied") {
@@ -105,8 +115,8 @@ export async function onRequestPost({ request, env }) {
     return json({ error: "Unsupported Admin security action." }, 400);
   } catch (error) {
     const message = error.message || "Admin security check failed.";
-    const status = /Authentication|required|invalid or expired/i.test(message) ? 401 :
-      /permission/i.test(message) ? 403 : 503;
+    const status = error.status || (/Authentication|required|invalid or expired/i.test(message) ? 401 :
+      /permission|authorised/i.test(message) ? 403 : 503);
     return json({ error: message }, status);
   }
 }
