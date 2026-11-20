@@ -62,6 +62,7 @@ updates, run these additive migrations once for the existing database:
 
   supabase/vision-hub-content-editor-ownership-security.sql
   supabase/vision-hub-request-submission-security.sql
+  supabase/vision-hub-public-column-access-security.sql
 
 They update Row Level Security policies and private-object access rules without
 deleting catalog records, media files or existing requests. Do not rerun the
