@@ -52,7 +52,7 @@
     try{
       const {data,error}=await db.from("vh_content").select("id,title,season_number,episode_number,duration,created_at").eq("content_type","Episode").eq("parent_series_id",seriesId).eq("published",true).order("season_number").order("episode_number");
       if(error)throw error;
-      host.innerHTML=(data||[]).length?(data||[]).map(item=>'<article class="manage-item"><div><strong>S'+String(item.season_number).padStart(2,"0")+' · E'+String(item.episode_number).padStart(2,"0")+' — '+esc(item.title)+'</strong><small>'+esc(item.duration||"Duration not set")+'</small></div><div class="manage-actions"><button type="button" class="btn-primary" onclick="playEpisode('+Number(item.id)+')">Watch</button><button type="button" class="btn-delete" onclick="deletePublishedContent('+Number(item.id)+')">Delete</button></div></article>').join(""):"<p>No episodes have been published for this series yet.</p>";
+      host.innerHTML=(data||[]).length?(data||[]).map(item=>'<article class="manage-item"><div><strong>S'+String(item.season_number).padStart(2,"0")+' · E'+String(item.episode_number).padStart(2,"0")+' — '+esc(item.title)+'</strong><small>'+esc(item.duration||"Duration not set")+'</small></div><div class="manage-actions"><button type="button" class="btn-primary" onclick="playEpisode('+Number(item.id)+')">Watch</button><button type="button" class="btn-delete" onclick="deleteEpisode('+Number(item.id)+','+Number(seriesId)+')">Delete</button></div></article>').join(""):"<p>No episodes have been published for this series yet.</p>";
     }catch(error){host.textContent=error.message||"Episode list could not be loaded.";}
   }
   window.publishEpisode=async event=>{
@@ -97,14 +97,17 @@
       if(status)status.textContent="Episode published successfully.";
       toast("Episode published successfully.");
       await loadEpisodeList(seriesId);
-      document.dispatchEvent(new CustomEvent("visionhub:content-loaded"));
-      window.renderVisionHub?.();
+      await window.refreshVisionHubCatalog?.();
     }catch(error){
       if(createdId)await db.from("vh_content").delete().eq("id",createdId);
       if(uploaded?.path)await cleanupUploaded(uploaded.path,uploaded.provider);
       if(status)status.textContent=error.message||"Episode could not be published.";
       toast(error.message||"Episode publish failed.");
     }finally{if(button)button.disabled=false;}
+  };
+  window.deleteEpisode=async(id,seriesId)=>{
+    if(typeof window.deletePublishedContent==="function")await window.deletePublishedContent(id);
+    await loadEpisodeList(seriesId);
   };
   window.playEpisode=id=>{
     window.openMovie?.(id);
