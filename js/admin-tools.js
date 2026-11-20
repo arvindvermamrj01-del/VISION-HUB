@@ -184,7 +184,10 @@
         site_name:$("settingSiteName")?.value.trim()||"Vision Hub",
         telegram_url:$("settingTelegram")?.value.trim()||"",
         seo_description:$("settingSeo")?.value.trim()||"",
-        maintenance_mode:$("settingMaintenance")?.value||"off"
+        maintenance_mode:$("settingMaintenance")?.value||"off",
+        donation_upi_id:$("settingDonationUpi")?.value.trim()||"",
+        donation_display_name:$("settingDonationName")?.value.trim()||"Vision Hub",
+        donation_qr_url:$("settingDonationQr")?.value.trim()||""
       };
       const rows=Object.entries(settings).map(([setting_key,setting_value])=>({setting_key,setting_value,updated_by:user.id,updated_at:new Date().toISOString()}));
       const {error}=await db.from("vh_site_settings").upsert(rows,{onConflict:"setting_key"});if(error)throw error;
@@ -199,8 +202,40 @@
       if($("settingTelegram")&&map.telegram_url)$("settingTelegram").value=map.telegram_url;
       if($("settingSeo")&&map.seo_description)$("settingSeo").value=map.seo_description;
       if($("settingMaintenance")&&map.maintenance_mode)$("settingMaintenance").value=map.maintenance_mode;
+      if($("settingDonationUpi"))$("settingDonationUpi").value=map.donation_upi_id||"";
+      if($("settingDonationName"))$("settingDonationName").value=map.donation_display_name||"Vision Hub";
+      if($("settingDonationQr"))$("settingDonationQr").value=map.donation_qr_url||"";
     }catch(e){console.warn("Site settings not loaded:",e.message);}
   }
+
+  async function loadDonations(){
+    const host=$("adminDonationsList");if(!host)return;
+    try{
+      await requireAdmin();
+      const {data,error}=await db.from("vh_donations").select("id,donor_name,amount,currency,payment_reference,status,created_at").order("created_at",{ascending:false}).limit(100);
+      if(error)throw error;
+      host.innerHTML=(data||[]).length?(data||[]).map(item=>
+        '<article class="vh-donation-row"><div><strong>'+esc(item.donor_name)+'</strong><small>₹'+Number(item.amount).toLocaleString("en-IN")+' · '+esc(item.payment_reference)+'</small><small>'+esc(new Date(item.created_at).toLocaleString())+' · '+esc(item.status)+'</small></div><div class="vh-donation-actions">'+
+        (item.status!=="verified"?'<button type="button" class="btn-primary" onclick="reviewDonation('+Number(item.id)+',\'verified\')">Verify</button>':'<span class="vh-donation-verified">Verified</span>')+
+        (item.status!=="rejected"?'<button type="button" class="btn-delete" onclick="reviewDonation('+Number(item.id)+',\'rejected\')">Reject</button>':'')+
+        '</div></article>'
+      ).join(""):"<p>No donation confirmations submitted yet.</p>";
+    }catch(error){host.textContent=error.message||"Donation records could not be loaded. Run the donation SQL migration first.";}
+  }
+  window.reviewDonation=async(id,status)=>{
+    if(!["verified","rejected"].includes(status))return;
+    if(status==="verified"&&!window.confirm("Have you checked this UPI reference against your bank/payment statement?"))return;
+    try{
+      const user=await requireAdmin();
+      const {error}=await db.from("vh_donations").update({
+        status,verified_at:status==="verified"?new Date().toISOString():null,
+        verified_by:status==="verified"?user.id:null
+      }).eq("id",id);
+      if(error)throw error;
+      toast(status==="verified"?"Donation marked as verified.":"Donation marked as rejected.");
+      await loadDonations();
+    }catch(error){toast(error.message||"Donation status could not be updated.");}
+  };
 
   window.updateAdminCredentials=async event=>{
     event?.preventDefault();const current=$("changeCurrPass")?.value||"",next=$("changeNewPass")?.value||"",confirm=$("changeConfirmPass")?.value||"";
@@ -262,7 +297,7 @@
   window.importFromDrive=()=>{const log=$("driveImportLog");if(log)log.textContent="Google Drive import is not connected yet. It still needs a Google OAuth client, Cloudflare server secret and provider consent flow.";toast("Drive import needs Google OAuth configuration.");};
 
   document.addEventListener("DOMContentLoaded",()=>{
-    const watchers=[["tab-users-admin",loadUsers],["tab-team-admin",loadSubAdmins],["tab-dashboard",loadDashboard],["tab-reports",loadReports],["tab-categories",loadCategories],["tab-songs",loadSongs],["tab-settings",loadWebsiteSettings]];
+    const watchers=[["tab-users-admin",loadUsers],["tab-team-admin",loadSubAdmins],["tab-dashboard",loadDashboard],["tab-reports",loadReports],["tab-categories",loadCategories],["tab-songs",loadSongs],["tab-settings",()=>{loadWebsiteSettings();loadDonations();}]];
     watchers.forEach(([id,fn])=>{const el=$(id);if(el)new MutationObserver(()=>{if(el.classList.contains("active"))fn();}).observe(el,{attributes:true,attributeFilter:["class"]});});
     db?.auth.onAuthStateChange((_event,session)=>{if(session?.user){loadDashboard();if($("tab-users-admin")?.classList.contains("active"))loadUsers();}});
     if(window.VH_IS_ADMIN)loadDashboard();
