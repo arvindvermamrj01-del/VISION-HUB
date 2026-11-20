@@ -79,8 +79,15 @@ const pageTitles={home:"Vision Hub | Movies, Web Series & Shorts",movies:"All Mo
 if(name==="watchlist")renderWatchlist();
 };
 window.openHiddenAdminLogin=()=>window.showPage("admin-login");
-window.addEventListener("hashchange",()=>{if(location.hash==="#control-center")window.openHiddenAdminLogin()});
-if(location.hash==="#control-center"||location.pathname.replace(/\/+$/,"")==="/control-center")window.openHiddenAdminLogin();
+const publicPageHashes=new Set(["home","movies","series","shorts","watchlist","request","profile","login","register","reset-password","admin-login","admin"]);
+window.addEventListener("hashchange",()=>{
+  const target=location.hash.replace(/^#/,"");
+  if(target==="control-center")window.openHiddenAdminLogin();
+  else if(publicPageHashes.has(target))window.showPage(target);
+});
+const initialHash=location.hash.replace(/^#/,"");
+if(initialHash==="control-center"||location.pathname.replace(/\/+$/,"")==="/control-center")window.openHiddenAdminLogin();
+else if(publicPageHashes.has(initialHash))window.showPage(initialHash);
 window.filterByIndustry=(v,el)=>{industry=v;el?.parentElement?.querySelectorAll(".filter-btn").forEach(b=>b.classList.toggle("active",b===el));render()};
 window.filterByGenre=(v,el)=>{genre=v;el?.parentElement?.querySelectorAll(".filter-btn").forEach(b=>b.classList.toggle("active",b===el));render()};
 window.filterMoviesPage=(v,el)=>{movieGenre=v;el?.parentElement?.querySelectorAll(".filter-btn").forEach(b=>b.classList.toggle("active",b===el));render()};
