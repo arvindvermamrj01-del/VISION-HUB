@@ -460,7 +460,12 @@
     if(!wrap){wrap=document.createElement("label");wrap.id="vhPlayerQualityWrap";wrap.className="vh-player-quality";wrap.innerHTML='<span>Video quality</span><select id="vhPlayerQuality" aria-label="Video quality"></select><small id="vhQualityHint"></small>';controls.prepend(wrap);}
     const select=$("vhPlayerQuality");
     const assets=(item.media_assets||[]).filter(asset=>asset.url&&(!asset.asset_type||asset.asset_type==="video"));
-    const choices=assets.length?assets:[{resolution:"Original",url:item.video_url,is_primary:true,asset_type:"video"}].filter(x=>x.url);
+    const choices=assets.length?assets.slice():[{resolution:"Original",url:item.video_url,is_primary:true,asset_type:"video"}].filter(x=>x.url);
+    choices.sort((a,b)=>{
+      const ai=qualityOrder.indexOf(String(a.resolution||"").toLowerCase());
+      const bi=qualityOrder.indexOf(String(b.resolution||"").toLowerCase());
+      return (bi<0?-1:bi)-(ai<0?-1:ai);
+    });
     select.innerHTML=choices.length?choices.map((asset,index)=>'<option value="'+index+'">'+esc(resolutionLabel(asset.resolution))+(asset.language?" · "+esc(asset.language):"")+'</option>').join(""):'<option value="">No playable rendition</option>';
     select.disabled=!choices.length;
     const hint=$("vhQualityHint");
@@ -783,6 +788,7 @@
     const screenshotHost=$("dlScreenshotSlider"),dots=$("dlSliderDots"),screens=Array.isArray(activeItem.screenshots)?activeItem.screenshots:[];
     if(screenshotHost)screenshotHost.innerHTML=screens.length?screens.map((url,index)=>'<img loading="lazy" src="'+esc(url)+'" alt="'+esc(activeItem.title)+' preview '+(index+1)+'">').join(""):"";
     if(dots)dots.textContent=screens.length?screens.length+" preview image(s)":"";
+    document.querySelector("#downloadModal .screenshot-slider-wrap")?.classList.toggle("hidden",!screens.length);
     host.innerHTML=choices.length?choices.map((asset,index)=>'<div class="res-card"><div class="res-info"><span class="res-tag">'+esc(resolutionLabel(asset.resolution)) +'</span><div class="res-meta"><span>'+esc(asset.language||"Language not specified")+'</span><small>Verified source link · actual supplied quality</small></div></div><div class="res-actions"><button class="btn-dl-server" type="button" data-vh-download-index="'+index+'"><i class="fas fa-download"></i> Download file</button></div></div>').join(""):"<p>No verified video resolution links have been added for this title.</p>";
     host.querySelectorAll("[data-vh-download-index]").forEach(button=>button.addEventListener("click",async()=>{
       const asset=choices[Number(button.dataset.vhDownloadIndex)];if(!asset)return;
