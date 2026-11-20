@@ -284,7 +284,15 @@
     if(id==null||!window.confirm("Delete this published item permanently?"))return;
     try{
       await requireAdmin();
-      const {data:assets,error:assetsError}=await db.from("vh_media_assets").select("storage_path,storage_provider").eq("content_id",id);
+      const {data:target,error:targetError}=await db.from("vh_content").select("id,content_type").eq("id",id).maybeSingle();
+      if(targetError)throw targetError;if(!target)throw new Error("Content record not found.");
+      const contentIds=[id];
+      if(target.content_type==="Web Series"){
+        const {data:episodes,error:episodesError}=await db.from("vh_content").select("id").eq("parent_series_id",id).eq("content_type","Episode");
+        if(episodesError)throw episodesError;
+        (episodes||[]).forEach(episode=>contentIds.push(episode.id));
+      }
+      const {data:assets,error:assetsError}=await db.from("vh_media_assets").select("content_id,storage_path,storage_provider").in("content_id",contentIds);
       if(assetsError)throw assetsError;
       const {data:{session}}=await db.auth.getSession();
       for(const asset of assets||[]){
@@ -294,14 +302,14 @@
         const response=await fetch("/api/media/delete",{
           method:"POST",
           headers:{"Authorization":"Bearer "+(session?.access_token||""),"Content-Type":"application/json"},
-          body:JSON.stringify({contentId:String(id),storagePath:path,provider})
+          body:JSON.stringify({contentId:String(asset.content_id),storagePath:path,provider})
         });
         const result=await response.json().catch(()=>({}));
         if(!response.ok)throw new Error(result.error||"Media file could not be removed. Content was kept.");
       }
       const {error}=await db.from("vh_content").delete().eq("id",id);
       if(error)throw error;
-      const catalog=window.VISION_HUB_DATA||[];for(let i=catalog.length-1;i>=0;i--){if(catalog[i].isSupabaseContent&&String(catalog[i].id)===String(id))catalog.splice(i,1);}
+      const catalog=window.VISION_HUB_DATA||[],deletedIds=new Set(contentIds.map(String));for(let i=catalog.length-1;i>=0;i--){if(catalog[i].isSupabaseContent&&deletedIds.has(String(catalog[i].id)))catalog.splice(i,1);}
       window.renderVisionHub?.();renderManageList($("manageSearch")?.value||"");toast("Content deleted.");
     }catch(error){console.error("Content delete failed:",error);toast(error.message||"Could not delete content.");}
   };
