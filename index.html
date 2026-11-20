@@ -989,7 +989,7 @@
               <div class="report-card vh-adsense-report">
                 <h4>💰 AdSense Revenue (Live API)</h4>
                 <p>Real earnings from Google AdSense. No estimated or invented values are shown.</p>
-                <button type="button" class="btn-primary" onclick="loadAdSenseRevenue()">Refresh last 7 days</button>
+                <div class="adsense-report-controls"><select id="adsenseRange" aria-label="AdSense report period"><option value="LAST_7_DAYS">Last 7 days</option><option value="LAST_30_DAYS">Last 30 days</option><option value="THIS_MONTH">This month</option><option value="LAST_MONTH">Last month</option></select><button type="button" class="btn-primary" onclick="loadAdSenseRevenue()">Refresh report</button></div>
                 <div id="adsenseRevenueList" role="status">For earnings reports, set ADSENSE_CLIENT_ID, ADSENSE_CLIENT_SECRET, ADSENSE_REFRESH_TOKEN and ADSENSE_ACCOUNT_ID (accounts/pub-...) in Cloudflare Pages. Enable the AdSense Management API in Google Cloud.</div>
               </div>
             </div>
