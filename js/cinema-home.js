@@ -28,9 +28,8 @@
     return [...new Set(values)];
   };
   const audioLanguages = item => {
-    const values = videoAssets(item).map(asset => safeText(asset.language)).filter(Boolean);
-    const combined = values.length ? values : [safeText(item.language)];
-    return [...new Set(combined.flatMap(value => value.split(/[,/|+]+/).map(part => part.trim()).filter(Boolean)))];
+    const values = [safeText(item.language), ...videoAssets(item).map(asset => safeText(asset.language))].filter(Boolean);
+    return [...new Set(values.flatMap(value => value.split(/[,/|+]+/).map(part => part.trim()).filter(Boolean)))];
   };
   const genres = item => safeText(item.genre).split(/[,/|]+/).map(value => value.trim()).filter(Boolean);
   const hasDualAudio = item => /dual/i.test(safeText(item.language)) || audioLanguages(item).length > 1;
@@ -218,10 +217,14 @@
   function setCategory(category) {
     activeCategory = category || "all";
     if (activeCategory === "watchlist") {
+      activeCategory = "all";
+      renderAll();
       window.showPage?.("watchlist");
       return;
     }
     if (activeCategory === "series") {
+      activeCategory = "all";
+      renderAll();
       window.showPage?.("series");
       return;
     }
