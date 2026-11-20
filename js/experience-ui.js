@@ -31,7 +31,7 @@
   function sync(name){
     const page=String(name||"home").replace(/^page-/,"");
     document.querySelectorAll("#vhAppSidebar [data-vh-nav]").forEach(button=>{
-      const active=button.dataset.vhNav===page;
+      const active=button.dataset.vhNav===page && button.dataset.vhLabel!=="Shows";
       button.classList.toggle("active",active);button.setAttribute("aria-current",active?"page":"false");
     });
     document.querySelectorAll(".vh-mobile-dock [data-vh-page]").forEach(button=>{
