@@ -27,7 +27,11 @@ Keep the existing Cloudflare Pages production variables:
 
 The new migration allows B2 in the database constraints. After the migration, the Storage Manager can save B2 as the default. Existing Supabase and R2 support remains.
 
-## 3. Telegram bot
+## 3. Google Drive Import
+
+For link-based imports, enable the Google Drive API in Google Cloud and add `GOOGLE_DRIVE_API_KEY` as a Cloudflare Pages secret. Restrict the key to the Drive API. The selected file must be shared as **Anyone with the link · Viewer**. The connector verifies the public video metadata and adds a catalog record; it does not copy the original file into B2. Private files and folders are not supported by this link-based import.
+
+## 4. Telegram bot
 
 Create a bot with BotFather, then add these as Cloudflare Pages production secrets:
 - `TELEGRAM_BOT_TOKEN`
@@ -40,7 +44,7 @@ Deploy the site, sign in as the main admin, open Admin → Platform Settings and
 
 Commands: `/start`, `/help`, `/latest`, `/request`, `/channel`; `/status` is admin-chat only. Authenticated user requests can notify the admin chat. Published titles and episodes can be announced to the configured channel.
 
-## 4. Donations
+## 5. Donations
 
 In Admin → Platform Settings configure:
 - Public UPI ID / VPA
@@ -49,7 +53,7 @@ In Admin → Platform Settings configure:
 
 The public Support Vision Hub panel creates a UPI payment intent and lets a donor submit the UTR/reference. Every submission remains **pending** until an admin checks the bank/payment statement and verifies it. This is not automatic bank verification or a payment gateway.
 
-## 5. AdSense
+## 6. AdSense
 
 Enable ads only after Google approves the site and its content/policies:
 - Publisher ID: `ca-pub-...`
@@ -64,7 +68,7 @@ For live earnings over 7 days, 30 days, this month or last month in Admin → An
 
 The report panel reads actual AdSense API results; it does not invent revenue or track ad clicks.
 
-## 6. Seasons and episodes
+## 7. Seasons and episodes
 
 After the SQL migration and deployment:
 1. Open Admin → Seasons & Episodes.
@@ -75,6 +79,6 @@ After the SQL migration and deployment:
 
 Episodes reuse the existing private-media access, quality player, watch-progress and deletion pipeline.
 
-## 7. Community
+## 8. Community
 
 Users sign in to submit a suggestion, bug report or complaint. Admin reviews it in Admin → Community Feedback. Only planned, in-progress and completed items appear on the public roadmap; authenticated users can vote once per item.
