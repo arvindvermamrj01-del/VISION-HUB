@@ -220,7 +220,61 @@ async function loadCloudWatchlist(){
   }catch(error){console.warn("Cloud watchlist load unavailable:",error.message);renderWatchlist();}
 }
 function renderWatchlist(){const ids=getWatchlist().map(String),a=data.filter(x=>ids.includes(String(x.id)));grid("watchlistGrid",a);grid("profileWatchlistGrid",a);$("watchlistEmpty")?.classList.toggle("hidden",a.length>0);if($("statWatchlist"))$("statWatchlist").textContent=a.length}
-window.openMovie=id=>{const m=data.find(x=>String(x.id)===String(id));if(!m)return;current=m;const activeHash=location.hash||"#home";if(!activeHash.startsWith("#movie-"))lastBrowseHash=activeHash;const movieHash="#movie-"+encodeURIComponent(String(m.id));if(location.hash!==movieHash)history.replaceState(null,"",location.pathname+location.search+movieHash);document.title=m.title+" ("+(m.year||"")+") | Vision Hub";const description=document.querySelector('meta[name="description"]');if(description)description.content=String(m.description||("Discover "+m.title+" on Vision Hub.")).slice(0,300);const ogTitle=document.querySelector('meta[property="og:title"]');if(ogTitle)ogTitle.content=m.title+" | Vision Hub";const ogDescription=document.querySelector('meta[property="og:description"]');if(ogDescription)ogDescription.content=String(m.description||("Discover "+m.title+" on Vision Hub.")).slice(0,300);if($("modalTitle"))$("modalTitle").textContent=m.title;if($("modalDesc"))$("modalDesc").textContent=m.description;if($("modalMeta"))$("modalMeta").textContent=[m.year,m.genre,m.language,m.rating!==""&&m.rating!=null?"★ "+m.rating:""].filter(Boolean).join(" · ");if($("modalPoster")){ $("modalPoster").style.display=m.poster?"":"none"; if(m.poster)$("modalPoster").src=m.poster; else $("modalPoster").removeAttribute("src"); }if($("modalCast"))$("modalCast").textContent=m.cast?"Cast: "+m.cast:"";if($("modalDirector"))$("modalDirector").textContent=m.director?"Director: "+m.director:"";const shots=$("modalScreenshots");if(shots){const list=Array.isArray(m.screenshots)?m.screenshots:String(m.screenshots||"").split(",").map(x=>x.trim()).filter(Boolean);shots.innerHTML=list.length?'<h3>Preview Screenshots</h3><div class="vh-screenshot-grid">'+list.map((url,i)=>'<a href="'+safe(url)+'" target="_blank" rel="noopener"><img loading="lazy" src="'+safe(url)+'" alt="'+safe(m.title)+' screenshot '+(i+1)+'"></a>').join("")+'</div>':"";}const trailer=$("trailerEmbed");if(trailer){const raw=String(m.trailer||"");let videoId="";try{const u=new URL(raw);if(u.hostname.includes("youtu.be"))videoId=u.pathname.slice(1);else if(u.hostname.includes("youtube.com"))videoId=u.searchParams.get("v")||u.pathname.split("/").filter(Boolean).pop()||"";}catch(_){}trailer.innerHTML=videoId?'<iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/'+safe(videoId)+'" title="Official trailer" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>':""; $("trailerSection")?.classList.toggle("hidden",!videoId);} $("movieModal")?.classList.add("open");$("movieModal")?.classList.remove("vh-lights-out");document.body.classList.add("vh-movie-detail-open");if($("movieModal"))$("movieModal").scrollTop=0;const lightsButton=$("movieLightsToggle");if(lightsButton){lightsButton.setAttribute("aria-pressed","false");lightsButton.innerHTML='<i class="fas fa-lightbulb"></i><span>Lights Out</span>';}if($("modalPlayBtn"))$("modalPlayBtn").onclick=()=>m.trailer?window.open(m.trailer,"_blank","noopener"):toast("Official trailer not available");if($("modalWatchBtn"))$("modalWatchBtn").onclick=()=>toggleItem(id)};
+function renderMovieDetailLayout(m){
+ const clean=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+ const sourceAssets=Array.isArray(m.media_assets)?m.media_assets.filter(asset=>asset&&asset.url&&(!asset.asset_type||asset.asset_type==="video")):[];
+ const choices=sourceAssets.length?sourceAssets.slice():m.video_url?[{resolution:"Original",language:m.language||"",url:m.video_url}]:[];
+ const rank=["180p","240p","360p","420p","480p","720p","1080p","2k","4k","8k"];
+ const label=value=>String(value||"Original").replace(/^2k$/i,"2K").replace(/^4k$/i,"4K").replace(/^8k$/i,"8K");
+ choices.sort((a,b)=>{const ai=rank.indexOf(String(a.resolution||"").toLowerCase()),bi=rank.indexOf(String(b.resolution||"").toLowerCase());return (bi<0?-1:bi)-(ai<0?-1:ai);});
+ const uniqueQualities=[...new Set(choices.map(asset=>label(asset.resolution)))];
+ const badgeHost=$("cinemaMovieBadges");
+ if(badgeHost){
+  const badges=[];
+  if(m.rating!==""&&m.rating!=null&&Number.isFinite(Number(m.rating)))badges.push("★ "+Number(m.rating).toFixed(1)+" IMDb");
+  uniqueQualities.slice(0,4).forEach(value=>badges.push(value));
+  if(m.language)badges.push(String(m.language));
+  if(m.genre)String(m.genre).split(/[,/|]+/).map(x=>x.trim()).filter(Boolean).slice(0,2).forEach(value=>badges.push(value));
+  badgeHost.innerHTML=badges.map((value,index)=>'<span class="cinema-badge '+(index===0?"rating":"quality")+'">'+clean(value)+'</span>').join("");
+ }
+ const backdrop=$("vhDetailBackdrop");
+ if(backdrop){
+  backdrop.style.backgroundImage="";
+  const raw=String(m.backdrop||m.poster||"").trim();
+  try{const url=new URL(raw,window.location.href);if(["https:","http:"].includes(url.protocol))backdrop.style.backgroundImage='url("'+url.href+'")';}catch(_){}
+ }
+ const quick=$("vhDetailQuickOptions"),allButton=$("vhDetailAllDownloads");
+ if(quick){
+  quick.innerHTML=choices.length?choices.slice(0,6).map(asset=>'<div class="vh-detail-quality-row"><div><strong>'+clean(label(asset.resolution))+'</strong><small>'+clean(asset.language||"Language not specified")+'</small></div><span class="vh-detail-source-ok"><i class="fas fa-check-circle"></i> Available</span></div>').join(""):'<div class="vh-detail-no-source"><i class="fas fa-info-circle"></i><span>No verified video quality has been published for this title yet.</span></div>';
+ }
+ if(allButton){allButton.disabled=!choices.length;allButton.classList.toggle("is-disabled",!choices.length);}
+ const info=$("vhDetailMovieInfo");
+ if(info){
+  const genres=String(m.genre||"").split(/[,/|]+/).map(x=>x.trim()).filter(Boolean).join(", ");
+  const rows=[
+   ["Quality",uniqueQualities.join(", ")||"Not published"],
+   ["Language",m.language||"Not specified"],
+   ["Genre",genres||"Not specified"],
+   ["Duration",m.duration||"Not specified"],
+   ["Year",m.year||"Not specified"],
+   ["IMDb",m.rating!==""&&m.rating!=null?Number(m.rating).toFixed(1)+" ★":"Not rated"]
+  ];
+  info.innerHTML=rows.map(([key,value])=>'<div class="vh-detail-info-row"><dt>'+clean(key)+'</dt><dd>'+clean(value)+'</dd></div>').join("");
+ }
+ const relatedHost=$("vhRelatedMoviesGrid");
+ if(relatedHost){
+  const currentGenres=String(m.genre||"").toLowerCase().split(/[,/|]+/).map(x=>x.trim()).filter(Boolean);
+  const candidates=data.filter(item=>item&&String(item.id)!==String(m.id)&&item.type!=="Short"&&item.type!=="Episode");
+  candidates.sort((a,b)=>{
+   const score=item=>String(item.genre||"").toLowerCase().split(/[,/|]+/).some(value=>currentGenres.includes(value.trim()))?1:0;
+   return score(b)-score(a)||Number(b.rating||0)-Number(a.rating||0);
+  });
+  const related=candidates.slice(0,4);
+  relatedHost.innerHTML=related.length?related.map(item=>'<button type="button" class="vh-detail-related-card" data-vh-related-id="'+clean(item.id)+'"><span class="vh-detail-related-poster">'+(item.poster?'<img loading="lazy" src="'+clean(item.poster)+'" alt="'+clean(item.title)+' poster">':'<i class="fas fa-film"></i>')+'</span><span class="vh-detail-related-copy"><strong>'+clean(item.title||"Untitled")+'</strong><small>'+clean([item.genre,item.year].filter(Boolean).join(" · ")||"Vision Hub title")+'</small></span><span class="vh-detail-related-rating">'+(item.rating!==""&&item.rating!=null?"★ "+clean(Number(item.rating).toFixed(1)):"")+'</span></button>').join(""):'<p class="vh-detail-empty-related">More related titles will appear after additional movies are published.</p>';
+  relatedHost.querySelectorAll("[data-vh-related-id]").forEach(button=>button.addEventListener("click",()=>window.openMovie?.(button.dataset.vhRelatedId)));
+ }
+}
+window.openMovie=id=>{const m=data.find(x=>String(x.id)===String(id));if(!m)return;current=m;const activeHash=location.hash||"#home";if(!activeHash.startsWith("#movie-"))lastBrowseHash=activeHash;const movieHash="#movie-"+encodeURIComponent(String(m.id));if(location.hash!==movieHash)history.replaceState(null,"",location.pathname+location.search+movieHash);document.title=m.title+" ("+(m.year||"")+") | Vision Hub";const description=document.querySelector('meta[name="description"]');if(description)description.content=String(m.description||("Discover "+m.title+" on Vision Hub.")).slice(0,300);const ogTitle=document.querySelector('meta[property="og:title"]');if(ogTitle)ogTitle.content=m.title+" | Vision Hub";const ogDescription=document.querySelector('meta[property="og:description"]');if(ogDescription)ogDescription.content=String(m.description||("Discover "+m.title+" on Vision Hub.")).slice(0,300);if($("modalTitle"))$("modalTitle").textContent=m.title;if($("modalDesc"))$("modalDesc").textContent=m.description;if($("modalMeta"))$("modalMeta").textContent=[m.year,m.genre,m.language,m.rating!==""&&m.rating!=null?"★ "+m.rating:""].filter(Boolean).join(" · ");if($("modalPoster")){ $("modalPoster").style.display=m.poster?"":"none"; if(m.poster)$("modalPoster").src=m.poster; else $("modalPoster").removeAttribute("src"); }if($("modalCast"))$("modalCast").textContent=m.cast?"Cast: "+m.cast:"";if($("modalDirector"))$("modalDirector").textContent=m.director?"Director: "+m.director:"";const shots=$("modalScreenshots");if(shots){const list=Array.isArray(m.screenshots)?m.screenshots:String(m.screenshots||"").split(",").map(x=>x.trim()).filter(Boolean);shots.innerHTML=list.length?'<h3>Preview Screenshots</h3><div class="vh-screenshot-grid">'+list.map((url,i)=>'<a href="'+safe(url)+'" target="_blank" rel="noopener"><img loading="lazy" src="'+safe(url)+'" alt="'+safe(m.title)+' screenshot '+(i+1)+'"></a>').join("")+'</div>':"";}const trailer=$("trailerEmbed");if(trailer){const raw=String(m.trailer||"");let videoId="";try{const u=new URL(raw);if(u.hostname.includes("youtu.be"))videoId=u.pathname.slice(1);else if(u.hostname.includes("youtube.com"))videoId=u.searchParams.get("v")||u.pathname.split("/").filter(Boolean).pop()||"";}catch(_){}trailer.innerHTML=videoId?'<iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/'+safe(videoId)+'" title="Official trailer" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>':""; $("trailerSection")?.classList.toggle("hidden",!videoId);} renderMovieDetailLayout(m);$("movieModal")?.classList.add("open");$("movieModal")?.classList.remove("vh-lights-out");document.body.classList.add("vh-movie-detail-open");if($("movieModal"))$("movieModal").scrollTop=0;const lightsButton=$("movieLightsToggle");if(lightsButton){lightsButton.setAttribute("aria-pressed","false");lightsButton.innerHTML='<i class="fas fa-lightbulb"></i><span>Lights Out</span>';}if($("modalPlayBtn"))$("modalPlayBtn").onclick=()=>m.trailer?window.open(m.trailer,"_blank","noopener"):toast("Official trailer not available");if($("modalWatchBtn"))$("modalWatchBtn").onclick=()=>toggleItem(id)};
 function movieShareUrl(){return window.location.origin+window.location.pathname+window.location.search+"#movie-"+encodeURIComponent(String(current?.id??""));}
 async function shareCurrentMovie(){
  if(!current)return;
@@ -330,3 +384,5 @@ document.addEventListener("DOMContentLoaded",()=>{
   });
 });
 })();
+
+window.navigateMovieDetail=page=>{window.closeModalBtn?.();window.showPage?.(page||"home");};
