@@ -38,7 +38,7 @@
       const node=document.createElement("script");
       node.async=true;node.crossOrigin="anonymous";node.dataset.vhAdsense="1";node.dataset.client=publisher;
       node.src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client="+encodeURIComponent(publisher);
-      node.onerror=()=>{clear($("vhAdHomeTop"));clear($("vhAdFooter"));console.warn("AdSense script could not load.");};
+      node.onerror=()=>{scriptClient="";clear($("vhAdHomeTop"));clear($("vhAdFooter"));console.warn("AdSense script could not load.");};
       document.head.appendChild(node);scriptClient=publisher;
     }
     renderPlacement("vhAdHomeTop",settings.adsense_slot_home,publisher);
