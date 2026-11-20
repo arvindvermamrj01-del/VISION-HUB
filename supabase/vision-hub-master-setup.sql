@@ -160,7 +160,7 @@ for delete to authenticated using (public.vh_is_admin());
 -- Default storage selection only. Provider selection does NOT create OAuth/API integration.
 create table if not exists public.vh_storage_settings (
   id smallint primary key default 1 check (id = 1),
-  default_provider text not null default 'supabase'
+  default_provider text not null default 'backblaze_b2'
     check (default_provider in ('supabase','cloudflare_r2','backblaze_b2','terabox','mega','degoo','google_drive','mediafire','pcloud','box','icedrive','koofr','internxt','telegram')),
   updated_by uuid references auth.users(id) on delete set null,
   updated_at timestamptz not null default now()
@@ -173,7 +173,7 @@ create policy "vh_storage_admin_select" on public.vh_storage_settings for select
 create policy "vh_storage_admin_insert" on public.vh_storage_settings for insert to authenticated with check (public.vh_is_admin());
 create policy "vh_storage_admin_update" on public.vh_storage_settings for update to authenticated using (public.vh_is_admin()) with check (public.vh_is_admin());
 grant select, insert, update on public.vh_storage_settings to authenticated;
-insert into public.vh_storage_settings (id, default_provider) values (1,'supabase')
+insert into public.vh_storage_settings (id, default_provider) values (1,'backblaze_b2')
 on conflict (id) do nothing;
 
 -- Admin-managed categories, songs and public site settings (no secrets).
