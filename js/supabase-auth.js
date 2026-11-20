@@ -206,6 +206,7 @@ window.loginUser = async function (event) {
     const roleVerified = await showSignedIn(data.user);
     if (!roleVerified) {
       const staffAccount = window.VH_UNAUTHORISED_STAFF_SESSION || ["admin", "sub_admin", "content_editor", "moderator"].includes(window.VH_REJECTED_STAFF_ROLE);
+      if (staffAccount) await window.VHLoginActivity?.log("admin_login_wrong_entry");
       await db.auth.signOut({ scope: "local" });
       showSignedOut();
       msg(staffAccount
