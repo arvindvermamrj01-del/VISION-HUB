@@ -5,6 +5,8 @@
   const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const rows = () => document.getElementById("vhLoginActivityRows");
   let latestEvents = [];
+  let totalCount = 0;
+  let isLoading = false;
 
   async function token() {
     if (!db) return null;
@@ -134,38 +136,50 @@
     }).join("") : '<tr><td colspan="7">No matching security activity found.</td></tr>';
 
     const total = document.getElementById("vhActivityTotal");
-    if (total) total.textContent = String(latestEvents.length) + " recent events";
+    if (total) total.textContent = "Showing " + latestEvents.length + " of " + totalCount + " events"; 
+    const more = document.getElementById("vhLoginActivityMore");
+    if (more) more.hidden = latestEvents.length >= totalCount;
     const refreshed = document.getElementById("vhActivityRefreshed");
     if (refreshed) refreshed.textContent = "Updated " + new Date().toLocaleTimeString();
   }
 
-  async function load() {
+  async function load(append = false) {
     const body = rows();
-    if (!body || !db) return;
-    body.innerHTML = '<tr><td colspan="7">Loading secure activity…</td></tr>';
+    if (!body || !db || isLoading) return;
+    isLoading = true;
+    if (!append) {
+      latestEvents = [];
+      totalCount = 0;
+      body.innerHTML = '<tr><td colspan="7">Loading secure activity…</td></tr>';
+    }
     try {
       const { data: { user }, error } = await db.auth.getUser();
       if (error || !user) throw new Error("Main administrator access required.");
       const { data: profile, error: profileError } = await db.from("profiles").select("role").eq("id", user.id).maybeSingle();
       if (profileError || profile?.role !== "admin") throw new Error("Only the Main Admin can view IP and login activity.");
       const accessToken = await token();
-      const response = await fetch("/api/security/events?limit=500", {
+      const offset = append ? latestEvents.length : 0;
+      const response = await fetch("/api/security/events?limit=250&offset=" + offset, {
         headers: { Authorization: "Bearer " + accessToken },
         credentials: "same-origin",
         cache: "no-store"
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || "Security activity could not be loaded.");
-      latestEvents = result.events || [];
+      latestEvents = append ? latestEvents.concat(result.events || []) : (result.events || []);
+      totalCount = Number(result.total || 0);
       render();
     } catch (error) {
       body.innerHTML = '<tr><td colspan="7">' + esc(error.message || "Activity could not be loaded.") + "</td></tr>";
+    } finally {
+      isLoading = false;
     }
   }
 
   window.VHLoginActivity = { load, record, log, trackVisit };
   document.addEventListener("click", event => {
-    if (event.target.closest("#vhLoginActivityNav") || event.target.closest("#vhLoginActivityRefresh")) load();
+    if (event.target.closest("#vhLoginActivityNav") || event.target.closest("#vhLoginActivityRefresh")) load(false);
+    if (event.target.closest("#vhLoginActivityMore")) load(true);
   });
   document.addEventListener("input", event => {
     if (event.target.matches("#vhActivitySearch")) render();
