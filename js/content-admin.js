@@ -22,7 +22,7 @@
     try{
       const url=new URL(raw);
       if(!["drive.google.com","docs.google.com"].includes(url.hostname.toLowerCase()))return "";
-      return url.pathname.match(/\\/file\\/d\\/([A-Za-z0-9_-]{10,})/)?.[1]||url.searchParams.get("id")||"";
+      return url.pathname.match(new RegExp("/file/d/([A-Za-z0-9_-]{10,})"))?.[1]||url.searchParams.get("id")||"";
     }catch(_){return "";}
   };
   const validHttpUrl = raw => { if(!raw)return null; let url; try{url=new URL(raw);}catch(_){throw new Error("Media URL valid nahi hai.");} if(!["http:","https:"].includes(url.protocol))throw new Error("Media URL http/https hona chahiye."); return url.href; };
