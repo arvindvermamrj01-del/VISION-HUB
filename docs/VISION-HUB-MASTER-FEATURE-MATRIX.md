@@ -30,11 +30,15 @@ This is the working completion ledger. “Implemented” means code/schema is pr
 | Community | Suggestions/bugs/complaints, moderated public roadmap and one-vote-per-user RPC | Run SQL bundle; final RLS and voting tests |
 | Legal / Compliance | Privacy, Terms and Copyright information pages added | Site owner must review the notices and publish a designated legal contact; configure a certified CMP where required |
 | SEO / Performance | Metadata, WebSite JSON-LD, robots, sitemap, CDN preconnect and lazy poster images | Final Lighthouse/performance and crawl checks |
-| Security | Server-side provider secrets, role-checked APIs, RLS and signed private media | Final security review and authorization tests |
+| Security | Server-side provider secrets, role-checked APIs, RLS, signed private media, signed HttpOnly staff session cookie, IP-based Admin lockout and guest/login activity in Cloudflare D1 | Final deploy and live negative/positive authorization, cookie expiry and lockout tests |
 
-## Main-admin login activity
+## Main-admin security and login activity
 
-The web interface records successful user and staff sign-ins in `vh_login_activity`. It stores only the account UUID and timestamp. Apply `supabase/vision-hub-login-activity.sql` in Supabase SQL Editor before expecting rows to appear. Row-level security allows each signed-in user to insert only their own event and permits only the main administrator role to read events. The feature remains unavailable until that migration is applied and its policies are verified in the target Supabase project.
+The Control Center activity panel now uses a separate Cloudflare D1 security store (Production binding `VH_SECURITY_DB`, database `vision-hub-security`) instead of relying on the legacy `vh_login_activity` SQL table. It records guest visits, authenticated visits, successful/failed user sign-ins, signup, logout, Admin sign-in outcomes, temporary blocks and unauthorised Control Center/API access. IP is read on the server from Cloudflare's `CF-Connecting-IP` header, never from a browser-supplied IP field.
+
+Admin and staff log in through the separate Secure Admin panel. A successful login receives a 1-hour HMAC-signed HttpOnly cookie scoped to `/api`; protected staff APIs require both the current Supabase staff role and this cookie. Five failed or unauthorised attempts within 30 minutes block that IP for 30 minutes. Raw IP and user-agent audit rows are retained up to 90 days. The activity read API and panel are restricted to the Main Admin role (`profiles.role = 'admin'`); sub-admin, content-editor and moderator roles cannot read this history. Passwords, OTP values and auth tokens are not stored in the activity log.
+
+The D1 database, schema and Production binding are provisioned, and the signing secret is configured as a Cloudflare Pages secret. The implementation still needs its matching production deployment and live browser verification before it can be marked Verified. The older `supabase/vision-hub-login-activity.sql` remains a legacy migration and is not needed by the new D1 activity panel.
 
 ## Final-stage verification gate
 
@@ -51,3 +55,8 @@ Do not mark the platform complete until the following have been run against the 
 - Security checks for RLS, private media, API authorization, input validation and secret exposure
 
 Provider features that still require external approvals or credentials must be reported separately rather than labelled “working”.
+
+
+## Review portfolio
+
+See [VISION HUB Feature Portfolio & Completion Chart](VISION-HUB-FEATURE-PORTFOLIO.md) for implemented vs verified vs blocked work, remaining dependencies and the priority backlog.
