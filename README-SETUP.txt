@@ -202,6 +202,16 @@ Telegram are not all direct-upload integrations. Where no verified connector
 is configured, use an authorised external share URL. Selecting a provider in
 the UI does not create or authenticate a provider account.
 
+LEGAL AND ADVERTISING DISCLOSURES
+---------------------------------
+Public policy pages are available at /privacy.html, /terms.html and /copyright.html.
+The privacy page discloses account and analytics data, service providers, local
+storage and Google advertising cookies. The footer links directly to these pages.
+The site owner should review the text for the actual business, jurisdiction and
+data practices before monetisation. If serving personalised ads to visitors in
+the EEA, UK or Switzerland, configure a Google-certified IAB TCF CMP as required
+by Google's current consent rules.
+
 SECURITY NOTES
 --------------
 - Never paste or commit service-role keys, B2/R2 secrets, provider passwords,
