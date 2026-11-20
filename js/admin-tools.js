@@ -93,7 +93,7 @@
         ).join("") : '<p>' + empty + '</p>';
       };
       renderRanked("topViewedList", countByContent("content_view"), "No content views recorded yet.");
-      renderRanked("topDownloadedList", countByContent("play_click"), "No play clicks recorded yet.");
+      renderRanked("topDownloadedList", countByContent("download_click"), "No download-link clicks recorded yet.");
       const genreCounts = new Map();
       events.filter(event => event.event_type === "content_view" && event.content_id != null).forEach(event => {
         const item = catalog.get(Number(event.content_id));
