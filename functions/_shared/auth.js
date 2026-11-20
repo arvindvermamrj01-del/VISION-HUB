@@ -150,7 +150,7 @@ async function countRecentSecurityFailures(request, env) {
   if (!env.VH_SECURITY_DB) return { attempts: 0, latest: 0 };
   const result = await env.VH_SECURITY_DB.prepare(
     "SELECT COUNT(*) AS attempts, COALESCE(MAX(started_at),0) AS latest " +
-    "FROM vh_admin_login_attempts WHERE ip_address=? AND status='failed' AND started_at > unixepoch()-1800"
+    "FROM vh_admin_login_attempts WHERE ip_address=? AND status IN ('failed','denied') AND started_at > unixepoch()-1800"
   ).bind(clientIp(request)).first();
   return { attempts: Number(result?.attempts || 0), latest: Number(result?.latest || 0) };
 }
