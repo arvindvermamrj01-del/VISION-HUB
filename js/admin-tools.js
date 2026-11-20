@@ -287,6 +287,29 @@
     }catch(error){host.textContent=error.message||"AdSense report could not be loaded.";}
   };
 
+  async function loadFeedbackAdmin(){
+    const host=$("adminFeedbackList");if(!host)return;
+    try{
+      await requireAdmin();
+      const {data,error}=await db.from("vh_feedback").select("id,category,title,description,status,admin_response,upvotes,created_at").order("created_at",{ascending:false}).limit(100);
+      if(error)throw error;
+      host.innerHTML=(data||[]).length?(data||[]).map(item=>'<article class="vh-admin-feedback"><div><strong>'+esc(item.title)+'</strong><small>'+esc(item.category)+' · '+Number(item.upvotes||0)+' votes · '+esc(new Date(item.created_at).toLocaleString())+'</small><p>'+esc(item.description)+'</p></div><div class="form-row"><label>Status<select id="feedbackStatus'+Number(item.id)+'"><option value="pending">Pending</option><option value="under_review">Under review</option><option value="planned">Planned</option><option value="in_progress">In progress</option><option value="completed">Completed</option><option value="declined">Declined</option></select></label><label>Admin response<textarea id="feedbackResponse'+Number(item.id)+'" rows="2">'+esc(item.admin_response||"")+'</textarea></label><button type="button" class="btn-primary" onclick="saveFeedbackReview('+Number(item.id)+')">Save review</button></div></article>'
+      ).join(""):"<p>No feedback has been submitted.</p>";
+      (data||[]).forEach(item=>{const select=$("feedbackStatus"+item.id);if(select)select.value=item.status;});
+    }catch(error){host.textContent=error.message||"Feedback could not be loaded. Apply the feature upgrade SQL first.";}
+  }
+  window.saveFeedbackReview=async id=>{
+    const status=$("feedbackStatus"+id)?.value||"pending";
+    const response=$("feedbackResponse"+id)?.value.trim()||"";
+    try{
+      await requireAdmin();
+      const {error}=await db.from("vh_feedback").update({status,admin_response:response,updated_at:new Date().toISOString()}).eq("id",id);
+      if(error)throw error;
+      toast("Community feedback review saved.");
+      await loadFeedbackAdmin();
+    }catch(error){toast(error.message||"Feedback review could not be saved.");}
+  };
+
   window.updateAdminCredentials=async event=>{
     event?.preventDefault();const current=$("changeCurrPass")?.value||"",next=$("changeNewPass")?.value||"",confirm=$("changeConfirmPass")?.value||"";
     if(next.length<12)return toast("New password must be at least 12 characters.");
@@ -347,7 +370,7 @@
   window.importFromDrive=()=>{const log=$("driveImportLog");if(log)log.textContent="Google Drive import is not connected yet. It still needs a Google OAuth client, Cloudflare server secret and provider consent flow.";toast("Drive import needs Google OAuth configuration.");};
 
   document.addEventListener("DOMContentLoaded",()=>{
-    const watchers=[["tab-users-admin",loadUsers],["tab-team-admin",loadSubAdmins],["tab-dashboard",loadDashboard],["tab-reports",loadReports],["tab-categories",loadCategories],["tab-songs",loadSongs],["tab-settings",()=>{loadWebsiteSettings();loadDonations();}]];
+    const watchers=[["tab-users-admin",loadUsers],["tab-team-admin",loadSubAdmins],["tab-dashboard",loadDashboard],["tab-reports",loadReports],["tab-categories",loadCategories],["tab-songs",loadSongs],["tab-settings",()=>{loadWebsiteSettings();loadDonations();}],["tab-community-admin",loadFeedbackAdmin]];
     watchers.forEach(([id,fn])=>{const el=$(id);if(el)new MutationObserver(()=>{if(el.classList.contains("active"))fn();}).observe(el,{attributes:true,attributeFilter:["class"]});});
     db?.auth.onAuthStateChange((_event,session)=>{if(session?.user){loadDashboard();if($("tab-users-admin")?.classList.contains("active"))loadUsers();}});
     if(window.VH_IS_ADMIN)loadDashboard();
