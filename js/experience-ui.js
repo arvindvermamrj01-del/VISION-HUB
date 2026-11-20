@@ -103,7 +103,7 @@
     return true;
   }
   function execute(button){
-    const page=button.dataset.vhPage,action=button.dataset.vhAction;
+    const page=button.dataset.vhPage||button.dataset.vhNav,action=button.dataset.vhAction;
     const donationModal=document.getElementById("donationModal");
     const donationOpen=!!donationModal?.classList.contains("open");
     if(donationOpen){
