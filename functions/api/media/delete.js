@@ -1,5 +1,6 @@
 import { json, requireRole, supabaseAdminHeaders, supabaseBase } from "../../_shared/auth.js";
 import { presignR2 } from "../../_shared/r2.js";
+import { presignB2 } from "../../_shared/b2.js";
 
 const encodePath = value => String(value).split("/").map(encodeURIComponent).join("/");
 
@@ -43,10 +44,12 @@ export async function onRequestPost({ request, env }) {
       return json({ error: "You can only clean up files uploaded by your account." }, 403);
     }
 
-    if (provider === "cloudflare_r2") {
-      const signed = await presignR2(env, "DELETE", storagePath, "", 300);
+    if (provider === "cloudflare_r2" || provider === "backblaze_b2") {
+      const signed = provider === "backblaze_b2"
+        ? await presignB2(env, "DELETE", storagePath, "", 300)
+        : await presignR2(env, "DELETE", storagePath, "", 300);
       const result = await fetch(signed.url, { method: "DELETE" });
-      if (!result.ok && result.status !== 404) return json({ error: "R2 object cleanup failed." }, 502);
+      if (!result.ok && result.status !== 404) return json({ error: "Cloud storage object cleanup failed." }, 502);
       return json({ success: true });
     }
     if (provider === "supabase") {
