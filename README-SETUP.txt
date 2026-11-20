@@ -54,6 +54,16 @@ This bundle includes:
 - Download-link click analytics.
 - Private B2/R2 song-audio upload and signed playback/deletion.
 - Privacy-safe 30-day popular-content aggregation.
+- Content-editor ownership enforcement for catalog records, media assets and
+  private Supabase Storage objects. Admins and sub-admins retain full access.
+
+If the feature bundle was already applied before the ownership-hardening update,
+run this additive migration once for the existing database:
+
+  supabase/vision-hub-content-editor-ownership-security.sql
+
+It updates Row Level Security policies and private-object access rules without
+deleting catalog records or media files. Do not rerun the old setup scripts.
 
 If applying individual migrations instead, use the relevant files:
   supabase/vision-hub-backblaze-b2-provider-upgrade.sql
