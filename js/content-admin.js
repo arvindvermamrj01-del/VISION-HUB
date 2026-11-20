@@ -345,7 +345,7 @@
     const isShort=type==="Short";
     const title=$(isShort?"shortTitle":"addTitle")?.value.trim();
     if(!title)throw new Error("Title required hai.");
-    const provider=$(isShort?"shortStorageProvider":"addStorageProvider")?.value||"supabase";
+    const provider=$(isShort?"shortStorageProvider":"addStorageProvider")?.value||window.VH_STORAGE_DEFAULT||"backblaze_b2";
     const primaryFile=$(isShort?"shortVideoFile":"addVideoFile")?.files?.[0]||null;
     const primaryUrl=$(isShort?"shortVideoUrl":"addVideo")?.value.trim()||"";
     const uploads=[];
