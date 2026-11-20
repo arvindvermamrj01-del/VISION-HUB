@@ -19,7 +19,7 @@ export async function onRequestPost({ request, env }) {
     }
     const safeName = fileName.normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(-100) || kind;
     const key = user.id + "/" + (kind === "audio" ? "audio/" : "") + crypto.randomUUID() + "-" + safeName;
-    const provider = String(body.provider || "cloudflare_r2").toLowerCase();
+    const provider = String(body.provider || "backblaze_b2").toLowerCase();
     const uploadExpiry = kind === "audio" ? 3600 : 900;
     if (provider === "backblaze_b2") {
       const signed = await presignB2(env, "PUT", key, contentType, uploadExpiry);
