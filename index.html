@@ -797,7 +797,7 @@
                   <option value="backblaze_b2">Backblaze B2 (Default — private cloud upload)</option>
                   <option value="cloudflare_r2">Cloudflare R2 (direct cloud upload — server setup required)</option>
                   <option value="supabase">Supabase (legacy / existing uploads)</option>
-                  <option value="pixeldrain">PixelDrain (API key required · in-app upload up to 90 MiB)</option>
+                  <option value="pixeldrain">PixelDrain (experimental · API key + India access check required)</option>
                   <option value="terabox">TeraBox (authorised URL only — API connector pending)</option>
                   <option value="mega">MEGA (authorised URL only — API connector pending)</option>
                   <option value="degoo">Degoo (authorised URL only — API connector pending)</option>
@@ -811,7 +811,7 @@
                   <option value="telegram">Telegram (authorised post link only)</option>
                 </select>
                 <input type="file" id="addVideoFile" accept="video/*" autocomplete="off"/>
-                <small class="pixeldrain-admin-note"><i class="fas fa-cloud"></i> PixelDrain needs a server-side API key. In-app uploads are limited by Cloudflare request size; upload larger files on PixelDrain first, then paste its share link above. Premium is needed for reliable in-page hotlink playback.</small>
+                <small class="pixeldrain-admin-note"><i class="fas fa-cloud"></i> Experimental only: PixelDrain requires a server-side API key and its own site currently lists India as a blocked location. Free shared files can expire after 60 days without qualifying downloads, and hotlink playback requires Pro; CAPTCHA protection can appear. Prefer Backblaze B2 / R2 for Vision Hub movie delivery. In-app PixelDrain uploads are capped at 90 MiB by Cloudflare's request limit.</small>
               </div>
 
               <!-- Multi-Resolution Download Link Inputs -->
@@ -1612,7 +1612,7 @@
 <script src="js/account-portal.js"></script>
 <script src="js/app.js?v=20261120-2"></script>
 <script src="js/analytics.js"></script>
-<script src="js/content-admin.js?v=20261120-5"></script>
+<script src="js/content-admin.js?v=20261120-6"></script>
 <script src="js/storage-manager.js"></script>
 <script src="js/request-manager.js"></script>
 <script src="js/admin-tools.js"></script>
