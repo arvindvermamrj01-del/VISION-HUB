@@ -1,0 +1,79 @@
+# VISION HUB — Phase 2 configuration
+
+These changes are committed to the `main` branch. Cloudflare Pages is configured for automatic deployments, so wait for the matching Production deployment to finish before expecting the new controls on the live site.
+
+## 1. One-time Supabase migration
+
+In Supabase Dashboard → SQL Editor, open and run:
+
+`supabase/vision-hub-feature-upgrade-bundle.sql`
+
+This single transaction adds:
+- Backblaze B2 and direct URL provider support to storage constraints
+- UPI donation confirmations and admin verification
+- Series season/episode metadata
+- Community feedback, public roadmap and authenticated voting
+
+Do not paste any provider secrets into SQL or chat. Existing catalog and media rows are preserved.
+
+## 2. Backblaze B2
+
+Keep the existing Cloudflare Pages production variables:
+- `B2_ENDPOINT`
+- `B2_BUCKET_NAME`
+- `B2_KEY_ID`
+- `B2_APPLICATION_KEY`
+
+The new migration allows B2 in the database constraints. After the migration, the Storage Manager can save B2 as the default. Existing Supabase and R2 support remains.
+
+## 3. Telegram bot
+
+Create a bot with BotFather, then add these as Cloudflare Pages production secrets:
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_WEBHOOK_SECRET` (1–256 characters; use letters, numbers, underscore or hyphen)
+- `TELEGRAM_ADMIN_CHAT_ID`
+- `TELEGRAM_CHANNEL_CHAT_ID` (optional; the bot must be an administrator in that channel)
+- `TELEGRAM_CHANNEL_URL` (optional public channel link)
+
+Deploy the site, sign in as the main admin, open Admin → Platform Settings and select **Connect / Refresh Bot Webhook**.
+
+Commands: `/start`, `/help`, `/latest`, `/request`, `/channel`; `/status` is admin-chat only. Authenticated user requests can notify the admin chat. Published titles and episodes can be announced to the configured channel.
+
+## 4. Donations
+
+In Admin → Platform Settings configure:
+- Public UPI ID / VPA
+- Display name
+- HTTPS QR image URL (optional)
+
+The public Support Vision Hub panel creates a UPI payment intent and lets a donor submit the UTR/reference. Every submission remains **pending** until an admin checks the bank/payment statement and verifies it. This is not automatic bank verification or a payment gateway.
+
+## 5. AdSense
+
+Enable ads only after Google approves the site and its content/policies:
+- Publisher ID: `ca-pub-...`
+- Homepage and footer ad slot IDs from AdSense
+- Set Cloudflare Pages variable `ADSENSE_PUBLISHER_ID` (accepts `pub-...` or `ca-pub-...`) so `/ads.txt` can be served.
+
+For live earnings in Admin → Analytics & Reports, configure these Cloudflare Pages secrets:
+- `ADSENSE_CLIENT_ID`
+- `ADSENSE_CLIENT_SECRET`
+- `ADSENSE_REFRESH_TOKEN` with the read-only AdSense OAuth scope
+- `ADSENSE_ACCOUNT_ID` in the format `accounts/pub-1234567890123456`
+
+The report panel reads actual AdSense API results; it does not invent revenue or track ad clicks.
+
+## 6. Seasons and episodes
+
+After the SQL migration and deployment:
+1. Open Admin → Seasons & Episodes.
+2. Select a published Web Series.
+3. Set season and episode numbers, title and video.
+4. Upload to B2/R2/Supabase or provide an authorised direct URL.
+5. Open that series on the public site to see its season/episode list.
+
+Episodes reuse the existing private-media access, quality player, watch-progress and deletion pipeline.
+
+## 7. Community
+
+Users sign in to submit a suggestion, bug report or complaint. Admin reviews it in Admin → Community Feedback. Only planned, in-progress and completed items appear on the public roadmap; authenticated users can vote once per item.
