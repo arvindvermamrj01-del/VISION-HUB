@@ -436,3 +436,7 @@ body.vh-modal-open{overflow:hidden}
 :root[data-vh-theme="light"] .legal-content h2{color:#172338}
 :root[data-vh-theme="light"] .legal-content p{color:#52627b}
 @media(max-width:600px){.legal-content{padding:17px}.legal-content p{font-size:.87rem}}
+
+.episode-extra-quality{margin:12px 0;padding:12px 14px;border:1px solid var(--vh-line);border-radius:14px;background:var(--vh-glass)}
+.episode-extra-quality summary{cursor:pointer;color:var(--accent2);font-weight:750;font-size:.86rem}
+.episode-extra-quality[open] summary{margin-bottom:12px}
