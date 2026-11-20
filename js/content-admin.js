@@ -457,14 +457,17 @@
     const controls=$("playerOverlay")?.querySelector(".player-controls");
     if(!controls)return;
     let wrap=$("vhPlayerQualityWrap");
-    if(!wrap){wrap=document.createElement("label");wrap.id="vhPlayerQualityWrap";wrap.className="vh-player-quality";wrap.innerHTML='<span>Quality</span><select id="vhPlayerQuality"></select>';controls.prepend(wrap);}
+    if(!wrap){wrap=document.createElement("label");wrap.id="vhPlayerQualityWrap";wrap.className="vh-player-quality";wrap.innerHTML='<span>Video quality</span><select id="vhPlayerQuality" aria-label="Video quality"></select><small id="vhQualityHint"></small>';controls.prepend(wrap);}
     const select=$("vhPlayerQuality");
     const assets=(item.media_assets||[]).filter(asset=>asset.url&&(!asset.asset_type||asset.asset_type==="video"));
     const choices=assets.length?assets:[{resolution:"Original",url:item.video_url,is_primary:true,asset_type:"video"}].filter(x=>x.url);
-    select.innerHTML=choices.map((asset,index)=>'<option value="'+index+'">'+esc(resolutionLabel(asset.resolution))+(asset.language?" · "+esc(asset.language):"")+'</option>').join("");
-    select.onchange=()=>playAsset(item,choices[Number(select.value)]);
+    select.innerHTML=choices.length?choices.map((asset,index)=>'<option value="'+index+'">'+esc(resolutionLabel(asset.resolution))+(asset.language?" · "+esc(asset.language):"")+'</option>').join(""):'<option value="">No playable rendition</option>';
+    select.disabled=!choices.length;
+    const hint=$("vhQualityHint");
+    if(hint)hint.textContent=choices.length<2?(choices.length?"Only the uploaded source is available. Add real renditions to offer more resolutions.":"No playable video is attached to this title."):"Choose an available uploaded resolution.";
+    select.onchange=()=>{const asset=choices[Number(select.value)];if(asset)playAsset(item,asset);};
     const preferred=choices.findIndex(asset=>asset.is_primary);
-    select.value=String(preferred>=0?preferred:0);
+    select.value=choices.length?String(preferred>=0?preferred:0):"";
     ensurePlaybackExtras(controls,item);
     if(choices.length)playAsset(item,choices[Number(select.value)]);
   }
