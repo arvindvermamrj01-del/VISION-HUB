@@ -175,6 +175,7 @@
         </div>
       </section>
 
+      <section class="vh-ad-section" id="vhAdHomeTop" aria-label="Advertisement" hidden></section>
       <!-- Trending Movies Section -->
       <section class="section">
         <div class="section-header">
@@ -1068,6 +1069,19 @@
                 </select>
               </div>
               <div class="form-group">
+                <label>Google AdSense</label>
+                <select id="settingAdsEnabled"><option value="off">Ads disabled</option><option value="on">Enable ads after approval</option></select>
+                <small>Enable only after AdSense approves the site and you have valid ad unit slots. Never click your own ads.</small>
+              </div>
+              <div class="form-group">
+                <label for="settingAdsPublisher">AdSense Publisher ID</label>
+                <input type="text" id="settingAdsPublisher" placeholder="ca-pub-0000000000000000" maxlength="40" autocomplete="off"/>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label for="settingAdsSlotHome">Homepage Ad Slot ID</label><input type="text" id="settingAdsSlotHome" inputmode="numeric" placeholder="Numeric slot ID" maxlength="20"/></div>
+                <div class="form-group"><label for="settingAdsSlotFooter">Footer Ad Slot ID</label><input type="text" id="settingAdsSlotFooter" inputmode="numeric" placeholder="Numeric slot ID" maxlength="20"/></div>
+              </div>
+              <div class="form-group">
                 <label for="settingDonationUpi">Donation UPI ID (VPA)</label>
                 <input type="text" id="settingDonationUpi" maxlength="128" placeholder="yourname@upi" autocomplete="off"/>
                 <small>Only your public UPI ID. Never enter a UPI PIN, bank password or OTP.</small>
@@ -1311,6 +1325,7 @@
   </div>
   </div><!-- end #app -->
 
+  <section class="vh-ad-section vh-ad-footer" id="vhAdFooter" aria-label="Advertisement" hidden></section>
   <!-- ===== FOOTER ===== -->
   <footer class="footer">
     <div class="footer-content">
@@ -1348,5 +1363,6 @@
 <script src="js/public-settings.js"></script>
 <script src="js/theme-manager.js"></script>
 <script src="js/donation-manager.js"></script>
+<script src="js/ads-manager.js"></script>
 </body>
 </html>
