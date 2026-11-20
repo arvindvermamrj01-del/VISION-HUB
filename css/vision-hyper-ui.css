@@ -364,3 +364,50 @@ body.vh-movie-detail-open #vhAppSidebar .vh-sidebar-button.active::before{left:0
 :root[data-vh-theme="amoled"] .vh-sidebar{background:linear-gradient(165deg,rgba(3,5,10,.99),rgba(0,0,0,.98) 60%,rgba(7,4,13,.99));border-color:rgba(126,135,179,.18)}
 @media(max-width:1100px) and (min-width:761px){#app>.telegram-banner{width:calc(100% - 112px);margin-left:96px}}
 @media(max-width:760px){#app>.telegram-banner{width:calc(100% - 22px);margin-left:auto;margin-right:auto}}
+
+
+/* Desktop navigation starts compact: icons only. Labels appear only on explicit toggle. */
+:root{--vh-nav-width:72px;--vh-nav-expanded:224px}
+#app>.page,#app>.footer{width:calc(100% - 112px)!important;margin-left:96px!important;margin-right:16px!important}
+.vh-sidebar{width:var(--vh-nav-width);padding:12px 8px 10px}
+.vh-sidebar:hover,.vh-sidebar:focus-within{width:var(--vh-nav-width)}
+.vh-sidebar-brand{position:relative;justify-content:center;min-height:48px;padding:2px 0 8px}
+.vh-sidebar-brand-copy,.vh-sidebar-section-label,.vh-sidebar-button span,.vh-sidebar-footer>span:last-child{opacity:0;visibility:hidden;pointer-events:none}
+.vh-sidebar-button{justify-content:center;gap:0;padding:0 8px}
+.vh-sidebar-button i{font-size:1.2rem}
+.vh-sidebar-divider{margin:7px 2px}
+.vh-sidebar-footer{justify-content:center;padding:0}
+.vh-sidebar-toggle{position:absolute;right:-3px;top:9px;width:25px;height:25px;display:grid;place-items:center;border:1px solid rgba(160,180,230,.25);border-radius:9px;background:rgba(100,115,190,.15);color:#cbd7ff;opacity:0;transition:opacity .2s ease}
+.vh-sidebar:hover .vh-sidebar-toggle,.vh-sidebar:focus-within .vh-sidebar-toggle{opacity:1}
+body.vh-sidebar-expanded #vhAppSidebar{width:var(--vh-nav-expanded);padding:12px 9px 10px}
+body.vh-sidebar-expanded #vhAppSidebar .vh-sidebar-brand{justify-content:flex-start;padding:2px 7px 8px}
+body.vh-sidebar-expanded #vhAppSidebar .vh-sidebar-brand-copy,
+body.vh-sidebar-expanded #vhAppSidebar .vh-sidebar-section-label,
+body.vh-sidebar-expanded #vhAppSidebar .vh-sidebar-button span,
+body.vh-sidebar-expanded #vhAppSidebar .vh-sidebar-footer>span:last-child{opacity:1;visibility:visible;pointer-events:auto}
+body.vh-sidebar-expanded #vhAppSidebar .vh-sidebar-button{justify-content:flex-start;gap:14px;padding:0 11px}
+body.vh-sidebar-expanded #vhAppSidebar .vh-sidebar-footer{justify-content:flex-start;padding:0 12px}
+body.vh-sidebar-expanded #vhAppSidebar .vh-sidebar-toggle{opacity:1}
+.vh-brand-vision,.vh-brand-hub{font-weight:950;background:linear-gradient(100deg,#f6f8ff 0%,#73ddff 35%,#9b83ff 67%,#f17bd1 100%);background-clip:text;-webkit-background-clip:text;color:transparent;text-shadow:0 0 22px rgba(120,130,255,.15)}
+.vh-brand-hub{margin-left:1px}
+.vh-sidebar-brand-copy strong{background:linear-gradient(100deg,#f7fbff,#79dcff 45%,#b18aff 78%,#f17bd1);background-clip:text;-webkit-background-clip:text;color:transparent}
+:root[data-vh-theme="hyperos"]{--accent:#8b7cff;--accent2:#55e0ff;--vh-glow:rgba(145,105,255,.32);--vh-cyan-glow:rgba(54,215,255,.2)}
+:root[data-vh-theme="hyperos"] body{background-image:radial-gradient(ellipse at 10% -8%,rgba(139,124,255,.28),transparent 39%),radial-gradient(ellipse at 100% 15%,rgba(65,218,255,.2),transparent 34%),radial-gradient(ellipse at 55% 100%,rgba(244,100,206,.14),transparent 42%),linear-gradient(145deg,#080d1d,#10152b)}
+.detail-playback-panel.vh-player-minimized .detail-player-stage,
+.detail-playback-panel.vh-player-minimized .detail-player-toolbar,
+.detail-playback-panel.vh-player-minimized .detail-player-controls{display:none!important}
+.vh-player-heading-actions{display:flex;align-items:center;gap:10px;min-width:0}
+.vh-player-minimize{width:34px;height:34px;flex:0 0 34px;border:1px solid var(--vh-glass-line);border-radius:11px;background:var(--vh-glass);color:var(--text)}
+@media(max-width:760px){
+ html,body{width:100%;max-width:100%;overflow-x:clip}
+ #app{width:100%;max-width:100%;overflow-x:clip}
+ #app>.page,#app>.footer{width:100%!important;max-width:100%!important;margin-left:0!important;margin-right:0!important}
+ .vh-sidebar{display:none!important}
+ .navbar{width:calc(100% - 18px)!important;max-width:100%;margin-left:auto!important;margin-right:auto!important}
+ .footer{width:calc(100% - 18px)!important;max-width:100%;margin:18px auto calc(86px + env(safe-area-inset-bottom))!important;padding:20px 14px!important}
+ .footer-content{width:100%;min-width:0}
+ .footer-content>p{font-size:.72rem;line-height:1.55;overflow-wrap:anywhere}
+ .footer-links{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 11px}
+ .vh-player-heading-actions{gap:6px}
+ .detail-player-heading{align-items:center;gap:8px}
+}
