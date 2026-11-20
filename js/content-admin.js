@@ -499,7 +499,7 @@
     Array.from(activeVideo.textTracks||[]).forEach((track,index)=>{track.mode=index===selectedIndex?"showing":"disabled";});
   }
 
-  function attachSubtitleTracks(item) {
+  function attachSubtitleTracks(item,subtitleSelectId="vhPlayerSubtitle",speedSelectId="vhPlayerSpeed") {
     if(!activeVideo)return;
     activeVideo.querySelectorAll("track[data-vh-subtitle]").forEach(track=>track.remove());
     const tracks=(item.subtitle_tracks||[]).filter(track=>track.url);
@@ -513,19 +513,37 @@
       node.addEventListener("load",()=>{node.track.mode="disabled";});
       activeVideo.appendChild(node);
     });
-    const select=$("vhPlayerSubtitle");
+    const select=$(subtitleSelectId);
     if(select)select.value="-1";
     setSubtitleMode(-1);
-    const speed=$("vhPlayerSpeed");
+    const speed=$(speedSelectId);
     if(speed)activeVideo.playbackRate=Number(speed.value)||1;
   }
 
-  function playAsset(item,asset) {
+  function playAsset(item,asset,targetVideoId=null,autoPlay=true) {
     if(!asset?.url){toast("Is quality ka playable URL available nahi hai.");return;}
+    const inline=Boolean(targetVideoId);
     const provider=String(asset.storage_provider||"supabase").toLowerCase();
+    const targetVideo=inline?$(targetVideoId):null;
     if(provider==="google_drive"){
       const id=googleDriveFileId(asset.storage_path||asset.url);
-      const iframe=$("playerIframe"),fallback=$("playerFallback");
+      const iframe=$(inline?"detailPlayerIframe":"playerIframe"),fallback=inline?null:$("playerFallback");
+      if(inline){
+        targetVideo?.pause();
+        if(targetVideo){targetVideo.removeAttribute("src");targetVideo.load();targetVideo.classList.add("hidden");}
+        $("detailPlayerEmpty")?.classList.add("hidden");
+        if(!id||!iframe){
+          $("detailPlayerEmpty").textContent="Google Drive preview is unavailable for this source.";
+          $("detailPlayerEmpty")?.classList.remove("hidden");
+          $("detailPlayerStatus").textContent="Preview unavailable";
+          return;
+        }
+        activeVideo=null;
+        iframe.src="https://drive.google.com/file/d/"+encodeURIComponent(id)+"/preview";
+        iframe.classList.remove("hidden");
+        $("detailPlayerStatus").textContent="Google Drive preview";
+        return;
+      }
       if(!id||!iframe){window.open(asset.url,"_blank","noopener");toast("Google Drive preview could not be embedded; opening the shared file.");return;}
       const previousVideo=fallback?.querySelector("video");
       if(previousVideo){previousVideo.pause();previousVideo.removeAttribute("src");previousVideo.load();}
@@ -537,17 +555,35 @@
       return;
     }
     if(provider!=="supabase" && provider!=="cloudflare_r2" && provider!=="backblaze_b2" && provider!=="direct"){
+      if(inline){
+        targetVideo?.pause();
+        targetVideo?.classList.add("hidden");
+        $("detailPlayerIframe")?.classList.add("hidden");
+        $("detailPlayerEmpty").textContent="This provider does not support secure in-page playback. Use its authorised source link.";
+        $("detailPlayerEmpty")?.classList.remove("hidden");
+        $("detailPlayerStatus").textContent="External provider source";
+        return;
+      }
       window.open(asset.url,"_blank","noopener");
       toast("Ye external provider link hai; playback provider ke page par khulega.");
       return;
     }
-    $("vhPlayerExtras")?.classList.remove("hidden");
-    activeVideo=$("playerFallback")?.querySelector("video");
+    if(inline){
+      if(!targetVideo)return;
+      activeVideo=targetVideo;
+      targetVideo.classList.remove("hidden");
+      $("detailPlayerIframe")?.classList.add("hidden");
+      if($("detailPlayerIframe"))$("detailPlayerIframe").src="";
+      $("detailPlayerEmpty")?.classList.add("hidden");
+    }else{
+      $("vhPlayerExtras")?.classList.remove("hidden");
+      activeVideo=$("playerFallback")?.querySelector("video");
+      $("playerIframe")?.classList.add("hidden");
+      $("playerFallback")?.classList.add("active");
+    }
     if(!activeVideo)return;
     activeVideo.crossOrigin="anonymous";
-    attachSubtitleTracks(item);
-    $("playerIframe")?.classList.add("hidden");
-    $("playerFallback")?.classList.add("active");
+    attachSubtitleTracks(item,inline?"detailPlayerSubtitle":"vhPlayerSubtitle",inline?"detailPlayerSpeed":"vhPlayerSpeed");
     activeVideo.onerror=()=>toast("Video stream nahi chal paayi. Direct file URL aur storage access check karein.");
     const video=activeVideo;
     let playbackUserId=window.VH_USER_ID||null;
@@ -585,7 +621,7 @@
           position=window.VH_ACCOUNT_DATA?.getProgress(item.id,null)||Number(localStorage.getItem(progressKey())||0);
         }
       }catch(error){console.debug("Cloud resume point unavailable:",error.message);}
-      if(video!==$("playerFallback")?.querySelector("video"))return;
+      if(video!==activeVideo||video.dataset.vhContentId!==String(item.id)||video.dataset.vhAssetUrl!==String(asset.url))return;
       if(Number.isFinite(position)&&position>5&&position<video.duration-5)video.currentTime=position;
     };
     video.ontimeupdate=()=>{
@@ -616,11 +652,92 @@
       window.renderVisionHub?.();
     };
     video.onerror=()=>toast("Video stream nahi chal paayi. Direct file URL aur storage access check karein.");
+    video.dataset.vhContentId=String(item.id);
+    video.dataset.vhAssetUrl=String(asset.url);
     if(video.src!==asset.url){video.pause();video.src=asset.url;video.load();}
-    activeVideo.play().catch(()=>{});
-    const status=$("playerOverlay")?.querySelector(".player-controls span:nth-child(2)");
+    if(autoPlay)video.play().catch(()=>{});
+    const status=inline?$("detailPlayerStatus"):$("playerResolutionStatus");
     if(status)status.textContent=resolutionLabel(asset.resolution)+(asset.language?" · "+asset.language:"")+" · supplied source";
   }
+
+  function setupDetailPlayer(item){
+    const panel=$("detailPlaybackPanel"),video=$("detailVideo"),iframe=$("detailPlayerIframe");
+    const select=$("detailQualitySelect"),empty=$("detailPlayerEmpty"),status=$("detailPlayerStatus");
+    if(!panel||!video||!select||!empty)return;
+    video.pause();
+    video.removeAttribute("src");
+    video.load();
+    video.poster=item.poster||"";
+    video.classList.remove("hidden");
+    if(iframe){iframe.src="";iframe.classList.add("hidden");}
+    empty.classList.add("hidden");
+    const assets=(item.media_assets||[]).filter(asset=>asset?.url&&(!asset.asset_type||asset.asset_type==="video"));
+    const choices=assets.length?assets.slice():[{resolution:"Original",url:item.video_url,storage_provider:item.storage_provider||"direct",content_id:item.id,is_primary:true}].filter(asset=>asset.url);
+    choices.sort((a,b)=>{
+      const ai=qualityOrder.indexOf(String(a.resolution||"").toLowerCase());
+      const bi=qualityOrder.indexOf(String(b.resolution||"").toLowerCase());
+      return (bi<0?-1:bi)-(ai<0?-1:ai);
+    });
+    select.replaceChildren();
+    choices.forEach((asset,index)=>{
+      const label=resolutionLabel(asset.resolution)+(asset.language?" · "+asset.language:"");
+      select.add(new Option(label,String(index)));
+    });
+    select.disabled=!choices.length;
+    select.classList.toggle("hidden",!choices.length);
+    const subtitleSelect=$("detailPlayerSubtitle");
+    const tracks=(item.subtitle_tracks||[]).filter(track=>track.url);
+    if(subtitleSelect){
+      subtitleSelect.replaceChildren(new Option("Subtitles off","-1"));
+      tracks.forEach((track,index)=>subtitleSelect.add(new Option(track.label||track.language||("Subtitle "+(index+1)),String(index))));
+      subtitleSelect.disabled=!tracks.length;
+      subtitleSelect.classList.toggle("hidden",!tracks.length);
+      subtitleSelect.onchange=()=>setSubtitleMode(Number(subtitleSelect.value));
+    }
+    const speed=$("detailPlayerSpeed");
+    if(speed){
+      let saved="1";try{saved=localStorage.getItem("vh_playback_speed")||"1";}catch(_){}
+      if(!["0.5","0.75","1","1.25","1.5","2"].includes(saved))saved="1";
+      speed.value=saved;
+      speed.onchange=()=>{if(activeVideo)activeVideo.playbackRate=Number(speed.value)||1;try{localStorage.setItem("vh_playback_speed",speed.value)}catch(_){}};
+    }
+    if(!choices.length){
+      video.classList.add("hidden");
+      empty.textContent="No verified video source has been published for this title yet. The details and authorised trailer remain available.";
+      empty.classList.remove("hidden");
+      if(status)status.textContent="Player not available";
+    }else{
+      const preferred=choices.findIndex(asset=>asset.is_primary);
+      select.value=String(preferred>=0?preferred:0);
+      const selected=choices[Number(select.value)];
+      select.onchange=()=>{
+        const next=choices[Number(select.value)];
+        const wasPlaying=!video.paused;
+        playAsset(item,next,"detailVideo",wasPlaying);
+      };
+      playAsset(item,selected,"detailVideo",false);
+    }
+    panel.classList.remove("hidden");
+  }
+
+  function stopDetailPlayback(){
+    const video=$("detailVideo");
+    if(video){
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+      if(activeVideo===video)activeVideo=null;
+    }
+    const iframe=$("detailPlayerIframe");
+    if(iframe){iframe.src="";iframe.classList.add("hidden");}
+  }
+
+  const baseCloseMovieModal=window.closeModal;
+  window.closeModal=function(...args){
+    stopDetailPlayback();
+    if(typeof baseCloseMovieModal==="function")return baseCloseMovieModal.apply(this,args);
+  };
+  window.closeModalBtn=window.closeModal;
 
   window.openMovie=function(id){
     const item=(window.VISION_HUB_DATA||[]).find(entry=>String(entry.id)===String(id));
@@ -634,9 +751,11 @@
       $("modalPoster").src=item.poster||"";
       $("movieModal")?.classList.add("open");
     }
+    setupDetailPlayer(item);
     const playButton=$("modalPlayBtn");
     if(playButton){
       playButton.onclick=()=>{
+        $("detailVideo")?.pause();
         $("movieModal")?.classList.remove("open");
         $("playerTitle").textContent="▶ "+item.title;
         $("playerOverlay")?.classList.add("open");
