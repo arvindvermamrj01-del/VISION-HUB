@@ -903,3 +903,29 @@ body.vh-sidebar-expanded #vhAppSidebar .vh-sidebar-toggle{opacity:1}
  .vh-sidebar-button:hover,.vh-sidebar-button:focus-visible{transform:none!important}
  #page-admin .admin-nav-btn:hover,.nav-actions #authNav button:hover{transform:none!important}
 }
+
+
+/* Final interaction clarity: explicit scale property and individual icon materials. */
+@media(min-width:761px){
+ .vh-sidebar-button{scale:1!important;transform:translateX(0)!important;transform-origin:left center!important;transition:scale .22s cubic-bezier(.18,.8,.25,1),transform .22s ease,box-shadow .22s ease!important}
+ .vh-sidebar-button:hover,.vh-sidebar-button:focus-visible{scale:1.075!important;transform:translateX(2px)!important;z-index:5!important}
+ .vh-sidebar-button.active{scale:1.015!important}
+ .vh-sidebar-button.active:hover,.vh-sidebar-button.active:focus-visible{scale:1.085!important}
+ .vh-sidebar-button i{filter:drop-shadow(0 5px 7px rgba(0,0,0,.3))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.48),inset 0 -4px 9px rgba(0,0,0,.16),0 6px 13px rgba(0,0,0,.28),0 0 13px rgba(98,160,255,.18)!important}
+}
+.vh-mobile-dock>.vh-mobile-nav-item i{
+ filter:drop-shadow(0 4px 6px rgba(0,0,0,.3))!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.48),inset 0 -3px 7px rgba(0,0,0,.16),0 5px 10px rgba(0,0,0,.26)!important
+}
+.vh-sidebar-button[data-vh-nav="home"] i,.vh-mobile-nav-item[data-vh-page="home"] i{background-image:linear-gradient(145deg,#74f6ff 0%,#398dff 48%,#5d57e8 100%)!important}
+.vh-sidebar-button[data-vh-nav="movies"] i,.vh-mobile-nav-item[data-vh-page="movies"] i{background-image:linear-gradient(145deg,#ffe08b 0%,#ff9861 48%,#dd4f83 100%)!important}
+.vh-sidebar-button[data-vh-nav="series"] i,.vh-mobile-nav-item[data-vh-page="series"] i{background-image:linear-gradient(145deg,#a2f4ff 0%,#51b5ef 48%,#655edc 100%)!important}
+.vh-sidebar-button[data-vh-nav="songs"] i,.vh-mobile-nav-item[data-vh-page="songs"] i{background-image:linear-gradient(145deg,#ffc1e9 0%,#c477f0 48%,#7059d5 100%)!important}
+.vh-sidebar-button[data-vh-nav="shorts"] i,.vh-mobile-nav-item[data-vh-page="shorts"] i{background-image:linear-gradient(145deg,#fff39a 0%,#ffae55 48%,#ed5963 100%)!important}
+.vh-sidebar-button[data-vh-nav="watchlist"] i,.vh-mobile-nav-item[data-vh-page="watchlist"] i{background-image:linear-gradient(145deg,#ffb5ca 0%,#f268a1 48%,#ba4e9e 100%)!important}
+.vh-sidebar-button[data-vh-nav="request"] i,.vh-mobile-nav-item[data-vh-page="request"] i{background-image:linear-gradient(145deg,#a2f5d9 0%,#49c6ae 48%,#378fbc 100%)!important}
+.vh-sidebar-button.vh-sidebar-donate i,.vh-mobile-nav-item[data-vh-action="donate"] i{background-image:linear-gradient(145deg,#ffc0ce 0%,#f46a91 48%,#c53e7b 100%)!important}
+.vh-sidebar-button[data-vh-nav="feedback"] i,.vh-mobile-nav-item[data-vh-page="feedback"] i{background-image:linear-gradient(145deg,#b6faff 0%,#61d0dc 48%,#477fe0 100%)!important}
+.vh-sidebar-button[data-vh-nav="community"] i,.vh-mobile-nav-item[data-vh-page="community"] i{background-image:linear-gradient(145deg,#d0f5aa 0%,#69cb91 48%,#348d88 100%)!important}
+.vh-sidebar-button[data-vh-action="settings"] i,.vh-mobile-nav-item[data-vh-action="settings"] i{background-image:linear-gradient(145deg,#d4d5ff 0%,#918df5 48%,#5d66bd 100%)!important}
+.vh-mobile-nav-item[data-vh-label="Shows"] i{background-image:linear-gradient(145deg,#fff0b3 0%,#f5b45f 48%,#ce765c 100%)!important}
