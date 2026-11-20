@@ -1,7 +1,7 @@
 -- VISION HUB feature upgrade bundle
 -- Run once in Supabase Dashboard > SQL Editor.
 -- Includes Backblaze B2 default/provider constraints, UPI donations, Web Series seasons/episodes,
--- community feedback/voting, and accurate download-link click analytics.
+-- community feedback/voting, accurate download-link click analytics, and 30-day popularity.
 -- Safe additive schema changes; preserves existing catalog and media rows.
 begin;
 
