@@ -4,6 +4,8 @@
   "use strict";
   const $ = id => document.getElementById(id);
   const safeText = value => String(value ?? "").trim();
+  let activeCategory = "all";
+  let searchTerm = "";
   const catalog = () => (window.VISION_HUB_DATA || []).filter(item =>
     item && item.type !== "Short" && item.type !== "Episode"
   );
@@ -136,6 +138,18 @@
     select.replaceChildren(new Option("All genres", "All"));
     allGenres.forEach(value => select.add(new Option(value, value)));
     select.value = allGenres.includes(current) ? current : "All";
+
+    const qualitySelect = $("cinemaQualityFilter");
+    if (qualitySelect) {
+      const selectedQuality = qualitySelect.value || "All";
+      const actualQualities = [...new Set(items.flatMap(qualities).map(value => value.toLowerCase()))];
+      const options = [["All", "All qualities"]];
+      if (actualQualities.some(value => ["4k","4k uhd","2160p"].includes(value))) options.push(["4k","4K UHD"]);
+      if (actualQualities.some(value => ["1080p","1080p fhd"].includes(value))) options.push(["1080p","1080p Full HD"]);
+      if (items.some(hasDualAudio)) options.push(["dual","Dual audio"]);
+      qualitySelect.replaceChildren(...options.map(([value,label]) => new Option(label,value)));
+      qualitySelect.value = options.some(([value]) => value === selectedQuality) ? selectedQuality : "All";
+    }
   }
 
   function renderTrending(items) {
@@ -161,10 +175,20 @@
     const genre = $("cinemaGenreFilter")?.value || "All";
     const quality = $("cinemaQualityFilter")?.value || "All";
     const sort = $("cinemaSortFilter")?.value || "newest";
-    const selected = sortItems(all.filter(item =>
-      (genre === "All" || genres(item).some(value => value.toLowerCase() === genre.toLowerCase())) &&
-      qualityMatch(item, quality)
-    ), sort);
+    const selected = sortItems(all.filter(item => {
+      const text = [item.title,item.description,item.cast,item.director,item.genre,item.language,item.industry,item.year].map(safeText).join(" ").toLowerCase();
+      const categoryMatch =
+        activeCategory === "all" ||
+        activeCategory === "new" ||
+        (activeCategory === "series" && item.type === "Web Series") ||
+        (activeCategory === "bollywood" && safeText(item.industry).toLowerCase() === "bollywood") ||
+        (activeCategory === "hollywood" && safeText(item.industry).toLowerCase() === "hollywood") ||
+        (activeCategory === "south" && safeText(item.industry).toLowerCase().includes("south"));
+      return categoryMatch &&
+        (!searchTerm || text.includes(searchTerm)) &&
+        (genre === "All" || genres(item).some(value => value.toLowerCase() === genre.toLowerCase())) &&
+        qualityMatch(item, quality);
+    }), activeCategory === "new" ? "newest" : sort);
     host.replaceChildren();
     if (!selected.length) {
       const empty = make("div", "cinema-empty", "");
@@ -184,6 +208,28 @@
     const items = catalog();
     renderTrending(items);
     renderCatalog();
+    document.querySelectorAll("[data-cinema-category]").forEach(button => {
+      const active = button.dataset.cinemaCategory === activeCategory;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
+  }
+
+  function setCategory(category) {
+    activeCategory = category || "all";
+    if (activeCategory === "watchlist") {
+      window.showPage?.("watchlist");
+      return;
+    }
+    if (activeCategory === "series") {
+      window.showPage?.("series");
+      return;
+    }
+    if (activeCategory === "bollywood" || activeCategory === "hollywood" || activeCategory === "south") {
+      window.filterByIndustry?.(activeCategory === "south" ? "South" : activeCategory[0].toUpperCase() + activeCategory.slice(1));
+    }
+    renderAll();
+    $("homeCatalogGrid")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function decorateMovieModal(item) {
@@ -202,6 +248,13 @@
     $("cinemaGenreFilter")?.addEventListener("change", renderCatalog);
     $("cinemaQualityFilter")?.addEventListener("change", renderCatalog);
     $("cinemaSortFilter")?.addEventListener("change", renderCatalog);
+    $("cinemaQuickSearch")?.addEventListener("input", event => {
+      searchTerm = safeText(event.target.value).toLowerCase();
+      renderCatalog();
+    });
+    document.querySelectorAll("[data-cinema-category]").forEach(button => {
+      button.addEventListener("click", () => setCategory(button.dataset.cinemaCategory));
+    });
     document.addEventListener("visionhub:content-loaded", renderAll);
     const originalRender = window.renderVisionHub;
     if (typeof originalRender === "function" && !originalRender.__cinemaWrapped) {
