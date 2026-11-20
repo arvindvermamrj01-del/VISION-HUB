@@ -13,7 +13,7 @@ export async function onRequestPost({ request, env }) {
       return json({ verified: false, stage: "configuration", error: "Backblaze B2 credentials are incomplete.", missing }, 503);
     }
 
-    const endpoint = String(env.B2_ENDPOINT).replace(/^https?:\\/\\//, "").replace(/\\/$/, "");
+    const endpoint = new URL(String(env.B2_ENDPOINT).includes("://") ? env.B2_ENDPOINT : "https://" + env.B2_ENDPOINT).host;
     const region = endpoint.split(".")[1] || "";
     const key = "__vh_healthcheck__/" + crypto.randomUUID() + ".txt";
     const probe = "VISION-HUB-B2-CHECK-" + crypto.randomUUID();
