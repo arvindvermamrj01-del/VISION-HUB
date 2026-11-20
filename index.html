@@ -80,7 +80,6 @@
           <button class="user-avatar" id="userAvatar" type="button" aria-label="Account menu" aria-haspopup="true" aria-expanded="false" aria-controls="userDropdown">U</button>
           <div class="dropdown-menu" id="userDropdown">
             <a onclick="showPage('profile')"><i class="fas fa-user"></i> My Profile</a>
-            <a id="adminNavLink" class="hidden" onclick="showPage('admin')"><i class="fas fa-shield-alt"></i> Control Center</a>
             <a onclick="showPage('watchlist')"><i class="fas fa-heart"></i> Watchlist</a>
             <a onclick="showPage('request')"><i class="fas fa-paper-plane"></i> My Requests</a>
             <a onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i> Logout</a>
@@ -694,7 +693,7 @@
             <button class="admin-nav-btn" onclick="adminTab('songs',this)">
               <i class="fas fa-music"></i> Song Management
             </button>
-            <button id="vhLoginActivityNav" class="admin-nav-btn" data-vh-roles="admin" onclick="adminTab('login-activity',this)"><i class="fas fa-history"></i> Login Activity</button>
+            <button id="vhLoginActivityNav" class="admin-nav-btn" data-vh-roles="admin" onclick="adminTab('login-activity',this)"><i class="fas fa-shield-halved"></i> Security & Login Activity</button>
             <button class="admin-nav-btn logout-btn" onclick="adminLogout()">
               <i class="fas fa-sign-out-alt"></i> Exit Admin
             </button>
@@ -705,12 +704,24 @@
         <main class="admin-main">
           
           <div id="tab-login-activity" class="admin-tab" data-vh-roles="admin">
-            <h2>Admin Login Activity</h2>
-            <p>Recent successful sign-ins. This list is restricted to the main administrator account.</p>
+            <h2>🔐 Security & Login Activity</h2>
+            <p>Guest visits, user sign-ins, Admin attempts and blocked access. IP addresses and account details are visible only to the Main Admin. Raw IP records are retained for up to 90 days; passwords, OTPs and session tokens are never stored here.</p>
+            <div class="vh-activity-toolbar">
+              <select id="vhActivityFilter" aria-label="Filter security activity">
+                <option value="all">All activity</option>
+                <option value="logins">Sign-ins and logouts</option>
+                <option value="visits">Guest and signed-in visits</option>
+                <option value="security">Failed, blocked and denied</option>
+              </select>
+              <input id="vhActivitySearch" type="search" placeholder="Search IP, account, browser or page…" aria-label="Search security activity"/>
+              <button id="vhLoginActivityRefresh" type="button"><i class="fas fa-rotate"></i> Refresh</button>
+              <span id="vhActivityTotal">Not loaded</span>
+              <small id="vhActivityRefreshed"></small>
+            </div>
             <div class="table-responsive">
               <table class="admin-table">
-                <thead><tr><th>Time</th><th>Account</th><th>User ID</th></tr></thead>
-                <tbody id="vhLoginActivityRows"><tr><td colspan="3">Open this tab to load activity.</td></tr></tbody>
+                <thead><tr><th>Time</th><th>Activity</th><th>Account</th><th>Role</th><th>IP Address</th><th>Browser / Device</th><th>Page</th></tr></thead>
+                <tbody id="vhLoginActivityRows"><tr><td colspan="7">Open this tab to load security activity.</td></tr></tbody>
               </table>
             </div>
           </div>
@@ -1657,16 +1668,16 @@
   <script src="js/data.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-config.js"></script>
-<script src="js/supabase-auth.js?v=20261120-2"></script>
+<script src="js/supabase-auth.js?v=20261120-4"></script>
 <script src="js/account-data.js"></script>
 <script src="js/account-portal.js"></script>
-<script src="js/app.js?v=20261120-9"></script>
+<script src="js/app.js?v=20261120-10"></script>
 <script src="js/analytics.js"></script>
 <script src="js/content-admin.js?v=20261120-10"></script>
 <script src="js/storage-manager.js?v=20261120-2"></script>
 <script src="js/request-manager.js"></script>
 <script src="js/admin-tools.js"></script>
-<script src="js/login-activity.js"></script>
+<script src="js/login-activity.js?v=20261120-3"></script>
 <script src="js/maintenance-mode.js"></script>
 <script src="js/public-settings.js"></script>
 <script src="js/theme-manager.js?v=20261120-2"></script>
