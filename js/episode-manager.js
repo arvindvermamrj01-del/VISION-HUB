@@ -11,20 +11,35 @@
     const {data:profile,error:pError}=await db.from("profiles").select("role").eq("id",user.id).maybeSingle();
     if(pError)throw pError;if(!staffRoles.includes(profile?.role))throw new Error("Episode management permission required.");return user;
   }
+  const VIDEO_MIME_BY_EXTENSION = Object.freeze({
+    mp4:"video/mp4",m4v:"video/x-m4v",mov:"video/quicktime",
+    mkv:"video/x-matroska",webm:"video/webm",avi:"video/x-msvideo",
+    mpg:"video/mpeg",mpeg:"video/mpeg","3gp":"video/3gpp",
+    "3g2":"video/3gpp2",ts:"video/mp2t",ogv:"video/ogg",
+    wmv:"video/x-ms-wmv",flv:"video/x-flv"
+  });
+  function episodeVideoContentType(file){
+    const reported=String(file?.type||"").trim().toLowerCase();
+    if(reported.startsWith("video/"))return reported;
+    const extension=String(file?.name||"").split(".").pop().toLowerCase();
+    const inferred=VIDEO_MIME_BY_EXTENSION[extension];
+    if(inferred)return inferred;
+    throw new Error("Browser video format identify nahi kar paaya. MP4, MKV, MOV, WebM, AVI ya supported video format use karein.");
+  }
   async function uploadEpisodeFile(file,user,provider){
-    if(!file.type.startsWith("video/"))throw new Error("Select a valid video file.");
+    const contentType=episodeVideoContentType(file);
     if(file.size>5*1024*1024*1024)throw new Error("Episode file exceeds the 5 GB single-upload limit.");
     if(provider==="backblaze_b2"||provider==="cloudflare_r2"){
       const {data:{session}}=await db.auth.getSession();if(!session?.access_token)throw new Error("Admin session expired.");
-      const response=await fetch("/api/media/upload-url",{method:"POST",headers:{"Authorization":"Bearer "+session.access_token,"Content-Type":"application/json"},body:JSON.stringify({contentType:file.type,fileName:file.name,fileSize:file.size,provider})});
+      const response=await fetch("/api/media/upload-url",{method:"POST",headers:{"Authorization":"Bearer "+session.access_token,"Content-Type":"application/json"},body:JSON.stringify({contentType,fileName:file.name,fileSize:file.size,provider})});
       const signed=await response.json().catch(()=>({}));if(!response.ok||!signed.uploadUrl)throw new Error(signed.error||"Cloud upload URL unavailable.");
-      const uploaded=await fetch(signed.uploadUrl,{method:"PUT",headers:signed.headers||{"Content-Type":file.type},body:file});
+      const uploaded=await fetch(signed.uploadUrl,{method:"PUT",headers:signed.headers||{"Content-Type":contentType},body:file});
       if(!uploaded.ok)throw new Error("Cloud upload failed: HTTP "+uploaded.status);
       return {path:signed.key,provider};
     }
     if(provider==="supabase"){
       const path=user.id+"/"+crypto.randomUUID()+"-"+file.name.normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g,"-").slice(-100);
-      const {error}=await db.storage.from("vh-private-media").upload(path,file,{upsert:false,contentType:file.type,cacheControl:"3600"});
+      const {error}=await db.storage.from("vh-private-media").upload(path,file,{upsert:false,contentType,cacheControl:"3600"});
       if(error)throw error;return {path,provider};
     }
     throw new Error("File upload supports B2, R2 or Supabase. For other providers use an authorised direct URL.");
