@@ -936,3 +936,61 @@ body.vh-movie-detail-open{overflow:hidden}
   body > #themePanel .theme-options>button strong {font-size:.72rem!important}
   body > #themePanel .theme-options>button small {font-size:.61rem!important;margin-top:2px!important}
 }
+
+
+/* Public Posts Studio cards reuse the existing cinema catalogue card system. */
+.vh-public-post-card .vh-public-post-media {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--panel, #101827);
+}
+.vh-public-post-media img,
+.vh-public-post-media video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.vh-public-post-media video {
+  background: #070b13;
+}
+.vh-public-post-placeholder {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-height: 110px;
+  place-items: center;
+  color: var(--muted);
+  font-size: 2rem;
+}
+.vh-public-post-card .movie-info h3 {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.vh-public-post-card .vh-public-post-meta {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: .72rem;
+}
+.vh-public-post-card .vh-public-post-description {
+  margin: 0;
+  color: var(--muted);
+  font-size: .8rem;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+.vh-public-post-card .vh-public-post-audio {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 10px;
+}
