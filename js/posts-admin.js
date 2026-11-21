@@ -1,79 +1,23 @@
-/* Private social-style Posts workspace. Separate from vh_content/Movie Catalog. */
+/* Separate Posts workspace; does not read or write Movie Catalog records. */
 (() => {
-  "use strict";
-  const db=window.VH_SUPABASE;
-  const $=id=>document.getElementById(id);
-  const form=$("vhPostForm");
-  if(!form||!db)return;
-  const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-  const setStatus=(message,error=false)=>{const el=$("vhPostStatus");if(el){el.textContent=message;el.style.color=error?"#dc5555":"";}};
-  async function sessionToken(){const {data:{session},error}=await db.auth.getSession();if(error||!session?.access_token)throw new Error("Admin session expired. Please sign in again.");return session.access_token;}
-  async function upload(file,kind,provider,token){
-    const response=await fetch("/api/media/upload-url",{method:"POST",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({kind,fileName:file.name,contentType:file.type,fileSize:file.size,provider})});
-    const signed=await response.json().catch(()=>({}));
-    if(!response.ok||!signed.uploadUrl)throw new Error(signed.error||"Could not prepare secure upload.");
-    const put=await fetch(signed.uploadUrl,{method:"PUT",headers:signed.headers||{"Content-Type":file.type},body:file});
-    if(!put.ok)throw new Error("Storage upload failed (HTTP "+put.status+"). Check provider CORS/configuration.");
-    return {path:signed.key,provider};
-  }
-  function updateType(){
-    const type=$("vhPostType").value,file=$("vhPostFile");
-    file.accept=type==="video"?"video/*":type==="song"?"audio/*":"image/jpeg,image/png,image/webp";
-    file.value="";
-    $("vhPostFileHint").textContent=type==="video"?"Video up to 5 GB.":type==="song"?"Audio up to 1 GB.":"JPG, PNG or WebP photo up to 15 MB.";
-  }
-  async function loadPosts(){
-    const host=$("vhPostsList");host.innerHTML="<p>Loading saved posts…</p>";
-    try{
-      const token=await sessionToken();
-      const res=await fetch("/api/posts",{headers:{"Authorization":"Bearer "+token},cache:"no-store"});
-      const data=await res.json().catch(()=>({}));
-      if(!res.ok)throw new Error(data.error||"Posts could not be loaded.");
-      if(!data.posts?.length){host.innerHTML="<p>No saved posts yet. Create your first private draft above.</p>";return;}
-      host.innerHTML=data.posts.map(p=>'<article class="manage-item" style="display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:14px;border-bottom:1px solid var(--border-color,#444)"><div><b>'+esc(p.title)+'</b><div><small>'+esc(p.post_type)+' · '+esc(p.category||"Uncategorised")+' · '+esc(p.status)+' · '+new Date(p.created_at).toLocaleString()+'</small></div><p>'+esc(p.description||"")+'</p></div><button type="button" class="btn btn-danger" data-delete-post="'+esc(p.id)+'">Delete</button></article>').join("");
-      host.querySelectorAll("[data-delete-post]").forEach(btn=>btn.addEventListener("click",()=>deletePost(btn.dataset.deletePost,btn)));
-    }catch(error){host.innerHTML='<p>'+esc(error.message)+'</p>';}
-  }
-  async function deletePost(id,button){
-    if(!window.confirm("Delete this post and its uploaded media?"))return;
-    button.disabled=true;
-    try{
-      const token=await sessionToken();
-      const res=await fetch("/api/posts/"+encodeURIComponent(id),{method:"DELETE",headers:{"Authorization":"Bearer "+token}});
-      const data=await res.json().catch(()=>({}));
-      if(!res.ok)throw new Error(data.error||"Post could not be deleted.");
-      await loadPosts();setStatus("Post and its media were deleted.");
-    }catch(error){button.disabled=false;setStatus(error.message,true);}
-  }
-  $("vhPostType").addEventListener("change",updateType);
-  $("vhPostResetBtn").addEventListener("click",()=>{form.reset();updateType();setStatus("");});
-  form.addEventListener("submit",async event=>{
-    event.preventDefault();
-    const button=$("vhPostSaveBtn"),file=$("vhPostFile").files[0],type=$("vhPostType").value;
-    if(!file){setStatus("Choose a media file first.",true);return;}
-    const provider=$("vhPostProvider").value;
-    button.disabled=true;setStatus("Uploading media privately…");
-    let uploaded=null,thumbnail=null;
-    try{
-      const token=await sessionToken();
-      const mediaKind=type==="song"?"audio":type==="photo"?"image":"video";
-      uploaded=await upload(file,mediaKind,provider,token);
-      const thumbFile=$("vhPostThumbnail").files[0];
-      if(thumbFile)thumbnail=await upload(thumbFile,"image",provider,token);
-      setStatus("Upload complete. Saving private draft…");
-      const res=await fetch("/api/posts",{method:"POST",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({title:$("vhPostTitle").value.trim(),description:$("vhPostDescription").value.trim(),category:$("vhPostCategory").value.trim(),postType:type,storageProvider:provider,storagePath:uploaded.path,thumbnailPath:thumbnail?.path||null,fileName:file.name,fileSize:file.size})});
-      const data=await res.json().catch(()=>({}));
-      if(!res.ok||!data.post)throw new Error(data.error||"Draft record could not be saved.");
-      form.reset();updateType();setStatus("Saved privately as a Draft. It is not public and is not in Movie Catalog.");await loadPosts();
-    }catch(error){
-      setStatus(error.message||"Post upload failed.",true);
-      // If upload succeeded but DB save failed, attempt to remove orphaned private objects.
-      if(uploaded||thumbnail){
-        try{const token=await sessionToken();for(const item of [uploaded,thumbnail].filter(Boolean))await fetch("/api/media/delete",{method:"POST",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({storagePath:item.path,provider:item.provider})});}catch(_){}
-      }
-    }finally{button.disabled=false;}
-  });
-  updateType();
-  document.addEventListener("click",event=>{const nav=event.target.closest('[onclick*="adminTab(\'posts\'"]');if(nav)setTimeout(loadPosts,0);});
-  loadPosts();
+"use strict";
+const db=window.VH_SUPABASE,$=id=>document.getElementById(id),form=$("vhPostForm");
+if(!form||!db)return;
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const status=(s,bad=false)=>{const e=$("vhPostStatus");if(e){e.textContent=s;e.style.color=bad?"#dc5555":"";}};
+async function token(){const {data:{session},error}=await db.auth.getSession();if(error||!session?.access_token)throw Error("Admin session expired. Sign in again.");return session.access_token;}
+async function api(path,opts={}){const t=await token(),r=await fetch(path,{...opts,headers:{"Authorization":"Bearer "+t,...(opts.body?{"Content-Type":"application/json"}:{}),...(opts.headers||{})},cache:"no-store"}),d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||"Request failed.");return d;}
+async function upload(file,kind,provider,t){const r=await fetch("/api/media/upload-url",{method:"POST",headers:{"Authorization":"Bearer "+t,"Content-Type":"application/json"},body:JSON.stringify({kind,fileName:file.name,contentType:file.type,fileSize:file.size,provider})}),d=await r.json().catch(()=>({}));if(!r.ok||!d.uploadUrl)throw Error(d.error||"Could not prepare secure upload.");const put=await fetch(d.uploadUrl,{method:"PUT",headers:d.headers||{"Content-Type":file.type},body:file});if(!put.ok)throw Error("Storage upload failed (HTTP "+put.status+"). Check provider CORS/configuration.");return {path:d.key,provider};}
+function updateType(){const t=$("vhPostType").value,f=$("vhPostFile");f.accept=t==="video"?"video/*":t==="song"?"audio/*":"image/jpeg,image/png,image/webp";f.value="";$("vhPostFileHint").textContent=t==="video"?"Video up to 5 GB.":t==="song"?"Audio up to 1 GB.":"JPG, PNG or WebP photo up to 15 MB.";}
+function setupUI(){if($("vhPostManagementStyles"))return;const s=document.createElement("style");s.id="vhPostManagementStyles";s.textContent=".vh-post-group{margin:18px 0}.vh-post-card{display:flex;gap:14px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;padding:15px;margin:9px 0;border:1px solid var(--border-color,#39445a);border-radius:12px}.vh-post-copy{min-width:220px;flex:1}.vh-post-actions{display:flex;gap:7px;flex-wrap:wrap}.vh-post-editor{display:grid;gap:9px;width:100%;margin-top:10px}.vh-post-editor input,.vh-post-editor textarea{width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-color,#555);background:var(--input-bg,transparent);color:inherit}.vh-post-modal{position:fixed;inset:0;z-index:99999;background:#000d;display:flex;align-items:center;justify-content:center;padding:18px}.vh-post-modal[hidden]{display:none}.vh-post-modal-inner{background:#101827;color:white;padding:18px;border-radius:14px;max-width:900px;width:100%;max-height:90vh;overflow:auto}.vh-post-modal video,.vh-post-modal audio,.vh-post-modal img{display:block;max-width:100%;max-height:68vh;margin:12px auto}";document.head.appendChild(s);const m=document.createElement("div");m.id="vhPostModal";m.className="vh-post-modal";m.hidden=true;m.innerHTML='<div class="vh-post-modal-inner"><button type="button" class="btn btn-secondary" id="vhPostModalClose">Close</button><div id="vhPostModalBody"></div></div>';document.body.appendChild(m);$("vhPostModalClose").onclick=closeModal;m.addEventListener("click",e=>{if(e.target===m)closeModal();});document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});}
+function closeModal(){const m=$("vhPostModal");if(m){m.hidden=true;$("vhPostModalBody").innerHTML="";}}
+function showModal(h){setupUI();$("vhPostModalBody").innerHTML=h;$("vhPostModal").hidden=false;}
+async function loadPosts(){const host=$("vhPostsList");if(!host)return;setupUI();host.innerHTML="<p>Loading posts…</p>";try{const d=await api("/api/posts"),all=d.posts||[],drafts=all.filter(p=>p.status!=="published"||p.visibility!=="public"),live=all.filter(p=>p.status==="published"&&p.visibility==="public");const render=(arr,empty)=>arr.length?arr.map(p=>'<article class="vh-post-card"><div class="vh-post-copy"><b>'+esc(p.title)+'</b><div><small>'+esc(p.post_type)+' · '+esc(p.category||"Uncategorised")+' · '+esc(p.status)+' · '+esc(new Date(p.created_at).toLocaleString())+'</small></div><p>'+esc(p.description||"")+'</p></div><div class="vh-post-actions"><button class="btn btn-secondary" type="button" data-edit="'+esc(p.id)+'">Edit</button><button class="btn btn-secondary" type="button" data-preview="'+esc(p.id)+'">Preview</button>'+(live.includes(p)?'<button class="btn btn-secondary" type="button" data-unpublish="'+esc(p.id)+'">Unpublish</button>':'<button class="btn btn-primary" type="button" data-publish="'+esc(p.id)+'">Publish</button>')+'<button class="btn btn-danger" type="button" data-delete="'+esc(p.id)+'">Delete</button></div><div class="vh-post-editor" id="vh-edit-'+esc(p.id)+'" hidden></div></article>').join(""):"<p>"+empty+"</p>";host.innerHTML='<section class="vh-post-group"><h4>Private Drafts ('+drafts.length+')</h4>'+render(drafts,"No private drafts.")+'</section><section class="vh-post-group"><h4>Published Posts ('+live.length+')</h4>'+render(live,"No published posts yet.")+'</section>';host.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editPost(b.dataset.edit));host.querySelectorAll("[data-preview]").forEach(b=>b.onclick=()=>preview(b.dataset.preview));host.querySelectorAll("[data-publish]").forEach(b=>b.onclick=()=>visibility(b.dataset.publish,"publish",b));host.querySelectorAll("[data-unpublish]").forEach(b=>b.onclick=()=>visibility(b.dataset.unpublish,"unpublish",b));host.querySelectorAll("[data-delete]").forEach(b=>b.onclick=()=>deletePost(b.dataset.delete,b));}catch(e){host.innerHTML="<p>"+esc(e.message)+"</p>";}}
+async function editPost(id){try{const p=(await api("/api/posts/"+encodeURIComponent(id))).post,box=$("vh-edit-"+id);if(!p||!box)throw Error("Post not found.");box.hidden=false;box.innerHTML='<label>Title<input id="edit-title-'+id+'" maxlength="180" value="'+esc(p.title)+'" required></label><label>Category<input id="edit-category-'+id+'" maxlength="80" value="'+esc(p.category||"")+'"></label><label>Description<textarea id="edit-description-'+id+'" rows="3" maxlength="5000">'+esc(p.description||"")+'</textarea></label><div class="vh-post-actions"><button type="button" class="btn btn-primary" id="edit-save-'+id+'">Save changes</button><button type="button" class="btn btn-secondary" id="edit-cancel-'+id+'">Cancel</button></div>';$("edit-cancel-"+id).onclick=()=>{box.hidden=true;};$("edit-save-"+id).onclick=async e=>{const b=e.currentTarget;b.disabled=true;try{await api("/api/posts/"+encodeURIComponent(id),{method:"PATCH",body:JSON.stringify({title:$("edit-title-"+id).value,category:$("edit-category-"+id).value,description:$("edit-description-"+id).value,action:"save"})});status("Post changes saved.");await loadPosts();}catch(err){status(err.message,true);b.disabled=false;}};}catch(e){status(e.message,true);}}
+async function preview(id){try{const p=(await api("/api/posts/"+encodeURIComponent(id))).post;if(!p?.preview_url)throw Error("Preview media unavailable.");const media=p.post_type==="video"?'<video controls playsinline src="'+esc(p.preview_url)+'"></video>':p.post_type==="song"?'<audio controls src="'+esc(p.preview_url)+'"></audio>':'<img src="'+esc(p.preview_url)+'" alt="'+esc(p.title)+'">';showModal("<h3>"+esc(p.title)+"</h3><p>"+esc(p.description||"")+"</p>"+media+(p.thumbnail_url?'<img src="'+esc(p.thumbnail_url)+'" alt="Cover image">':"")+'<small>Secure preview link expires in about one hour.</small>');}catch(e){status(e.message,true);}}
+async function visibility(id,action,b){if(!confirm(action==="publish"?"Publish this post publicly?":"Move this post back to private drafts?"))return;b.disabled=true;try{await api("/api/posts/"+encodeURIComponent(id),{method:"PATCH",body:JSON.stringify({action})});status(action==="publish"?"Post published in the separate public Posts feed.":"Post returned to Private Drafts.");await loadPosts();}catch(e){status(e.message,true);b.disabled=false;}}
+async function deletePost(id,b){if(!confirm("Permanently delete this post and its uploaded media?"))return;b.disabled=true;try{await api("/api/posts/"+encodeURIComponent(id),{method:"DELETE"});status("Post and uploaded media deleted.");await loadPosts();}catch(e){status(e.message,true);b.disabled=false;}}
+$("vhPostType").addEventListener("change",updateType);$("vhPostResetBtn").addEventListener("click",()=>{form.reset();updateType();status("");});
+form.addEventListener("submit",async e=>{e.preventDefault();const b=$("vhPostSaveBtn"),f=$("vhPostFile").files[0],type=$("vhPostType").value;if(!f){status("Choose a media file first.",true);return;}const provider=$("vhPostProvider").value;b.disabled=true;status("Uploading media privately…");let media=null,thumb=null;try{const t=await token();media=await upload(f,type==="song"?"audio":type==="photo"?"image":"video",provider,t);const tf=$("vhPostThumbnail").files[0];if(tf)thumb=await upload(tf,"image",provider,t);status("Upload complete. Saving private draft…");const r=await fetch("/api/posts",{method:"POST",headers:{"Authorization":"Bearer "+t,"Content-Type":"application/json"},body:JSON.stringify({title:$("vhPostTitle").value.trim(),description:$("vhPostDescription").value.trim(),category:$("vhPostCategory").value.trim(),postType:type,storageProvider:provider,storagePath:media.path,thumbnailPath:thumb?.path||null,fileName:f.name,fileSize:f.size})}),d=await r.json().catch(()=>({}));if(!r.ok||!d.post)throw Error(d.error||"Draft could not be saved.");form.reset();updateType();status("Saved privately as a Draft. Not public and not in Movie Catalog.");await loadPosts();}catch(err){status(err.message,true);if(media||thumb){try{const t=await token();for(const x of [media,thumb].filter(Boolean))await fetch("/api/media/delete",{method:"POST",headers:{"Authorization":"Bearer "+t,"Content-Type":"application/json"},body:JSON.stringify({storagePath:x.path,provider:x.provider})});}catch(_){}}}finally{b.disabled=false;}});
+updateType();document.addEventListener("click",e=>{if(e.target.closest('[onclick*="adminTab(\'posts\'"]'))setTimeout(loadPosts,0);});loadPosts();
 })();
