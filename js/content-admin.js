@@ -14,7 +14,7 @@
   const toast = message => typeof window.toast === "function" ? window.toast(message) : window.alert(message);
   const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const slug = value => String(value || "media").normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g,"-").replace(/^-+|-+$/g,"").slice(-100) || "media";
-  const qualityOrder = ["180p","240p","360p","420p","480p","720p","1080p","2k","4k","8k"];
+  const qualityOrder = ["180p","240p","360p","420p","480p","720p","1080p","2k","4k","8k","original"];
   const resolutionLabel=value=>String(value||"Original").replace(/^(\d)k$/i,"$1K");
   const staffRoles = ["admin","sub_admin","content_editor"];
   const googleDriveFileId = value => {
@@ -27,7 +27,7 @@
     }catch(_){return "";}
   };
   const validHttpUrl = raw => { if(!raw)return null; let url; try{url=new URL(raw);}catch(_){throw new Error("Media URL valid nahi hai.");} if(!["http:","https:"].includes(url.protocol))throw new Error("Media URL http/https hona chahiye."); return url.href; };
-  const dbResolution = value => !value || String(value).toLowerCase() === "original" ? null : String(value).toLowerCase();
+  const dbResolution = value => !value || String(value).toLowerCase() === "original" ? "original" : String(value).toLowerCase();
   const pixeldrainId = raw => {
     let parsed;try{parsed=new URL(String(raw||""));}catch(_){return "";}
     if(!["pixeldrain.com","www.pixeldrain.com"].includes(parsed.hostname.toLowerCase()))return "";
