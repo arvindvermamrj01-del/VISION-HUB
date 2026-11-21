@@ -1200,3 +1200,34 @@ body.vh-sidebar-expanded #vhAppSidebar .vh-sidebar-toggle{opacity:1}
   .nav-brand .vh-brand-motto{font-size:.37rem!important;letter-spacing:.035em!important}
 }
 
+
+
+/* Modal compact title stays clear of the expand and close controls. */
+#movieModal .vh-movie-compact-head{
+  padding:13px 116px 13px 28px;
+  overflow:hidden;
+}
+#movieModal .vh-movie-compact-head strong{
+  flex:1 1 auto;
+  min-width:0;
+  margin-left:4px;
+}
+#movieModal .vh-movie-details-toggle{z-index:24;right:62px;pointer-events:auto}
+#movieModal .modal-close{z-index:30;pointer-events:auto;cursor:pointer}
+@media(max-width:560px){
+  #movieModal .vh-movie-compact-head{padding:10px 104px 10px 20px}
+  #movieModal .vh-movie-details-toggle{right:52px}
+}
+
+/* Full song metadata, source and licence credits. */
+.song-description{margin:.35rem 0;color:var(--text-muted);font-size:.88rem;line-height:1.55}
+.song-duration{display:block;margin:.25rem 0 .5rem;color:var(--text-muted);font-size:.78rem}
+.song-duration.is-error{color:#ff9b9b}
+.song-license{display:grid;gap:5px;margin-top:10px;color:var(--text-muted);font-size:.76rem;line-height:1.45}
+.song-source-links{display:flex;flex-wrap:wrap;gap:12px}
+.song-source-links a{color:var(--accent,#80d8ff);text-decoration:underline;text-underline-offset:2px}
+.vh-activity-control-strip{display:grid;gap:12px;margin:0 0 20px;padding:16px;border:1px solid var(--border);border-radius:14px;background:var(--card-bg,rgba(255,255,255,.03))}
+.vh-activity-control-strip p{margin:4px 0 0;color:var(--text-muted);font-size:.86rem}
+.vh-activity-control-actions{display:flex;flex-wrap:wrap;gap:10px}
+.vh-activity-control-strip small{color:var(--text-muted)}
+@media(max-width:560px){.vh-activity-control-actions button{flex:1 1 130px}}
