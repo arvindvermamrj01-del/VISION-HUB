@@ -7,7 +7,7 @@
   function render(){
     const host=$("songsLibraryGrid");if(!host)return;
     const query=String($("songLibrarySearch")?.value||"").trim().toLowerCase();
-    const rows=songs.filter(song=>[song.title,song.artist].join(" ").toLowerCase().includes(query));
+    const rows=songs.filter(song=>[song.title,song.artist,song.description,song.genre].join(" ").toLowerCase().includes(query));
     host.replaceChildren();
     if(!rows.length){
       const empty=document.createElement("div");empty.className="empty-state";
@@ -24,16 +24,33 @@
       const body=document.createElement("div");body.className="song-card-body";
       const title=document.createElement("h3");title.textContent=song.title;
       const artist=document.createElement("p");artist.className="song-artist";artist.textContent=song.artist||"Vision Hub Music";
-      const audio=document.createElement("audio");audio.controls=true;audio.preload="none";audio.src=httpsUrl(song.playable_url||song.audio_url);audio.setAttribute("aria-label","Play "+song.title);
+      const description=document.createElement("p");description.className="song-description";description.textContent=song.description||"";
+      const audio=document.createElement("audio");audio.controls=true;audio.preload="metadata";audio.src=httpsUrl(song.playable_url||song.audio_url);audio.setAttribute("aria-label","Play "+song.title);
+      const duration=document.createElement("small");duration.className="song-duration";duration.textContent="Loading duration…";
+      audio.addEventListener("loadedmetadata",()=>{const seconds=Number(audio.duration);if(Number.isFinite(seconds)&&seconds>0){const mins=Math.floor(seconds/60),secs=Math.floor(seconds%60);duration.textContent="Duration · "+mins+":"+String(secs).padStart(2,"0");}else duration.textContent="Duration unavailable";},{once:true});
+      audio.addEventListener("error",()=>{duration.textContent="Audio source could not be loaded. Check the source link.";duration.classList.add("is-error");});
       audio.addEventListener("play",()=>document.querySelectorAll(".song-card audio").forEach(other=>{if(other!==audio)other.pause();}));
-      body.append(title,artist,audio);card.append(cover,body);host.appendChild(card);
+      body.append(title,artist);
+      if(description.textContent)body.appendChild(description);
+      body.appendChild(duration);
+      body.appendChild(audio);
+      const credits=document.createElement("div");credits.className="song-license";
+      if(song.genre){const genre=document.createElement("span");genre.textContent=song.genre;credits.appendChild(genre);}
+      if(song.license_name){const license=document.createElement("span");license.textContent=song.license_name+(song.license_credit?" · "+song.license_credit:"");credits.appendChild(license);}
+      const links=document.createElement("div");links.className="song-source-links";
+      const sourceUrl=httpsUrl(song.source_url),licenseUrl=httpsUrl(song.license_url);
+      if(sourceUrl){const link=document.createElement("a");link.href=sourceUrl;link.target="_blank";link.rel="noopener noreferrer";link.textContent="Source / track details";links.appendChild(link);}
+      if(licenseUrl){const link=document.createElement("a");link.href=licenseUrl;link.target="_blank";link.rel="noopener noreferrer";link.textContent="License terms";links.appendChild(link);}
+      if(links.childElementCount)credits.appendChild(links);
+      if(credits.childElementCount)body.appendChild(credits);
+      card.append(cover,body);host.appendChild(card);
     });
   }
   async function load(){
     const host=$("songsLibraryGrid");if(!host||!db||loading)return;
     loading=true;
     try{
-      let {data,error}=await db.from("vh_songs").select("id,title,artist,audio_url,poster_url,storage_provider,storage_path,created_at").eq("is_published",true).order("created_at",{ascending:false}).limit(40);
+      let {data,error}=await db.from("vh_songs").select("id,title,artist,audio_url,poster_url,storage_provider,storage_path,description,source_url,license_name,license_url,license_credit,genre,created_at").eq("is_published",true).order("created_at",{ascending:false}).limit(40);
       if(error&&/storage_provider|storage_path|column/i.test(error.message||"")){
         const legacy=await db.from("vh_songs").select("id,title,artist,audio_url,poster_url,created_at").eq("is_published",true).order("created_at",{ascending:false}).limit(40);
         data=legacy.data;error=legacy.error;
