@@ -2,13 +2,17 @@
 -- Admins and sub-admins retain full management access. Editors can manage only their own non-Short content.
 begin;
 
-create or replace function public.vh_can_manage_content_item(p_content_id bigint)
+create schema if not exists private authorization postgres;
+revoke all on schema private from public;
+grant usage on schema private to authenticated, service_role;
+
+create or replace function private.vh_can_manage_content_item(p_content_id bigint)
 returns boolean
 language sql
 stable
 security definer
 set search_path = ''
-as $$
+as $
   select exists (
     select 1
     from public.profiles p
@@ -23,9 +27,20 @@ as $$
         )
       )
   );
-$$;
-revoke all on function public.vh_can_manage_content_item(bigint) from public;
-grant execute on function public.vh_can_manage_content_item(bigint) to authenticated;
+$;
+revoke all on function private.vh_can_manage_content_item(bigint) from public, anon, authenticated;
+grant execute on function private.vh_can_manage_content_item(bigint) to authenticated, service_role;
+
+create or replace function public.vh_can_manage_content_item(p_content_id bigint)
+returns boolean
+language sql
+stable
+security invoker
+set search_path = ''
+as $ SELECT private.vh_can_manage_content_item(p_content_id); $;
+revoke all on function public.vh_can_manage_content_item(bigint) from public, anon, authenticated;
+grant execute on function public.vh_can_manage_content_item(bigint) to authenticated, service_role;
+
 
 drop policy if exists "vh_content_staff_all" on public.vh_content;
 create policy "vh_content_staff_all" on public.vh_content
