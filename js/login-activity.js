@@ -176,10 +176,35 @@
     }
   }
 
-  window.VHLoginActivity = { load, record, log, trackVisit };
+  async function resetActivity(){
+    const accessToken=await token();
+    if(!accessToken)throw new Error("Main administrator access required.");
+    const response=await fetch("/api/security/events",{
+      method:"POST",
+      headers:{Authorization:"Bearer "+accessToken,"Content-Type":"application/json"},
+      credentials:"same-origin",
+      cache:"no-store",
+      body:JSON.stringify({action:"reset"})
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Security activity could not be reset.");
+    latestEvents=[];totalCount=0;
+    await load(false);
+    return result;
+  }
+
+  window.VHLoginActivity = { load, record, log, trackVisit, resetActivity };
   document.addEventListener("click", event => {
     if (event.target.closest("#vhLoginActivityNav") || event.target.closest("#vhLoginActivityRefresh")) load(false);
     if (event.target.closest("#vhLoginActivityMore")) load(true);
+    if (event.target.closest("#vhLoginActivityReset")) {
+      if(!window.confirm("Clear all detailed security/login activity now? Recent failed-login lockout protection records are kept separately."))return;
+      const button=document.getElementById("vhLoginActivityReset");
+      if(button)button.disabled=true;
+      resetActivity().then(()=>{const stamp=document.getElementById("vhActivityRefreshed");if(stamp)stamp.textContent="Reset to zero · "+new Date().toLocaleTimeString();})
+        .catch(error=>{const body=rows();if(body)body.innerHTML='<tr><td colspan="7">'+esc(error.message||"Security activity reset failed.")+'</td></tr>';})
+        .finally(()=>{if(button)button.disabled=false;});
+    }
   });
   document.addEventListener("input", event => {
     if (event.target.matches("#vhActivitySearch")) render();
@@ -198,5 +223,10 @@
     updateVisibility();
     window.addEventListener("vh-auth-state-changed", updateVisibility);
     trackVisit();
+    // Refresh only while the Main Admin has this panel open and the tab is visible.
+    const refreshWhenVisible=()=>{if(document.visibilityState==="visible"&&panel?.classList.contains("active"))load(false);};
+    window.setInterval(refreshWhenVisible,5*60*1000);
+    window.addEventListener("focus",refreshWhenVisible);
+    document.addEventListener("visibilitychange",refreshWhenVisible);
   });
 })();
