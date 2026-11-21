@@ -99,6 +99,9 @@ ALTER FUNCTION public.handle_new_user() SET search_path = '';
 -- 4) Remove overlapping legacy content/request policies while preserving the
 -- exact effective user/admin permissions of the existing policy combinations.
 DROP POLICY IF EXISTS "Admins manage content" ON public.content;
+DROP POLICY IF EXISTS "vh_content_admin_insert" ON public.content;
+DROP POLICY IF EXISTS "vh_content_admin_update" ON public.content;
+DROP POLICY IF EXISTS "vh_content_admin_delete" ON public.content;
 CREATE POLICY "vh_content_admin_insert" ON public.content
   FOR INSERT TO authenticated
   WITH CHECK (private.is_admin());
@@ -113,6 +116,10 @@ CREATE POLICY "vh_content_admin_delete" ON public.content
 DROP POLICY IF EXISTS "Admins review requests" ON public.movie_requests;
 DROP POLICY IF EXISTS "Users submit own requests" ON public.movie_requests;
 DROP POLICY IF EXISTS "Users create and read own requests" ON public.movie_requests;
+DROP POLICY IF EXISTS "vh_movie_requests_select" ON public.movie_requests;
+DROP POLICY IF EXISTS "vh_movie_requests_insert" ON public.movie_requests;
+DROP POLICY IF EXISTS "vh_movie_requests_update" ON public.movie_requests;
+DROP POLICY IF EXISTS "vh_movie_requests_delete" ON public.movie_requests;
 CREATE POLICY "vh_movie_requests_select" ON public.movie_requests
   FOR SELECT TO authenticated
   USING (user_id = (SELECT auth.uid()) OR private.is_admin());
@@ -132,6 +139,11 @@ CREATE POLICY "vh_movie_requests_delete" ON public.movie_requests
 DROP POLICY IF EXISTS "catalog staff manage categories" ON public.vh_categories;
 DROP POLICY IF EXISTS "vh_categories_admin_all" ON public.vh_categories;
 DROP POLICY IF EXISTS "vh_categories_public_read" ON public.vh_categories;
+DROP POLICY IF EXISTS "vh_categories_public_read_anon" ON public.vh_categories;
+DROP POLICY IF EXISTS "vh_categories_public_read_authenticated" ON public.vh_categories;
+DROP POLICY IF EXISTS "vh_categories_staff_insert" ON public.vh_categories;
+DROP POLICY IF EXISTS "vh_categories_staff_update" ON public.vh_categories;
+DROP POLICY IF EXISTS "vh_categories_staff_delete" ON public.vh_categories;
 CREATE POLICY "vh_categories_public_read_anon" ON public.vh_categories
   FOR SELECT TO anon
   USING (is_active OR private.vh_is_admin());
@@ -154,6 +166,11 @@ CREATE POLICY "vh_categories_staff_delete" ON public.vh_categories
 DROP POLICY IF EXISTS "staff manage content" ON public.vh_content;
 DROP POLICY IF EXISTS "vh_content_staff_all" ON public.vh_content;
 DROP POLICY IF EXISTS "vh_content_public_read" ON public.vh_content;
+DROP POLICY IF EXISTS "vh_content_public_read_anon" ON public.vh_content;
+DROP POLICY IF EXISTS "vh_content_public_read_authenticated" ON public.vh_content;
+DROP POLICY IF EXISTS "vh_content_staff_insert" ON public.vh_content;
+DROP POLICY IF EXISTS "vh_content_staff_update" ON public.vh_content;
+DROP POLICY IF EXISTS "vh_content_staff_delete" ON public.vh_content;
 CREATE POLICY "vh_content_public_read_anon" ON public.vh_content
   FOR SELECT TO anon
   USING (published = true OR private.vh_is_admin());
@@ -229,6 +246,11 @@ DROP POLICY IF EXISTS "main admins manage media tracks" ON public.vh_media_asset
 DROP POLICY IF EXISTS "vh_media_assets_staff_all" ON public.vh_media_assets;
 DROP POLICY IF EXISTS "published media tracks readable" ON public.vh_media_assets;
 DROP POLICY IF EXISTS "vh_media_assets_public_read" ON public.vh_media_assets;
+DROP POLICY IF EXISTS "vh_media_assets_read_anon" ON public.vh_media_assets;
+DROP POLICY IF EXISTS "vh_media_assets_read_authenticated" ON public.vh_media_assets;
+DROP POLICY IF EXISTS "vh_media_assets_staff_insert" ON public.vh_media_assets;
+DROP POLICY IF EXISTS "vh_media_assets_staff_update" ON public.vh_media_assets;
+DROP POLICY IF EXISTS "vh_media_assets_staff_delete" ON public.vh_media_assets;
 CREATE POLICY "vh_media_assets_read_anon" ON public.vh_media_assets
   FOR SELECT TO anon
   USING (
@@ -268,6 +290,11 @@ DROP POLICY IF EXISTS "vh_requests_staff_update" ON public.vh_requests;
 DROP POLICY IF EXISTS "Users can submit requests for themselves" ON public.vh_requests;
 DROP POLICY IF EXISTS "vh_requests_public_insert" ON public.vh_requests;
 DROP POLICY IF EXISTS "Users can view their own requests" ON public.vh_requests;
+DROP POLICY IF EXISTS "vh_requests_insert_anon" ON public.vh_requests;
+DROP POLICY IF EXISTS "vh_requests_insert_authenticated" ON public.vh_requests;
+DROP POLICY IF EXISTS "vh_requests_select_authenticated" ON public.vh_requests;
+DROP POLICY IF EXISTS "vh_requests_update_staff" ON public.vh_requests;
+DROP POLICY IF EXISTS "vh_requests_delete_staff" ON public.vh_requests;
 CREATE POLICY "vh_requests_insert_anon" ON public.vh_requests
   FOR INSERT TO anon
   WITH CHECK (status = 'pending' AND reviewed_at IS NULL AND reviewed_by IS NULL);
@@ -296,6 +323,9 @@ CREATE POLICY "vh_requests_delete_staff" ON public.vh_requests
 -- 9) Public site settings were already readable to everyone; retain that
 -- behaviour and split administrator mutations into separate commands.
 DROP POLICY IF EXISTS "vh_site_settings_admin_all" ON public.vh_site_settings;
+DROP POLICY IF EXISTS "vh_site_settings_admin_insert" ON public.vh_site_settings;
+DROP POLICY IF EXISTS "vh_site_settings_admin_update" ON public.vh_site_settings;
+DROP POLICY IF EXISTS "vh_site_settings_admin_delete" ON public.vh_site_settings;
 CREATE POLICY "vh_site_settings_admin_insert" ON public.vh_site_settings
   FOR INSERT TO authenticated
   WITH CHECK (private.vh_is_admin());
@@ -311,6 +341,11 @@ CREATE POLICY "vh_site_settings_admin_delete" ON public.vh_site_settings
 DROP POLICY IF EXISTS "catalog staff manage songs" ON public.vh_songs;
 DROP POLICY IF EXISTS "vh_songs_admin_all" ON public.vh_songs;
 DROP POLICY IF EXISTS "vh_songs_public_read" ON public.vh_songs;
+DROP POLICY IF EXISTS "vh_songs_read_anon" ON public.vh_songs;
+DROP POLICY IF EXISTS "vh_songs_read_authenticated" ON public.vh_songs;
+DROP POLICY IF EXISTS "vh_songs_staff_insert" ON public.vh_songs;
+DROP POLICY IF EXISTS "vh_songs_staff_update" ON public.vh_songs;
+DROP POLICY IF EXISTS "vh_songs_staff_delete" ON public.vh_songs;
 CREATE POLICY "vh_songs_read_anon" ON public.vh_songs
   FOR SELECT TO anon
   USING (is_published OR private.vh_is_admin());
