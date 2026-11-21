@@ -11,9 +11,20 @@ export async function onRequestPost({ request, env }) {
     } catch (_) {
       return json({ error: "Invalid JSON request body." }, 400);
     }
-    const contentType = String(body.contentType || "").trim().toLowerCase();
     const kind = body.kind === "audio" ? "audio" : "video";
     const fileName = String(body.fileName || kind).slice(0, 180);
+    const reportedContentType = String(body.contentType || "").trim().toLowerCase();
+    const videoMimeByExtension = {
+      mp4: "video/mp4", m4v: "video/x-m4v", mov: "video/quicktime",
+      mkv: "video/x-matroska", webm: "video/webm", avi: "video/x-msvideo",
+      mpg: "video/mpeg", mpeg: "video/mpeg", "3gp": "video/3gpp",
+      "3g2": "video/3gpp2", ts: "video/mp2t", ogv: "video/ogg",
+      wmv: "video/x-ms-wmv", flv: "video/x-flv"
+    };
+    const extension = fileName.includes(".") ? fileName.split(".").pop().toLowerCase() : "";
+    const contentType = kind === "video" && !reportedContentType.startsWith("video/")
+      ? (videoMimeByExtension[extension] || reportedContentType)
+      : reportedContentType;
     const fileSize = Number(body.fileSize || 0);
     const allowedAudioTypes = ["audio/mpeg","audio/mp4","audio/aac","audio/ogg","audio/wav","audio/x-wav","audio/flac","audio/x-flac","audio/webm","audio/opus"];
     const validType = kind === "audio" ? allowedAudioTypes.includes(contentType) : contentType.startsWith("video/");
