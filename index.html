@@ -22,9 +22,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link rel="stylesheet" href="css/style.css?v=20261120-6"/>
-  <link rel="stylesheet" href="css/vision-hyper-ui.css?v=20261120-19"/>
+  <link rel="stylesheet" href="css/vision-hyper-ui.css?v=20261121-20"/>
   <link rel="stylesheet" href="css/vision-brand-aurora.css?v=20261120-2"/>
-  <link rel="stylesheet" href="css/cinema4u-layout.css?v=20261121-3"/>
+  <link rel="stylesheet" href="css/cinema4u-layout.css?v=20261121-4"/>
 </head>
 <body>
   <div id="app">
@@ -734,7 +734,7 @@
           
           <div id="tab-login-activity" class="admin-tab" data-vh-roles="admin">
             <h2>🔐 Security & Login Activity</h2>
-            <p>Guest visits, user sign-ins, Admin attempts and blocked access. IP addresses and account details are visible only to the Main Admin. Raw IP records are retained for up to 90 days; passwords, OTPs and session tokens are never stored here.</p>
+            <p>Guest visits, user sign-ins, Admin attempts and blocked access. Detailed activity rows are retained up to 24 hours and visible only to the Main Admin. Separate failed-attempt signals remain up to 90 days for brute-force protection; passwords, OTPs and session tokens are never stored here.</p>
             <div class="vh-activity-toolbar">
               <select id="vhActivityFilter" aria-label="Filter security activity">
                 <option value="all">All activity</option>
@@ -744,6 +744,7 @@
               </select>
               <input id="vhActivitySearch" type="search" placeholder="Search IP, account, browser or page…" aria-label="Search security activity"/>
               <button id="vhLoginActivityRefresh" type="button"><i class="fas fa-rotate"></i> Refresh</button>
+              <button id="vhLoginActivityReset" type="button" class="btn-delete"><i class="fas fa-rotate-left"></i> Reset to zero</button>
               <button id="vhLoginActivityMore" type="button" hidden>Load older events</button>
               <span id="vhActivityTotal">Not loaded</span>
               <small id="vhActivityRefreshed"></small>
@@ -1170,6 +1171,14 @@
           <!-- TAB 6: Analytics & Reports -->
           <div id="tab-reports" class="admin-tab">
             <h2>📊 Platform Reports & Insights</h2>
+            <section class="vh-activity-control-strip" aria-label="Tracked analytics activity controls">
+              <div><strong>Tracked activity · rolling 24 hours</strong><p>Old events are removed automatically. Reset clears the current analytics history immediately.</p></div>
+              <div class="vh-activity-control-actions">
+                <button id="analyticsActivityRefresh" type="button" class="btn-secondary" onclick="refreshAnalyticsActivity()"><i class="fas fa-rotate"></i> Refresh activity</button>
+                <button id="analyticsActivityReset" type="button" class="btn-delete" onclick="resetAnalyticsActivity()"><i class="fas fa-rotate-left"></i> Reset to zero</button>
+              </div>
+              <small id="analyticsActivityStatus" role="status">Analytics are retained for 24 hours.</small>
+            </section>
             <div class="reports-grid">
               <div class="report-card">
                 <h4>📈 Most Watched Content</h4>
@@ -1462,7 +1471,7 @@
       <div class="modal-box">
         <button type="button" id="vhMovieDetailsToggle" class="vh-movie-details-toggle" aria-expanded="true" aria-label="Minimise movie details" title="Minimise movie details" onclick="toggleMovieDetails()"><i class="fas fa-compress-alt"></i></button>
 
-        <button class="modal-close" onclick="closeModalBtn()" aria-label="Close dialog"><i class="fas fa-times"></i></button>
+        <button type="button" class="modal-close" onclick="event.preventDefault();event.stopPropagation();window.closeModalBtn()" aria-label="Close dialog"><i class="fas fa-times"></i></button>
         <div class="modal-hero" id="modalHero"></div>
         <div class="vh-movie-compact-head" id="vhMovieCompactHead"><span class="vh-movie-compact-poster" id="vhMovieCompactPoster"></span><strong id="vhMovieCompactTitle">Movie details</strong><span class="vh-movie-compact-hint">Details minimised</span></div>
         <div class="modal-body">
@@ -1732,19 +1741,19 @@
 <script src="js/app.js?v=20261120-12"></script>
 <script src="js/posts-public.js?v=20261121-2"></script>
 <script src="js/analytics.js"></script>
-<script src="js/content-admin.js?v=20261120-12"></script>
+<script src="js/content-admin.js?v=20261121-13"></script>
 <script src="js/posts-admin.js?v=20261121-1"></script>
 <script src="js/storage-manager.js?v=20261120-2"></script>
 <script src="js/request-manager.js"></script>
-<script src="js/admin-tools.js"></script>
-<script src="js/login-activity.js?v=20261120-4"></script>
+<script src="js/admin-tools.js?v=20261121-1"></script>
+<script src="js/login-activity.js?v=20261121-5"></script>
 <script src="js/maintenance-mode.js"></script>
 <script src="js/public-settings.js"></script>
 <script src="js/theme-manager.js?v=20261120-5"></script>
 <script src="js/donation-manager.js?v=20261120-3"></script>
 <script src="js/ads-manager.js"></script>
 <script src="js/episode-manager.js"></script>
-<script src="js/song-library.js"></script>
+<script src="js/song-library.js?v=20261121-1"></script>
 <script src="js/community.js"></script>
 <script src="js/experience-ui.js?v=20261120-21"></script>
 <script src="js/cinema-home.js?v=20261120-3"></script>
