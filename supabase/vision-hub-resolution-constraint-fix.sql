@@ -8,6 +8,7 @@ ALTER TABLE public.vh_media_assets
   CHECK (
     resolution IS NULL OR resolution = ANY (
       ARRAY[
+        'original'::text,
         '180p'::text,
         '240p'::text,
         '360p'::text,
