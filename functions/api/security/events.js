@@ -27,7 +27,9 @@ function validSessionId(value) {
 }
 
 async function cleanup(db) {
-  await db.prepare("DELETE FROM vh_security_events WHERE created_at < unixepoch() - 7776000").run();
+  // Detailed IP/browser activity is retained for 24 hours only.
+  await db.prepare("DELETE FROM vh_security_events WHERE created_at < unixepoch() - 86400").run();
+  // Keep minimum failed-attempt metadata longer for brute-force rate limiting.
   await db.prepare("DELETE FROM vh_admin_login_attempts WHERE started_at < unixepoch() - 7776000").run();
 }
 
@@ -44,7 +46,7 @@ export async function onRequestGet({ request, env }) {
       "FROM vh_security_events ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?"
     ).bind(limit, offset).all();
     const total = await env.VH_SECURITY_DB.prepare("SELECT COUNT(*) AS total FROM vh_security_events").first();
-    return json({ events: result.results || [], total: Number(total?.total || 0), offset, limit, retentionDays: 90, viewerRole: profile.role });
+    return json({ events: result.results || [], total: Number(total?.total || 0), offset, limit, retentionHours: 24, lockoutMetadataRetentionDays: 90, viewerRole: profile.role });
   } catch (error) {
     const status = error.status || (/Authentication|required/i.test(error.message || "") ? 401 : 403);
     return json({ error: error.message || "Main administrator access required." }, status);
@@ -56,6 +58,12 @@ export async function onRequestPost({ request, env }) {
     if (!env.VH_SECURITY_DB) return json({ error: "Security activity storage is not configured." }, 503);
     const body = await request.json().catch(() => null);
     if (!body || typeof body !== "object") return json({ error: "Invalid event payload." }, 400);
+    if(String(body.action||"")==="reset"){
+      await requireRole(request,env,["admin"]);
+      await env.VH_SECURITY_DB.prepare("DELETE FROM vh_security_events").run();
+      return json({cleared:true,total:0,retentionHours:24,lockoutMetadataPreserved:true});
+    }
+
     const requestedType = String(body.type || "");
     if (!authenticatedTypes.has(requestedType) && !publicTypes.has(requestedType)) {
       return json({ error: "Unsupported activity event." }, 400);
