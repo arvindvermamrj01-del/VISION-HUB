@@ -363,4 +363,86 @@ CREATE POLICY "vh_songs_staff_delete" ON public.vh_songs
   FOR DELETE TO authenticated
   USING (private.vh_can_manage_catalog());
 
+
+-- 11) Keep public RPC entry points invoker-safe. Their SECURITY DEFINER
+-- implementations live in the non-exposed private schema.
+GRANT USAGE ON SCHEMA private TO anon, authenticated;
+CREATE OR REPLACE FUNCTION private.vh_get_popular_content(p_limit integer DEFAULT 10)
+RETURNS TABLE(content_id bigint, view_count bigint)
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $$
+  SELECT e.content_id, count(*)::bigint
+  FROM public.vh_analytics_events e
+  JOIN public.vh_content c ON c.id=e.content_id
+  WHERE e.event_type='content_view' AND e.content_id IS NOT NULL
+    AND e.created_at>=now()-interval '30 days'
+    AND c.published=true AND c.content_type<>'Episode'
+  GROUP BY e.content_id
+  ORDER BY count(*) DESC,max(e.created_at) DESC
+  LIMIT greatest(1,least(coalesce(p_limit,10),50));
+$$;
+REVOKE ALL ON FUNCTION private.vh_get_popular_content(integer) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION private.vh_get_popular_content(integer) TO anon,authenticated;
+CREATE OR REPLACE FUNCTION public.vh_get_popular_content(p_limit integer DEFAULT 10)
+RETURNS TABLE(content_id bigint, view_count bigint)
+LANGUAGE sql STABLE SECURITY INVOKER SET search_path = '' AS $$
+  SELECT * FROM private.vh_get_popular_content(p_limit);
+$$;
+REVOKE ALL ON FUNCTION public.vh_get_popular_content(integer) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.vh_get_popular_content(integer) TO anon,authenticated;
+
+CREATE OR REPLACE FUNCTION private.vh_vote_feedback(p_feedback_id bigint)
+RETURNS integer
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
+DECLARE v_user uuid := (SELECT auth.uid()); v_inserted bigint; v_votes integer;
+BEGIN
+  IF v_user IS NULL THEN RAISE EXCEPTION 'Sign in to vote.'; END IF;
+  INSERT INTO public.vh_feedback_votes(feedback_id,user_id)
+  SELECT f.id,v_user FROM public.vh_feedback f
+  WHERE f.id=p_feedback_id AND f.status IN ('planned','in_progress','completed')
+  ON CONFLICT (feedback_id,user_id) DO NOTHING RETURNING id INTO v_inserted;
+  IF v_inserted IS NOT NULL THEN
+    UPDATE public.vh_feedback SET upvotes=upvotes+1,updated_at=now() WHERE id=p_feedback_id;
+  END IF;
+  SELECT upvotes INTO v_votes FROM public.vh_feedback WHERE id=p_feedback_id;
+  IF v_votes IS NULL THEN RAISE EXCEPTION 'Feedback item not found.'; END IF;
+  RETURN v_votes;
+END;
+$$;
+REVOKE ALL ON FUNCTION private.vh_vote_feedback(bigint) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION private.vh_vote_feedback(bigint) TO authenticated;
+CREATE OR REPLACE FUNCTION public.vh_vote_feedback(p_feedback_id bigint)
+RETURNS integer
+LANGUAGE sql SECURITY INVOKER SET search_path = '' AS $$
+  SELECT private.vh_vote_feedback(p_feedback_id);
+$$;
+REVOKE ALL ON FUNCTION public.vh_vote_feedback(bigint) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.vh_vote_feedback(bigint) TO authenticated;
+
+-- 12) Consolidate community-board SELECT policies by role, and index all
+-- remaining foreign keys added by the feature migrations.
+DROP POLICY IF EXISTS "vh_feedback_public_board" ON public.vh_feedback;
+DROP POLICY IF EXISTS "vh_feedback_owner_read" ON public.vh_feedback;
+DROP POLICY IF EXISTS "vh_feedback_admin_read" ON public.vh_feedback;
+DROP POLICY IF EXISTS "vh_feedback_authenticated_read" ON public.vh_feedback;
+CREATE POLICY "vh_feedback_public_board" ON public.vh_feedback
+  FOR SELECT TO anon
+  USING (status IN ('planned','in_progress','completed'));
+CREATE POLICY "vh_feedback_authenticated_read" ON public.vh_feedback
+  FOR SELECT TO authenticated
+  USING (status IN ('planned','in_progress','completed')
+    OR user_id=(SELECT auth.uid()) OR public.vh_is_admin());
+CREATE INDEX IF NOT EXISTS vh_donations_verified_by_idx ON public.vh_donations(verified_by);
+CREATE INDEX IF NOT EXISTS vh_feedback_votes_user_id_idx ON public.vh_feedback_votes(user_id);
+
+-- 13) Include download-link clicks in the allowed first-party analytics events.
+ALTER TABLE public.vh_analytics_events
+  DROP CONSTRAINT IF EXISTS vh_analytics_events_event_type_check;
+ALTER TABLE public.vh_analytics_events
+  ADD CONSTRAINT vh_analytics_events_event_type_check
+  CHECK (event_type IN ('page_view','content_view','play_click','download_click','request_submit'));
+DROP POLICY IF EXISTS "vh_analytics_public_insert" ON public.vh_analytics_events;
+CREATE POLICY "vh_analytics_public_insert" ON public.vh_analytics_events
+  FOR INSERT TO anon,authenticated
+  WITH CHECK (event_type IN ('page_view','content_view','play_click','download_click','request_submit'));
+
 COMMIT;
