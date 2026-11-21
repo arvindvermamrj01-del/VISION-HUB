@@ -1,3 +1,7 @@
+CURRENT PRODUCTION STATUS
+-------------------------
+See docs/VISION-HUB-CURRENT-STATUS.md for the latest verified deployment, database state, movie/episode/audio upload fixes, completed checks and remaining blockers. That document supersedes older status snapshots in the docs folder.
+
 VISION HUB — DEPLOYMENT & INTEGRATION GUIDE
 ===============================================
 
@@ -124,15 +128,21 @@ Previously applied account/request upgrades should not need to be repeated:
   supabase/vision-hub-platform-upgrade.sql
 
 For the current combined legacy + VH production schema, run
-supabase/vision-hub-production-hardening.sql after the feature bundle. It adds
-Backblaze B2 to the remaining provider checks, consolidates overlapping RLS
-policies without changing their effective permissions, adds the missing
-foreign-key indexes and restricts direct execution of trigger handlers. It
-does not change the configured default storage provider or modify catalog rows.
+supabase/vision-hub-production-hardening.sql after the feature bundle. It
+consolidates overlapping RLS policies without changing their effective
+permissions, adds missing foreign-key indexes, restricts direct execution of
+trigger handlers, hardens popular-content and community-voting RPC entry
+points, and enables download-click analytics. It does not move or delete
+catalog rows or media objects.
 
-After the migration, open Admin > Storage Manager to select Backblaze B2 when
-the bucket credentials have been verified. Existing legacy Supabase files and
-the current default provider remain supported.
+The B2 provider migration and feature bundle set Backblaze B2 as the preferred
+default for new storage, content and media records. The donation migrations
+cap submissions at ₹999, matching the public form. AdSense remains disabled
+until a valid publisher ID and approved ad slots are configured.
+
+After the migration, open Admin > Storage Manager to confirm the Backblaze B2
+connection status. New content defaults to B2; existing legacy Supabase and R2
+objects keep their original provider and remain supported.
 
 BACKBLAZE B2 — PREFERRED VIDEO STORAGE
 --------------------------------------

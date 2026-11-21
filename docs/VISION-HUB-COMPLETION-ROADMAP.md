@@ -1,4 +1,6 @@
 # VISION HUB — Completion Roadmap & Verification Plan
+> **Current-state notice (21 Nov 2026):** this roadmap was an earlier planning snapshot. Its Supabase connector-mismatch and pre-migration statements are historical and no longer current. Use [VISION HUB Current Production Status](VISION-HUB-CURRENT-STATUS.md) for the verified live schema, upload root causes/fixes, deployment, current blockers and test evidence.
+
 
 **Purpose:** finish the existing VISION HUB application without replacing its approved layout, while preserving existing database rows, media objects, user accounts and RLS.
 

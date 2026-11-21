@@ -1,4 +1,6 @@
 # VISION HUB — Master feature matrix
+> **Current-state notice (21 Nov 2026):** this matrix describes intended feature coverage, not live verification. For the current Production deployment, applied migrations, actual table inventory and pending E2E tests, see [VISION HUB Current Production Status](VISION-HUB-CURRENT-STATUS.md).
+
 
 This is the working completion ledger. “Implemented” means code/schema is present; it does not mean a live provider credential, database migration or final browser test has already succeeded.
 
