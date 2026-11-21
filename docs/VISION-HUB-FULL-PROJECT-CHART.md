@@ -392,7 +392,8 @@ Public Pages URL पहले से Internet पर खुलती है। �
 | RPC/RLS hardening | Invoker wrappers, policy consolidation, indexes और download analytics | PR #23 merged/deployed |
 | Current status docs | Live state and blockers documented | PR #24 merged/deployed |
 | Full portfolio | Feature + setup + permissions + launch chart | PR #25 merged/deployed |
-| Full start-to-launch project map | Hosting, domain, all services, data upload, permissions and launch gates | PR #26 in documentation release |\n| Final production sign-off | Real upload, member and permission E2E | Pending |
+| Full start-to-launch project map | Hosting, domain, all services, data upload, permissions and launch gates | PR #26 in documentation release |
+| Final production sign-off | Real upload, member and permission E2E | Pending |
 
 ## 13. अब आगे की Step-by-Step Testing — PASS / FAIL / BLOCKED register
 
