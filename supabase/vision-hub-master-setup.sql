@@ -23,10 +23,10 @@ begin
       update public.profiles
       set fullname = coalesce(nullif(btrim(fullname), ''), nullif(btrim(full_name), ''))
       where fullname is null or btrim(fullname) = ''
-    $copy_profile_names$;
+    $copy_profile_names$$;
   end if;
 end
-$vh_profile_name_compat$;
+$vh_profile_name_compat$$;
 alter table public.profiles add column if not exists role text not null default 'user';
 alter table public.profiles add column if not exists created_at timestamptz not null default now();
 alter table public.profiles enable row level security;
@@ -38,19 +38,19 @@ grant usage on schema private to anon, authenticated, service_role;
 create or replace function private.vh_is_admin()
 returns boolean language sql stable security definer
 set search_path = ''
-as $
+as $$
   select exists (
     select 1 from public.profiles p
     where p.id = (select auth.uid()) and p.role = 'admin'
   );
-$;
+$$;
 revoke all on function private.vh_is_admin() from public, anon, authenticated;
 grant execute on function private.vh_is_admin() to anon, authenticated, service_role;
 
 create or replace function public.vh_is_admin()
 returns boolean language sql stable security invoker
 set search_path = ''
-as $ select private.vh_is_admin(); $;
+as $$ select private.vh_is_admin(); $$;
 revoke all on function public.vh_is_admin() from public, anon, authenticated;
 grant execute on function public.vh_is_admin() to anon, authenticated, service_role;
 
@@ -68,7 +68,7 @@ begin
   end if;
   return new;
 end;
-$;
+$$;
 revoke all on function public.vh_guard_profile_role() from public, anon, authenticated;
 drop trigger if exists vh_guard_profile_role on public.profiles;
 create trigger vh_guard_profile_role
