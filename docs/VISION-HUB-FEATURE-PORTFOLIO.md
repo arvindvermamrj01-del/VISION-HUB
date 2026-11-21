@@ -1,4 +1,6 @@
 # VISION HUB - Feature Portfolio & Completion Chart
+> **Current-state notice (21 Nov 2026):** this portfolio predates the latest production fixes and schema reconciliation. Use [VISION HUB Current Production Status](VISION-HUB-CURRENT-STATUS.md) as the source of truth for what is now deployed, what is verified, and what remains blocked.
+
 
 **Snapshot:** 21 November 2026  
 **Purpose:** review the current product, identify what is implemented, what is verified, and what remains blocked before starting the next feature batch.
