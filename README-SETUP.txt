@@ -124,11 +124,17 @@ Previously applied account/request upgrades should not need to be repeated:
   supabase/vision-hub-platform-upgrade.sql
 
 For the current combined legacy + VH production schema, run
-supabase/vision-hub-production-hardening.sql after the feature bundle. It adds
-Backblaze B2 to the remaining provider checks, consolidates overlapping RLS
-policies without changing their effective permissions, adds the missing
-foreign-key indexes and restricts direct execution of trigger handlers. It
-does not change the configured default storage provider or modify catalog rows.
+supabase/vision-hub-production-hardening.sql after the feature bundle. It
+consolidates overlapping RLS policies without changing their effective
+permissions, adds missing foreign-key indexes, restricts direct execution of
+trigger handlers, hardens popular-content and community-voting RPC entry
+points, and enables download-click analytics. It does not move or delete
+catalog rows or media objects.
+
+The B2 provider migration and feature bundle set Backblaze B2 as the preferred
+default for new storage, content and media records. The donation migrations
+cap submissions at ₹999, matching the public form. AdSense remains disabled
+until a valid publisher ID and approved ad slots are configured.
 
 After the migration, open Admin > Storage Manager to select Backblaze B2 when
 the bucket credentials have been verified. Existing legacy Supabase files and
