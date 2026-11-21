@@ -652,10 +652,10 @@
     let youtubeId="";
     try{
       const sourceUrl=new URL(String(asset.url||""));
-      const host=sourceUrl.hostname.toLowerCase().replace(/^www\\./,"");
+      const host=sourceUrl.hostname.toLowerCase().replace(/^www\./,"");
       if(host==="youtu.be")youtubeId=sourceUrl.pathname.split("/").filter(Boolean)[0]||"";
       else if(["youtube.com","m.youtube.com","youtube-nocookie.com"].includes(host)){
-        youtubeId=sourceUrl.searchParams.get("v")||sourceUrl.pathname.match(/\\/(?:embed|shorts|live)\\/([^/?]+)/)?.[1]||"";
+        youtubeId=sourceUrl.searchParams.get("v")||sourceUrl.pathname.match(/\/(?:embed|shorts|live)\/([^/?]+)/)?.[1]||"";
       }
     }catch(_){}
     if(/^[A-Za-z0-9_-]{11}$/.test(youtubeId)){
@@ -968,7 +968,17 @@
         panel?.scrollIntoView({behavior:"smooth",block:"start"});
         if(activeVideo&&typeof activeVideo.play==="function"){
           const playback=activeVideo.play();
-          playback?.catch(()=>{});
+          playback?.catch(error=>{
+            const status=$("detailPlayerStatus"),empty=$("detailPlayerEmpty");
+            if(error?.name==="NotAllowedError"){
+              if(status)status.textContent="Video ready — press Play in the player controls.";
+              return;
+            }
+            const message="Playback could not start: "+(error?.message||error?.name||"browser error");
+            if(status)status.textContent=message;
+            if(empty){empty.textContent=message;empty.classList.remove("hidden");}
+            toast(message);
+          });
         }else if(!((item.media_assets||[]).some(asset=>asset?.url&&(!asset.asset_type||asset.asset_type==="video"))||item.video_url)){
           toast("No verified video source has been published for this title yet.");
         }
