@@ -1,12 +1,12 @@
 # VISION HUB — Current Production Status
-**Snapshot:** 21 November 2026, 04:46 UTC onward  
+**Snapshot:** 21 November 2026, 04:49 UTC onward  
 **Purpose:** truthful working status; supersedes older checklist snapshots where their production facts conflict.
 
 ## Production deployment
 - Cloudflare Pages project: `vision-hub`, automatic deployment from GitHub `main`.
-- Latest verified Production deployment at snapshot: [`ecc5e5bb`](https://ecc5e5bb.vision-hub-bat.pages.dev), commit `09c461d4f11e92d73488411651c9d48374fdc483`; Cloudflare build and deploy completed successfully.
+- Latest verified Production deployment at snapshot: [`378ff02c`](https://378ff02c.vision-hub-bat.pages.dev), commit `b3e03bfd4797dab2d8549126a305c21a7734c1f8`; Cloudflare build and deploy completed successfully.
 - Production alias: https://vision-hub-bat.pages.dev
-- Recent merged fixes: PR #17 movie MIME/B2 defaults, PR #18 migration consistency, PR #19 episode/audio MIME detection, PR #20 Original video resolution, PR #21 episode Original resolution, PR #22 B2 defaults and donation cap.
+- Recent merged fixes: PR #17 movie MIME/B2 defaults, PR #18 migration consistency, PR #19 episode/audio MIME detection, PR #20 Original video resolution, PR #21 episode Original resolution, PR #22 B2 defaults and donation cap, PR #23 current-status documentation and RPC/RLS hardening.
 - No approved homepage, movie-detail popup, player or navigation layout was redesigned in this batch.
 
 ## Movie-upload failure — root causes found and fixed
@@ -44,7 +44,7 @@
 ## Safe production configuration
 - AdSense has been switched off because publisher ID and slot IDs are not configured; it must remain off until approval and configuration.
 - UPI ID and QR URL are not configured, so donation submission remains unavailable until the owner configures them.
-- Pages Production currently contains Supabase, B2 and Admin-session secret variable names. R2, Google Drive, Telegram bot and AdSense OAuth secrets are not present in the Production variable-name list.
+- Pages Production currently contains Supabase, B2 and Admin-session secret variable names. R2, PixelDrain, Google Drive, Telegram bot and AdSense OAuth secrets are not present in the Production variable-name list.
 - B2 remains private; Supabase private media remains supported for legacy objects.
 - Current direct single-PUT video limit is 5 GB; multipart/resumable upload above 5 GB is not implemented. Audio upload is capped at 1 GB.
 - Google Drive import is limited to public shared-file links; private/folder import and Drive-to-B2 copy are not implemented.
