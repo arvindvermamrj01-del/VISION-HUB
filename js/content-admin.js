@@ -112,9 +112,27 @@
     if (window.VH_SECURE_ADMIN_SESSION_READY) refreshStorageHealth();
   }
 
+  const VIDEO_MIME_BY_EXTENSION = Object.freeze({
+    mp4: "video/mp4", m4v: "video/x-m4v", mov: "video/quicktime",
+    mkv: "video/x-matroska", webm: "video/webm", avi: "video/x-msvideo",
+    mpg: "video/mpeg", mpeg: "video/mpeg", mpeg2: "video/mpeg",
+    m4p: "video/mp4", m4v: "video/x-m4v", "3gp": "video/3gpp",
+    "3g2": "video/3gpp2", ts: "video/mp2t", ogv: "video/ogg",
+    wmv: "video/x-ms-wmv", flv: "video/x-flv"
+  });
+
+  function videoContentType(file) {
+    const reported = String(file?.type || "").trim().toLowerCase();
+    if (reported.startsWith("video/")) return reported;
+    const extension = String(file?.name || "").split(".").pop().toLowerCase();
+    const inferred = VIDEO_MIME_BY_EXTENSION[extension];
+    if (inferred) return inferred;
+    throw new Error("Browser video format identify nahi kar paaya. MP4, MKV, MOV, WebM, AVI ya supported video format use karein.");
+  }
+
   async function uploadPrivate(file,user,provider) {
     if (!file) return null;
-    if (!file.type.startsWith("video/")) throw new Error("Selected file video format mein nahi hai.");
+    const contentType = videoContentType(file);
     if (provider === "pixeldrain") {
       const maxBytes=90*1024*1024;
       if(file.size>maxBytes)throw new Error("PixelDrain in-app upload is limited to 90 MiB by the Cloudflare request limit. Upload larger files on PixelDrain first, then paste the share link; use B2/R2 for full-size movie uploads.");
@@ -124,7 +142,7 @@
         method:"POST",
         headers:{
           "Authorization":"Bearer "+session.access_token,
-          "Content-Type":file.type,
+          "Content-Type":contentType,
           "X-VH-File-Name":encodeURIComponent(file.name),
           "X-VH-File-Size":String(file.size)
         },
@@ -140,17 +158,17 @@
       const response=await fetch("/api/media/upload-url",{
         method:"POST",
         headers:{"Authorization":"Bearer "+session.access_token,"Content-Type":"application/json"},
-        body:JSON.stringify({contentType:file.type,fileName:file.name,fileSize:file.size,provider})
+        body:JSON.stringify({contentType,fileName:file.name,fileSize:file.size,provider})
       });
       const signed=await response.json().catch(()=>({}));
       if(!response.ok||!signed.uploadUrl)throw new Error(signed.error||"Cloud storage upload could not be prepared.");
-      const uploadResponse=await fetch(signed.uploadUrl,{method:"PUT",headers:signed.headers||{"Content-Type":file.type},body:file});
+      const uploadResponse=await fetch(signed.uploadUrl,{method:"PUT",headers:signed.headers||{"Content-Type":contentType},body:file});
       if(!uploadResponse.ok)throw new Error("Cloud storage upload failed with HTTP "+uploadResponse.status+". Check bucket CORS and credentials.");
       return {path:signed.key,file,storage_provider:provider};
     }
     if(provider!=="supabase")throw new Error("Is provider ke liye direct upload connector abhi configure nahi hai. Supabase/R2 upload choose karein ya authorised direct URL dein.");
     const path = user.id + "/" + crypto.randomUUID() + "-" + slug(file.name);
-    const {error} = await db.storage.from(PRIVATE_BUCKET).upload(path,file,{upsert:false,contentType:file.type,cacheControl:"3600"});
+    const {error} = await db.storage.from(PRIVATE_BUCKET).upload(path,file,{upsert:false,contentType,cacheControl:"3600"});
     if (error) throw error;
     return {path,file,storage_provider:"supabase"};
   }
