@@ -14,6 +14,13 @@ alter table public.vh_storage_settings
 -- Make B2 the default for newly created settings rows and migrate the legacy default once.
 alter table public.vh_storage_settings
   alter column default_provider set default 'backblaze_b2';
+
+-- New content and media rows also default to B2 unless a legacy provider is
+-- explicitly selected by the caller. Existing rows retain their provider.
+alter table public.vh_content
+  alter column storage_provider set default 'backblaze_b2';
+alter table public.vh_media_assets
+  alter column storage_provider set default 'backblaze_b2';
 update public.vh_storage_settings
   set default_provider='backblaze_b2', updated_at=now()
   where id=1 and default_provider='supabase';
