@@ -12,7 +12,7 @@ language sql
 stable
 security definer
 set search_path = ''
-as $
+as $$
   select exists (
     select 1
     from public.profiles p
@@ -27,7 +27,7 @@ as $
         )
       )
   );
-$;
+$$;
 revoke all on function private.vh_can_manage_content_item(bigint) from public, anon, authenticated;
 grant execute on function private.vh_can_manage_content_item(bigint) to authenticated, service_role;
 
@@ -37,7 +37,7 @@ language sql
 stable
 security invoker
 set search_path = ''
-as $ SELECT private.vh_can_manage_content_item(p_content_id); $;
+as $$ SELECT private.vh_can_manage_content_item(p_content_id); $$;
 revoke all on function public.vh_can_manage_content_item(bigint) from public, anon, authenticated;
 grant execute on function public.vh_can_manage_content_item(bigint) to authenticated, service_role;
 
