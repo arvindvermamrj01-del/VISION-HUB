@@ -5,7 +5,12 @@ import { presignB2 } from "../../_shared/b2.js";
 export async function onRequestPost({ request, env }) {
   try {
     const { user } = await requireRole(request, env, ["admin", "sub_admin", "content_editor"]);
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch (_) {
+      return json({ error: "Invalid JSON request body." }, 400);
+    }
     const contentType = String(body.contentType || "").trim().toLowerCase();
     const kind = body.kind === "audio" ? "audio" : "video";
     const fileName = String(body.fileName || kind).slice(0, 180);
@@ -27,10 +32,10 @@ export async function onRequestPost({ request, env }) {
     }
     if (provider !== "cloudflare_r2") return json({ error: "Unsupported upload provider." }, 400);
     const signed = await presignR2(env, "PUT", key, contentType, uploadExpiry);
-    return json({ provider, key, kind, uploadUrl: signed.url, headers: signed.headers, expiresIn: 900 });
+    return json({ provider, key, kind, uploadUrl: signed.url, headers: signed.headers, expiresIn: uploadExpiry });
   } catch (error) {
     const message = error.message || "Could not create secure upload URL.";
-    const status = /Authentication|session/i.test(message) ? 401 : /permission/i.test(message) ? 403 : 503;
+    const status = error.status || (/Authentication|session/i.test(message) ? 401 : /permission/i.test(message) ? 403 : 503);
     return json({ error: message }, status);
   }
 }
