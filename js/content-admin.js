@@ -655,7 +655,7 @@
       const host=sourceUrl.hostname.toLowerCase().replace(/^www\./,"");
       if(host==="youtu.be")youtubeId=sourceUrl.pathname.split("/").filter(Boolean)[0]||"";
       else if(["youtube.com","m.youtube.com","youtube-nocookie.com"].includes(host)){
-        youtubeId=sourceUrl.searchParams.get("v")||sourceUrl.pathname.match(/\/(?:embed|shorts|live)\/([^/?]+)/)?.[1]||"";
+        const pathMatch=sourceUrl.pathname.match(/\/(?:embed|shorts|live)\/([^/?]+)/);\n        youtubeId=sourceUrl.searchParams.get("v")||pathMatch?.[1]||"";
       }
     }catch(_){}
     if(/^[A-Za-z0-9_-]{11}$/.test(youtubeId)){
