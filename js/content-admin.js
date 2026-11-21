@@ -647,6 +647,50 @@
     const inline=Boolean(targetVideoId);
     const provider=String(asset.storage_provider||"supabase").toLowerCase();
     const targetVideo=inline?$(targetVideoId):null;
+
+    // Public YouTube watch URLs need the embedded player, not an HTMLVideoElement.
+    let youtubeId="";
+    try{
+      const sourceUrl=new URL(String(asset.url||""));
+      const host=sourceUrl.hostname.toLowerCase().replace(/^www\./,"");
+      if(host==="youtu.be")youtubeId=sourceUrl.pathname.split("/").filter(Boolean)[0]||"";
+      else if(["youtube.com","m.youtube.com","youtube-nocookie.com"].includes(host)){
+        const pathMatch=sourceUrl.pathname.match(/\/(?:embed|shorts|live)\/([^/?]+)/);
+        youtubeId=sourceUrl.searchParams.get("v")||pathMatch?.[1]||"";
+      }
+    }catch(_){}
+    if(/^[A-Za-z0-9_-]{11}$/.test(youtubeId)){
+      const iframe=$(inline?"detailPlayerIframe":"playerIframe");
+      if(inline){
+        targetVideo?.pause();
+        if(targetVideo){targetVideo.removeAttribute("src");targetVideo.load();targetVideo.classList.add("hidden");}
+        $("detailPlayerEmpty")?.classList.add("hidden");
+      }else{
+        const oldVideo=$("playerFallback")?.querySelector("video");
+        if(oldVideo){oldVideo.pause();oldVideo.removeAttribute("src");oldVideo.load();}
+        $("playerFallback")?.classList.remove("active");
+        $("vhPlayerExtras")?.classList.add("hidden");
+      }
+      if(!iframe){
+        if(inline){
+          const empty=$("detailPlayerEmpty");
+          if(empty){empty.textContent="Embedded video player is unavailable.";empty.classList.remove("hidden");}
+          $("detailPlayerStatus").textContent="Player unavailable";
+        }else toast("Embedded video player is unavailable.");
+        return;
+      }
+      activeVideo=null;
+      iframe.src="https://www.youtube-nocookie.com/embed/"+youtubeId+"?rel=0&playsinline=1";
+      iframe.title=String(item.title||"Authorised full video");
+      iframe.classList.remove("hidden");
+      if(inline){
+        $("detailPlayerStatus").textContent="Official embedded video";
+        $("detailSpeedWrap")?.classList.add("hidden");
+        $("detailSubtitleWrap")?.classList.add("hidden");
+      }
+      return;
+    }
+
     if(provider==="google_drive"){
       const id=googleDriveFileId(asset.storage_path||asset.url);
       const iframe=$(inline?"detailPlayerIframe":"playerIframe"),fallback=inline?null:$("playerFallback");
@@ -709,9 +753,9 @@
       $("playerFallback")?.classList.add("active");
     }
     if(!activeVideo)return;
-    activeVideo.crossOrigin="anonymous";
+    // Public media playback does not require CORS. Forcing anonymous CORS blocks
+    // ordinary hosted video files whose CDNs do not send Access-Control-Allow-Origin.
     attachSubtitleTracks(item,inline?"detailPlayerSubtitle":"vhPlayerSubtitle",inline?"detailPlayerSpeed":"vhPlayerSpeed");
-    activeVideo.onerror=()=>toast("Video stream nahi chal paayi. Direct file URL aur storage access check karein.");
     const video=activeVideo;
     let playbackUserId=window.VH_USER_ID||null;
     const progressKey=()=>window.VH_ACCOUNT_DATA?.progressKey(item.id,playbackUserId)||("vh_progress_"+String(item.id));
@@ -778,13 +822,34 @@
       }).catch(()=>{});
       window.renderVisionHub?.();
     };
-    video.onerror=()=>toast("Video stream nahi chal paayi. Direct file URL aur storage access check karein.");
+    const status=inline?$("detailPlayerStatus"):$("playerResolutionStatus");
+    const empty=inline?$("detailPlayerEmpty"):null;
+    const sourceLabel=resolutionLabel(asset.resolution)+(asset.language?" · "+asset.language:"")+" · supplied source";
+    if(status)status.textContent="Loading video metadata…";
+    video.onloadeddata=()=>{if(status)status.textContent=sourceLabel+" · ready";};
+    video.oncanplay=()=>{if(status)status.textContent=sourceLabel+" · ready to play";};
+    video.onerror=()=>{
+      const code=video.error?.code||0;
+      const details=video.error?.message||"The browser could not decode or retrieve this media.";
+      const message="Video failed to load (media error "+code+"): "+details;
+      if(status)status.textContent="Playback error · "+code;
+      if(empty){empty.textContent=message;empty.classList.remove("hidden");}
+      toast(message);
+    };
     video.dataset.vhContentId=String(item.id);
     video.dataset.vhAssetUrl=String(asset.url);
     if(video.src!==asset.url){video.pause();video.src=asset.url;video.load();}
-    if(autoPlay)video.play().catch(()=>{});
-    const status=inline?$("detailPlayerStatus"):$("playerResolutionStatus");
-    if(status)status.textContent=resolutionLabel(asset.resolution)+(asset.language?" · "+asset.language:"")+" · supplied source";
+    if(autoPlay)video.play().catch(error=>{
+      if(error?.name==="AbortError")return;
+      if(error?.name==="NotAllowedError"){
+        if(status)status.textContent="Video ready — press Play in the controls.";
+      }else{
+        const message="Playback could not start: "+(error?.message||error?.name||"unknown browser error");
+        if(status)status.textContent=message;
+        if(empty){empty.textContent=message;empty.classList.remove("hidden");}
+        toast(message);
+      }
+    });
   }
 
   function setupDetailPlayer(item){
@@ -904,7 +969,17 @@
         panel?.scrollIntoView({behavior:"smooth",block:"start"});
         if(activeVideo&&typeof activeVideo.play==="function"){
           const playback=activeVideo.play();
-          playback?.catch(()=>{});
+          playback?.catch(error=>{
+            const status=$("detailPlayerStatus"),empty=$("detailPlayerEmpty");
+            if(error?.name==="NotAllowedError"){
+              if(status)status.textContent="Video ready — press Play in the player controls.";
+              return;
+            }
+            const message="Playback could not start: "+(error?.message||error?.name||"browser error");
+            if(status)status.textContent=message;
+            if(empty){empty.textContent=message;empty.classList.remove("hidden");}
+            toast(message);
+          });
         }else if(!((item.media_assets||[]).some(asset=>asset?.url&&(!asset.asset_type||asset.asset_type==="video"))||item.video_url)){
           toast("No verified video source has been published for this title yet.");
         }

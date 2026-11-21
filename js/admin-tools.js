@@ -140,6 +140,55 @@
     }
   }
 
+  async function analyticsRequest(method="GET",body=null){
+    await requireAdmin();
+    const {data:{session},error}=await db.auth.getSession();
+    if(error||!session?.access_token)throw new Error("Admin session expired. Sign in again.");
+    const response=await fetch("/api/analytics/events",{
+      method,
+      headers:{Authorization:"Bearer "+session.access_token,"Content-Type":"application/json"},
+      credentials:"same-origin",
+      cache:"no-store",
+      ...(body?{body:JSON.stringify(body)}:{})
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"Analytics activity could not be updated.");
+    return result;
+  }
+
+  window.refreshAnalyticsActivity=async(silent=false)=>{
+    const status=$("analyticsActivityStatus");
+    const buttons=[$("analyticsActivityRefresh"),$("analyticsActivityReset")].filter(Boolean);
+    buttons.forEach(button=>button.disabled=true);
+    if(status)status.textContent="Refreshing the last 24 hours of activity…";
+    try{
+      const result=await analyticsRequest("GET");
+      await loadReports();
+      if(status)status.textContent="Updated "+new Date().toLocaleTimeString()+" · "+Number(result.total||0)+" events in the rolling 24-hour window.";
+      if(!silent)toast("24-hour activity refreshed.");
+    }catch(error){
+      if(status)status.textContent=error.message||"Activity refresh failed.";
+      toast(error.message||"Activity refresh failed.");
+    }finally{buttons.forEach(button=>button.disabled=false);}
+  };
+
+  window.resetAnalyticsActivity=async()=>{
+    if(!window.confirm("Reset all tracked analytics events now? This clears the activity reports and sets them to zero. The management dashboard layout will stay unchanged."))return;
+    const status=$("analyticsActivityStatus");
+    const buttons=[$("analyticsActivityRefresh"),$("analyticsActivityReset")].filter(Boolean);
+    buttons.forEach(button=>button.disabled=true);
+    if(status)status.textContent="Resetting tracked analytics…";
+    try{
+      await analyticsRequest("POST",{action:"reset"});
+      await loadReports();
+      if(status)status.textContent="Activity reset to zero · "+new Date().toLocaleTimeString();
+      toast("Tracked analytics reset to zero.");
+    }catch(error){
+      if(status)status.textContent=error.message||"Activity reset failed.";
+      toast(error.message||"Activity reset failed.");
+    }finally{buttons.forEach(button=>button.disabled=false);}
+  };
+
   async function loadCategories() {
     const host=$("categoriesList"); if(!host)return;
     try {
@@ -463,6 +512,10 @@
   document.addEventListener("DOMContentLoaded",()=>{
     const watchers=[["tab-users-admin",loadUsers],["tab-team-admin",loadSubAdmins],["tab-dashboard",loadDashboard],["tab-reports",loadReports],["tab-categories",loadCategories],["tab-songs",loadSongs],["tab-settings",()=>{loadWebsiteSettings();loadDonations();}],["tab-community-admin",loadFeedbackAdmin]];
     watchers.forEach(([id,fn])=>{const el=$(id);if(el)new MutationObserver(()=>{if(el.classList.contains("active"))fn();}).observe(el,{attributes:true,attributeFilter:["class"]});});
+    window.setInterval(()=>{
+      const panel=$("tab-reports");
+      if(document.visibilityState==="visible"&&panel?.classList.contains("active"))window.refreshAnalyticsActivity?.(true);
+    },15*60*1000);
     db?.auth.onAuthStateChange((_event,session)=>{if(session?.user){loadDashboard();if($("tab-users-admin")?.classList.contains("active"))loadUsers();}});
     if(window.VH_IS_ADMIN)loadDashboard();
   });
