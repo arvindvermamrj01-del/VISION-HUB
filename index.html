@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="css/style.css?v=20261120-6"/>
   <link rel="stylesheet" href="css/vision-hyper-ui.css?v=20261120-19"/>
   <link rel="stylesheet" href="css/vision-brand-aurora.css?v=20261120-2"/>
-  <link rel="stylesheet" href="css/cinema4u-layout.css?v=20261120-11"/>
+  <link rel="stylesheet" href="css/cinema4u-layout.css?v=20261121-2"/>
 </head>
 <body>
   <div id="app">
@@ -289,6 +289,13 @@
       <section class="section cinema-legacy-rail">
         <div class="cinema-section-heading"><div><h2>⚡ Latest Releases</h2><p>Recently published titles</p></div><a onclick="showPage('movies')" class="see-all">Browse all →</a></div>
         <div class="movies-grid" id="newGrid"></div>
+      </section>
+      <section class="section cinema-legacy-rail hidden" id="publicPostsSection" aria-labelledby="publicPostsHeading">
+        <div class="cinema-section-heading">
+          <div><h2 id="publicPostsHeading">📣 Latest Posts</h2><p>Videos and updates published by the Vision Hub team</p></div>
+          <span class="cinema-heading-meta">Public feed</span>
+        </div>
+        <div class="movies-grid" id="publicPostsGrid" aria-live="polite"></div>
       </section>
       <section class="section cinema-legacy-rail hidden" id="popularContentSection">
         <div class="cinema-section-heading"><div><h2>🔥 Most Popular · Last 30 Days</h2><p>Based on real content-detail views</p></div></div>
@@ -1721,6 +1728,7 @@
 <script src="js/account-data.js"></script>
 <script src="js/account-portal.js"></script>
 <script src="js/app.js?v=20261120-12"></script>
+<script src="js/posts-public.js?v=20261121-1"></script>
 <script src="js/analytics.js"></script>
 <script src="js/content-admin.js?v=20261120-12"></script>
 <script src="js/posts-admin.js?v=20261121-1"></script>
