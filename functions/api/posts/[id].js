@@ -23,7 +23,7 @@ export async function onRequestGet({request,env,params}){
   try{
     const {user}=await requireRole(request,env,ROLES);
     const id=String(params?.id||"");
-    if(!/^[0-9a-f-]{36}$/i.test(id))return json({error:"Invalid post ID."},400);
+    if(!/^[1-9]\d*$/.test(id))return json({error:"Invalid post ID."},400);
     const post=await findOwnedPost(env,id,user.id);
     if(!post)return json({error:"Post not found."},404);
     const url=await signedMedia(env,post,post.storage_path);
@@ -35,7 +35,7 @@ export async function onRequestPatch({request,env,params}){
   try{
     const {user}=await requireRole(request,env,ROLES);
     const id=String(params?.id||"");
-    if(!/^[0-9a-f-]{36}$/i.test(id))return json({error:"Invalid post ID."},400);
+    if(!/^[1-9]\d*$/.test(id))return json({error:"Invalid post ID."},400);
     let body;try{body=await request.json();}catch(_){return json({error:"Invalid JSON body."},400);}
     const existing=await findOwnedPost(env,id,user.id);
     if(!existing)return json({error:"Post not found or not owned by this account."},404);
@@ -65,7 +65,7 @@ export async function onRequestDelete({request,env,params}){
   try{
     const {user}=await requireRole(request,env,ROLES);
     const id=String(params?.id||"");
-    if(!/^[0-9a-f-]{36}$/i.test(id))return json({error:"Invalid post ID."},400);
+    if(!/^[1-9]\d*$/.test(id))return json({error:"Invalid post ID."},400);
     const post=await findOwnedPost(env,id,user.id);
     if(!post)return json({error:"Post not found or not owned by this account."},404);
     if(!validPath(post.storage_path,user.id)||post.thumbnail_path&&!validPath(post.thumbnail_path,user.id))return json({error:"Stored media ownership check failed; nothing was deleted."},403);
