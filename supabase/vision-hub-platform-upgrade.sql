@@ -7,21 +7,25 @@ alter table public.profiles drop constraint if exists profiles_role_check;
 alter table public.profiles add constraint profiles_role_check
   check (role in ('user','admin','sub_admin','content_editor','moderator'));
 
-create or replace function public.vh_can_manage_content()
+create schema if not exists private authorization postgres;
+revoke all on schema private from public;
+grant usage on schema private to authenticated, service_role;
+
+create or replace function private.vh_can_manage_content()
 returns boolean language sql stable security definer
 set search_path = ''
-as $$
+as $
   select exists (
     select 1 from public.profiles p
     where p.id = (select auth.uid())
       and p.role in ('admin','sub_admin','content_editor')
   );
-$$;
+$;
 
-create or replace function public.vh_can_manage_content_item(p_content_id bigint)
+create or replace function private.vh_can_manage_content_item(p_content_id bigint)
 returns boolean language sql stable security definer
 set search_path = ''
-as $$
+as $
   select exists (
     select 1
     from public.profiles p
@@ -36,26 +40,46 @@ as $$
         )
       )
   );
-$$;
+$;
 
-revoke all on function public.vh_can_manage_content_item(bigint) from public;
-grant execute on function public.vh_can_manage_content_item(bigint) to authenticated;
-
-create or replace function public.vh_can_manage_requests()
+create or replace function private.vh_can_manage_requests()
 returns boolean language sql stable security definer
 set search_path = ''
-as $$
+as $
   select exists (
     select 1 from public.profiles p
     where p.id = (select auth.uid())
       and p.role in ('admin','sub_admin','moderator')
   );
-$$;
+$;
 
-revoke all on function public.vh_can_manage_content() from public;
-revoke all on function public.vh_can_manage_requests() from public;
-grant execute on function public.vh_can_manage_content() to authenticated;
-grant execute on function public.vh_can_manage_requests() to authenticated;
+revoke all on function private.vh_can_manage_content() from public, anon, authenticated;
+revoke all on function private.vh_can_manage_content_item(bigint) from public, anon, authenticated;
+revoke all on function private.vh_can_manage_requests() from public, anon, authenticated;
+grant execute on function private.vh_can_manage_content() to authenticated, service_role;
+grant execute on function private.vh_can_manage_content_item(bigint) to authenticated, service_role;
+grant execute on function private.vh_can_manage_requests() to authenticated, service_role;
+
+create or replace function public.vh_can_manage_content()
+returns boolean language sql stable security invoker
+set search_path = ''
+as $ select private.vh_can_manage_content(); $;
+create or replace function public.vh_can_manage_content_item(p_content_id bigint)
+returns boolean language sql stable security invoker
+set search_path = ''
+as $ select private.vh_can_manage_content_item(p_content_id); $;
+create or replace function public.vh_can_manage_requests()
+returns boolean language sql stable security invoker
+set search_path = ''
+as $ select private.vh_can_manage_requests(); $;
+
+revoke all on function public.vh_can_manage_content() from public, anon, authenticated;
+revoke all on function public.vh_can_manage_content_item(bigint) from public, anon, authenticated;
+revoke all on function public.vh_can_manage_requests() from public, anon, authenticated;
+grant execute on function public.vh_can_manage_content() to authenticated, service_role;
+grant execute on function public.vh_can_manage_content_item(bigint) to authenticated, service_role;
+grant execute on function public.vh_can_manage_requests() to authenticated, service_role;
+
 
 -- The current upload code uses this private bucket. It was missing from the original master setup.
 insert into storage.buckets (id, name, public)
