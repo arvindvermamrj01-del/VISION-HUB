@@ -1,3 +1,7 @@
+CURRENT PRODUCTION STATUS
+-------------------------
+See docs/VISION-HUB-CURRENT-STATUS.md for the latest verified deployment, database state, movie/episode/audio upload fixes, completed checks and remaining blockers. That document supersedes older status snapshots in the docs folder.
+
 VISION HUB — DEPLOYMENT & INTEGRATION GUIDE
 ===============================================
 
