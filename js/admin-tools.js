@@ -178,7 +178,7 @@
     try{if(poster){posterUrl=new URL(poster);if(posterUrl.protocol!=="https:"||posterUrl.username||posterUrl.password)throw new Error();}}catch(_){return toast("Poster must be a valid HTTPS URL.");}
     let directUrl=null;
     if(directAudio){try{directUrl=new URL(directAudio);if(directUrl.protocol!=="https:"||directUrl.username||directUrl.password)throw new Error();}catch(_){return toast("Audio URL must be a valid HTTPS URL.");}}
-    if(file&&(!file.type.startsWith("audio/")||file.size<=0||file.size>1024*1024*1024))return toast("Choose a valid audio file up to 1 GB.");
+    if(file&&(file.size<=0||file.size>1024*1024*1024))return toast("Choose a valid audio file up to 1 GB.");
     const button=form?.querySelector('[type="submit"]');if(button)button.disabled=true;
     const status=$("songUploadStatus"),setStatus=message=>{if(status)status.textContent=message;};
     setStatus(file?"Preparing secure audio upload…":"Saving song link…");
@@ -193,9 +193,11 @@
         storageProvider=$("songStorageProvider")?.value||"backblaze_b2";
         if(!["backblaze_b2","cloudflare_r2"].includes(storageProvider))throw new Error("Choose Backblaze B2 or Cloudflare R2 for private audio uploads.");
         const extension=file.name.split(".").pop()?.toLowerCase()||"";
-        const inferred={"mp3":"audio/mpeg","m4a":"audio/mp4","aac":"audio/aac","ogg":"audio/ogg","opus":"audio/ogg","wav":"audio/wav","flac":"audio/flac"};
-        const contentType=file.type||inferred[extension]||"";
-        if(!["audio/mpeg","audio/mp4","audio/aac","audio/ogg","audio/wav","audio/x-wav","audio/flac","audio/x-flac","audio/webm","audio/opus"].includes(contentType))throw new Error("Use an MP3, M4A, AAC, OGG, WAV, FLAC or supported WebM audio file.");
+        const allowedAudioTypes=["audio/mpeg","audio/mp4","audio/aac","audio/ogg","audio/wav","audio/x-wav","audio/flac","audio/x-flac","audio/webm","audio/opus"];
+        const inferred={"mp3":"audio/mpeg","mpga":"audio/mpeg","m4a":"audio/mp4","m4b":"audio/mp4","aac":"audio/aac","ogg":"audio/ogg","oga":"audio/ogg","opus":"audio/opus","wav":"audio/wav","flac":"audio/flac","webm":"audio/webm","weba":"audio/webm"};
+        const reportedType=String(file.type||"").trim().toLowerCase();
+        const contentType=allowedAudioTypes.includes(reportedType)?reportedType:(inferred[extension]||"");
+        if(!allowedAudioTypes.includes(contentType))throw new Error("Use an MP3, M4A, AAC, OGG, WAV, FLAC or supported WebM audio file.");
         const signedResponse=await fetch("/api/media/upload-url",{method:"POST",headers:{"Authorization":"Bearer "+sessionToken,"Content-Type":"application/json"},body:JSON.stringify({provider:storageProvider,kind:"audio",contentType,fileName:file.name,fileSize:file.size})});
         const signed=await signedResponse.json().catch(()=>({}));
         if(!signedResponse.ok)throw new Error(signed.error||"Could not prepare secure audio upload.");
