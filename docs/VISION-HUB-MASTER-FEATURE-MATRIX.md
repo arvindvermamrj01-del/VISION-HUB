@@ -1,7 +1,9 @@
 # VISION HUB — Master Feature Matrix
 
-The complete feature-by-feature implementation and verification register now lives in one source of truth:
+For the complete project journey from initial planning through GitHub, Cloudflare hosting, domain, Supabase, B2, catalog data upload, user/Admin flows and final public launch, see:
 
-**[VISION HUB Master Feature Portfolio & Completion Chart](VISION-HUB-MASTER-PORTFOLIO.md)**
+**[VISION HUB Full Project Chart](VISION-HUB-FULL-PROJECT-CHART.md)**
 
-The master portfolio includes the planned feature set, delivered/deployed work, live Production schema and configuration, role-based permission matrix, exact Movie upload root causes and fixes, stepwise E2E plan, required owner permissions and remaining blockers.
+For the current feature-by-feature implementation and verification state, see:
+
+**[VISION HUB Master Feature Portfolio](VISION-HUB-MASTER-PORTFOLIO.md)**

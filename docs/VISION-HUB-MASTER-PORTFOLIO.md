@@ -1,5 +1,7 @@
 # VISION HUB — Master Feature Portfolio & Completion Chart
 
+> **Start-to-launch project map:** read [VISION HUB Full Project Chart](VISION-HUB-FULL-PROJECT-CHART.md) first for the original end-to-end plan, where each hosting/database/storage service is used, how catalog data is uploaded, the current publication setup and the complete final sign-off sequence.
+
 **Status snapshot:** 21 November 2026  
 **Source of truth:** this document combines the older completion roadmap, Cinema4U feature comparison, master feature matrix and the latest Production checks. It distinguishes code present, database/configuration present and true end-to-end verification.
 
@@ -8,10 +10,10 @@
 VISION HUB का core platform, approved Cinema4U-style discovery layout, Admin Control Center, Supabase backend, Cloudflare Pages APIs, private media architecture, account features and integrations का code मौजूद है। Recent work ने Movie upload की वास्तविक database failure, B2 default mismatch, MIME detection और Episode schema gaps को ठीक किया है।
 
 **Current Production:** https://vision-hub-bat.pages.dev  
-**Latest verified deployment:** e5560c18  
-**Commit:** 63239698dceb2676b365464d67bf935a9e1d18f7  
+**Latest verified deployment:** 1006b1b9  
+**Commit:** f936f24d84127161c8c17deeb49c29b68ab35971  
 **Cloudflare:** Production build और deploy सफल  
-**GitHub:** PR #17–#24 merged; latest main branch matches the deployment commit.
+**GitHub:** PR #17–#25 merged at this snapshot; PR #26 adds the complete start-to-launch infrastructure and launch chart.
 
 ### Status meaning
 
@@ -101,8 +103,9 @@ Earlier foundation work also includes password form minimum alignment, SQL dolla
 
 - Project: vision-hub
 - Production alias: https://vision-hub-bat.pages.dev
-- Latest deployment: e5560c18
-- Latest deployed commit: 63239698dceb2676b365464d67bf935a9e1d18f7
+- Cloudflare Pages currently has no custom domain attached; the pages.dev hostname is the public site address until an owner-owned custom domain is connected.
+- Latest deployment: 1006b1b9
+- Latest deployed commit: f936f24d84127161c8c17deeb49c29b68ab35971
 - Deployment stages: Cloudflare build and deploy succeeded.
 - Names of configured Production variables include Supabase URL/client/service credentials, four B2 settings and the Admin session secret. Secret values are not copied into this report.
 - R2, PixelDrain, Google Drive, Telegram and AdSense OAuth variable names were absent in the last Production configuration inventory.

@@ -1,3 +1,10 @@
+VISION HUB — START-TO-LAUNCH PROJECT CHART
+-----------------------------------------
+See docs/VISION-HUB-FULL-PROJECT-CHART.md for the complete start-to-launch
+project map: original feature scope, GitHub/Cloudflare hosting, domain, Supabase,
+B2 data uploads, Admin/user features, role permissions, integrations and every
+final QA and publication gate.
+
 CURRENT PRODUCTION STATUS
 -------------------------
 See docs/VISION-HUB-CURRENT-STATUS.md for the latest verified deployment, database state, movie/episode/audio upload fixes, completed checks and remaining blockers. That document supersedes older status snapshots in the docs folder.
