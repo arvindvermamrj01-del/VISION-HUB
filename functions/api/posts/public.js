@@ -15,6 +15,6 @@ export async function onRequestGet({env}){
       const thumb=post.thumbnail_path?await sign(post.thumbnail_path):null;
       return {id:post.id,title:post.title,description:post.description,category:post.category,post_type:post.post_type,created_at:post.created_at,media_url:media.url,thumbnail_url:thumb?.url||null};
     }));
-    return json({posts,expires_in:3600},{"headers":{"cache-control":"public, max-age=60"}});
+    return json({posts,expires_in:3600},200,{"cache-control":"public, max-age=60"});
   }catch(error){return json({error:error.message||"Published posts are unavailable."},503);}
 }
