@@ -11,7 +11,7 @@ export async function onRequestPost({ request, env }) {
     } catch (_) {
       return json({ error: "Invalid JSON request body." }, 400);
     }
-    const kind = body.kind === "audio" ? "audio" : "video";
+    const kind = ["audio", "image"].includes(body.kind) ? body.kind : "video";
     const fileName = String(body.fileName || kind).slice(0, 180);
     const reportedContentType = String(body.contentType || "").trim().toLowerCase();
     const videoMimeByExtension = {
@@ -27,14 +27,15 @@ export async function onRequestPost({ request, env }) {
       : reportedContentType;
     const fileSize = Number(body.fileSize || 0);
     const allowedAudioTypes = ["audio/mpeg","audio/mp4","audio/aac","audio/ogg","audio/wav","audio/x-wav","audio/flac","audio/x-flac","audio/webm","audio/opus"];
-    const validType = kind === "audio" ? allowedAudioTypes.includes(contentType) : contentType.startsWith("video/");
-    const maxSize = kind === "audio" ? 1024 * 1024 * 1024 : 5 * 1024 * 1024 * 1024;
-    if (!validType) return json({ error: kind === "audio" ? "Only audio uploads are accepted for this request." : "Only video uploads are accepted." }, 400);
+    const allowedImageTypes = ["image/jpeg","image/png","image/webp"];
+    const validType = kind === "audio" ? allowedAudioTypes.includes(contentType) : kind === "image" ? allowedImageTypes.includes(contentType) : contentType.startsWith("video/");
+    const maxSize = kind === "audio" ? 1024 * 1024 * 1024 : kind === "image" ? 15 * 1024 * 1024 : 5 * 1024 * 1024 * 1024;
+    if (!validType) return json({ error: kind === "audio" ? "Only supported audio uploads are accepted." : kind === "image" ? "Only JPG, PNG and WebP images are accepted." : "Only video uploads are accepted." }, 400);
     if (!Number.isFinite(fileSize) || fileSize <= 0 || fileSize > maxSize) {
-      return json({ error: kind === "audio" ? "Audio file must be between 1 byte and 1 GB." : "Video file must be between 1 byte and 5 GB. Larger files need multipart upload." }, 400);
+      return json({ error: kind === "audio" ? "Audio file must be between 1 byte and 1 GB." : kind === "image" ? "Image must be between 1 byte and 15 MB." : "Video file must be between 1 byte and 5 GB. Larger files need multipart upload." }, 400);
     }
     const safeName = fileName.normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/\.{2,}/g, ".").replace(/^-+|-+$/g, "").slice(-100) || kind;
-    const key = user.id + "/" + (kind === "audio" ? "audio/" : "") + crypto.randomUUID() + "-" + safeName;
+    const key = user.id + "/" + (kind === "audio" ? "audio/" : kind === "image" ? "images/" : "") + crypto.randomUUID() + "-" + safeName;
     const provider = String(body.provider || "backblaze_b2").toLowerCase();
     const uploadExpiry = kind === "audio" ? 3600 : 900;
     if (provider === "backblaze_b2") {

@@ -677,6 +677,9 @@
             <button class="admin-nav-btn" onclick="adminTab('manage',this)">
               <i class="fas fa-film"></i> Manage Catalog
             </button>
+            <button class="admin-nav-btn" onclick="adminTab('posts',this)">
+              <i class="fas fa-photo-video"></i> Posts
+            </button>
             <button class="admin-nav-btn" onclick="adminTab('episodes',this)">
               <i class="fas fa-layer-group"></i> Seasons & Episodes
             </button>
@@ -1008,6 +1011,33 @@
               <input type="text" id="manageSearch" placeholder="Filter by title, genre, language..." oninput="filterManageList(this.value)" autocomplete="off"/>
             </div>
             <div id="manageList" class="manage-list"></div>
+          </div>
+
+          <!-- Separate social-style Posts workspace; does not publish to Movie Catalog. -->
+          <div id="tab-posts" class="admin-tab">
+            <h2>📸 Posts Studio</h2>
+            <p>Create a video, song or photo post. New posts are saved privately as drafts and never enter the Movie Catalog.</p>
+            <form class="admin-form" id="vhPostForm">
+              <div class="form-row">
+                <div class="form-group"><label for="vhPostType">Post type *</label><select id="vhPostType" required><option value="video">Video</option><option value="song">Song / Audio</option><option value="photo">Photo</option></select></div>
+                <div class="form-group"><label for="vhPostCategory">Category</label><input id="vhPostCategory" maxlength="80" placeholder="e.g. Music, Behind the scenes"/></div>
+              </div>
+              <div class="form-group"><label for="vhPostTitle">Title *</label><input id="vhPostTitle" maxlength="180" required placeholder="Enter post title"/></div>
+              <div class="form-group"><label for="vhPostDescription">Description</label><textarea id="vhPostDescription" rows="4" maxlength="5000" placeholder="Write a description..."></textarea></div>
+              <div class="form-row">
+                <div class="form-group"><label for="vhPostProvider">Storage</label><select id="vhPostProvider"><option value="backblaze_b2">Backblaze B2</option><option value="cloudflare_r2">Cloudflare R2</option></select></div>
+                <div class="form-group"><label for="vhPostFile">Choose media file *</label><input id="vhPostFile" type="file" required accept="video/*"/></div>
+              </div>
+              <p id="vhPostFileHint" class="form-hint">Video up to 5 GB. Audio up to 1 GB. Photo up to 15 MB.</p>
+              <div class="form-group"><label for="vhPostThumbnail">Thumbnail / cover image (optional)</label><input id="vhPostThumbnail" type="file" accept="image/jpeg,image/png,image/webp"/></div>
+              <div class="form-row">
+                <button class="btn btn-primary" type="submit" id="vhPostSaveBtn">Save as Private Draft</button>
+                <button class="btn btn-secondary" type="button" id="vhPostResetBtn">Clear</button>
+              </div>
+              <p id="vhPostStatus" role="status" aria-live="polite"></p>
+            </form>
+            <h3>Saved Posts</h3>
+            <div id="vhPostsList" class="manage-list"><p>Loading saved posts…</p></div>
           </div>
 
           <!-- TAB 4: Series Seasons & Episodes -->
@@ -1693,6 +1723,7 @@
 <script src="js/app.js?v=20261120-12"></script>
 <script src="js/analytics.js"></script>
 <script src="js/content-admin.js?v=20261120-12"></script>
+<script src="js/posts-admin.js?v=20261121-1"></script>
 <script src="js/storage-manager.js?v=20261120-2"></script>
 <script src="js/request-manager.js"></script>
 <script src="js/admin-tools.js"></script>
