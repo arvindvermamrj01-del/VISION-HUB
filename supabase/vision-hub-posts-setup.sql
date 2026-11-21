@@ -30,6 +30,7 @@ alter table public.vh_posts enable row level security;
 -- server-side service-role key. No public or browser-role access is granted.
 revoke all on public.vh_posts from anon, authenticated;
 grant all on public.vh_posts to service_role;
+grant usage, select on sequence public.vh_posts_id_seq to service_role;
 
 comment on table public.vh_posts is
   'Separate private social posts workspace; not the Movie Catalog. Drafts are private by default.';
