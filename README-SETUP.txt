@@ -140,9 +140,9 @@ default for new storage, content and media records. The donation migrations
 cap submissions at ₹999, matching the public form. AdSense remains disabled
 until a valid publisher ID and approved ad slots are configured.
 
-After the migration, open Admin > Storage Manager to select Backblaze B2 when
-the bucket credentials have been verified. Existing legacy Supabase files and
-the current default provider remain supported.
+After the migration, open Admin > Storage Manager to confirm the Backblaze B2
+connection status. New content defaults to B2; existing legacy Supabase and R2
+objects keep their original provider and remain supported.
 
 BACKBLAZE B2 — PREFERRED VIDEO STORAGE
 --------------------------------------
