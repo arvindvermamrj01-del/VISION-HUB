@@ -709,7 +709,7 @@
       $("playerFallback")?.classList.add("active");
     }
     if(!activeVideo)return;
-    activeVideo.crossOrigin="anonymous";
+    // Do not force anonymous CORS on third-party media hosts. Most external files\n    // are playable as ordinary media; crossOrigin is only needed for canvas access.\n
     attachSubtitleTracks(item,inline?"detailPlayerSubtitle":"vhPlayerSubtitle",inline?"detailPlayerSpeed":"vhPlayerSpeed");
     activeVideo.onerror=()=>toast("Video stream nahi chal paayi. Direct file URL aur storage access check karein.");
     const video=activeVideo;
@@ -778,7 +778,7 @@
       }).catch(()=>{});
       window.renderVisionHub?.();
     };
-    video.onerror=()=>toast("Video stream nahi chal paayi. Direct file URL aur storage access check karein.");
+    video.onerror=()=>{const mediaError=video.error;const detail=mediaError?(" (code "+mediaError.code+(mediaError.message?": "+mediaError.message:"")+")"):"";toast("Video load nahi ho paaya"+detail+". Source URL, format ya storage access check karein.");};
     video.dataset.vhContentId=String(item.id);
     video.dataset.vhAssetUrl=String(asset.url);
     if(video.src!==asset.url){video.pause();video.src=asset.url;video.load();}
