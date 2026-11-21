@@ -123,8 +123,16 @@ Previously applied account/request upgrades should not need to be repeated:
   supabase/vision-hub-watch-progress.sql
   supabase/vision-hub-platform-upgrade.sql
 
-After the B2 migration, open Admin > Storage Manager. The legacy Supabase
-default is migrated to Backblaze B2; existing legacy files remain supported.
+For the current combined legacy + VH production schema, run
+supabase/vision-hub-production-hardening.sql after the feature bundle. It adds
+Backblaze B2 to the remaining provider checks, consolidates overlapping RLS
+policies without changing their effective permissions, adds the missing
+foreign-key indexes and restricts direct execution of trigger handlers. It
+does not change the configured default storage provider or modify catalog rows.
+
+After the migration, open Admin > Storage Manager to select Backblaze B2 when
+the bucket credentials have been verified. Existing legacy Supabase files and
+the current default provider remain supported.
 
 BACKBLAZE B2 — PREFERRED VIDEO STORAGE
 --------------------------------------
