@@ -437,7 +437,7 @@ language sql
 stable
 security definer
 set search_path = ''
-as $
+as $$
   select exists (
     select 1
     from public.profiles p
@@ -452,7 +452,7 @@ as $
         )
       )
   );
-$;
+$$;
 revoke all on function private.vh_can_manage_content_item(bigint) from public, anon, authenticated;
 grant execute on function private.vh_can_manage_content_item(bigint) to authenticated, service_role;
 

@@ -116,6 +116,17 @@ const { data: profile, error } = await db
   .eq("id", user.id)
   .maybeSingle();
 
+// Never silently downgrade an authenticated staff account when its role lookup fails.
+// The role is security-critical; fail closed and keep account/admin controls hidden.
+if (error) {
+  console.warn("Profile role lookup failed; account access is withheld until verification succeeds:", error.message);
+  window.VH_ROLE = "unverified";
+  window.VH_IS_ADMIN = false;
+  el("userNav")?.classList.add("hidden");
+  el("adminNav")?.classList.add("hidden");
+  window.dispatchEvent(new Event("vh-auth-state-changed"));
+  return false;
+}
 
 if (profile?.fullname) {
   name = profile.fullname;
@@ -339,7 +350,8 @@ window.adminLogin = async function (e) {
     const adminSessionExpiry = Date.now() + 3600000;
     try { sessionStorage.setItem("vh-admin-secret-session", String(adminSessionExpiry)); } catch (_) {}
     window.VH_ADMIN_SECRET_SESSION_ACTIVE = adminSessionExpiry;
-    window.VH_ADMIN_LOGIN_IN_PROGRESS = false;
+    // Keep the explicit admin flow marker active until role/UI verification finishes.
+    // Auth-state callbacks must not race this authoritative check.
     const roleVerified = await showSignedIn(data.user);
     if (!roleVerified || !window.VH_IS_ADMIN) {
       await db.auth.signOut({ scope: "local" });
@@ -430,7 +442,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 db.auth.onAuthStateChange(async (event, session) => {
 if (session?.user) {
+if (window.VH_ADMIN_LOGIN_IN_PROGRESS) {
+  if (event === "PASSWORD_RECOVERY") setTimeout(() => showPage("reset-password"), 0);
+  return;
+}
 setTimeout(async () => {
+  if (window.VH_ADMIN_LOGIN_IN_PROGRESS) return;
   const allowed = await showSignedIn(session.user);
   if (!allowed && !window.VH_ADMIN_LOGIN_IN_PROGRESS) {
     await db.auth.signOut({ scope: "local" }).catch(() => null);
@@ -446,6 +463,7 @@ showSignedOut();
 
 db.auth.getSession().then(async ({ data }) => {
 if (data.session?.user) {
+  if (window.VH_ADMIN_LOGIN_IN_PROGRESS) return;
   const allowed = await showSignedIn(data.session.user);
   if (!allowed && !window.VH_ADMIN_LOGIN_IN_PROGRESS) {
     await db.auth.signOut({ scope: "local" }).catch(() => null);
