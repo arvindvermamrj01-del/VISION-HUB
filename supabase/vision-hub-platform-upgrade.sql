@@ -14,18 +14,18 @@ grant usage on schema private to authenticated, service_role;
 create or replace function private.vh_can_manage_content()
 returns boolean language sql stable security definer
 set search_path = ''
-as $
+as $$
   select exists (
     select 1 from public.profiles p
     where p.id = (select auth.uid())
       and p.role in ('admin','sub_admin','content_editor')
   );
-$;
+$$;
 
 create or replace function private.vh_can_manage_content_item(p_content_id bigint)
 returns boolean language sql stable security definer
 set search_path = ''
-as $
+as $$
   select exists (
     select 1
     from public.profiles p
@@ -40,18 +40,18 @@ as $
         )
       )
   );
-$;
+$$;
 
 create or replace function private.vh_can_manage_requests()
 returns boolean language sql stable security definer
 set search_path = ''
-as $
+as $$
   select exists (
     select 1 from public.profiles p
     where p.id = (select auth.uid())
       and p.role in ('admin','sub_admin','moderator')
   );
-$;
+$$;
 
 revoke all on function private.vh_can_manage_content() from public, anon, authenticated;
 revoke all on function private.vh_can_manage_content_item(bigint) from public, anon, authenticated;
