@@ -1,12 +1,12 @@
 # VISION HUB — Current Production Status
-**Snapshot:** 21 November 2026, 04:49 UTC onward  
+**Snapshot:** 21 November 2026, 04:56 UTC onward  
 **Purpose:** truthful working status; supersedes older checklist snapshots where their production facts conflict.
 
-## Production deployment
+## Master portfolio and permission plan\n- Complete workstream chart, implementation vs verification status, role matrix, upload test sequence, owner permissions and remaining priorities: [VISION HUB Master Feature Portfolio](VISION-HUB-MASTER-PORTFOLIO.md).\n\n## Production deployment
 - Cloudflare Pages project: `vision-hub`, automatic deployment from GitHub `main`.
-- Latest verified Production deployment at snapshot: [`378ff02c`](https://378ff02c.vision-hub-bat.pages.dev), commit `b3e03bfd4797dab2d8549126a305c21a7734c1f8`; Cloudflare build and deploy completed successfully.
+- Latest verified Production deployment at snapshot: [`e5560c18`](https://e5560c18.vision-hub-bat.pages.dev), commit `63239698dceb2676b365464d67bf935a9e1d18f7`; Cloudflare build and deploy completed successfully.
 - Production alias: https://vision-hub-bat.pages.dev
-- Recent merged fixes: PR #17 movie MIME/B2 defaults, PR #18 migration consistency, PR #19 episode/audio MIME detection, PR #20 Original video resolution, PR #21 episode Original resolution, PR #22 B2 defaults and donation cap, PR #23 current-status documentation and RPC/RLS hardening.
+- Recent merged fixes: PR #17 movie MIME/B2 defaults, PR #18 migration consistency, PR #19 episode/audio MIME detection, PR #20 Original video resolution, PR #21 episode Original resolution, PR #22 B2 defaults and donation cap, PR #23 current-status documentation and RPC/RLS hardening, PR #24 status refresh.
 - No approved homepage, movie-detail popup, player or navigation layout was redesigned in this batch.
 
 ## Movie-upload failure — root causes found and fixed
