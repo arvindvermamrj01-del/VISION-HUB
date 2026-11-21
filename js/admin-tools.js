@@ -156,7 +156,7 @@
     return result;
   }
 
-  window.refreshAnalyticsActivity=async()=>{
+  window.refreshAnalyticsActivity=async(silent=false)=>{
     const status=$("analyticsActivityStatus");
     const buttons=[$("analyticsActivityRefresh"),$("analyticsActivityReset")].filter(Boolean);
     buttons.forEach(button=>button.disabled=true);
@@ -165,7 +165,7 @@
       const result=await analyticsRequest("GET");
       await loadReports();
       if(status)status.textContent="Updated "+new Date().toLocaleTimeString()+" · "+Number(result.total||0)+" events in the rolling 24-hour window.";
-      toast("24-hour activity refreshed.");
+      if(!silent)toast("24-hour activity refreshed.");
     }catch(error){
       if(status)status.textContent=error.message||"Activity refresh failed.";
       toast(error.message||"Activity refresh failed.");
@@ -512,6 +512,10 @@
   document.addEventListener("DOMContentLoaded",()=>{
     const watchers=[["tab-users-admin",loadUsers],["tab-team-admin",loadSubAdmins],["tab-dashboard",loadDashboard],["tab-reports",loadReports],["tab-categories",loadCategories],["tab-songs",loadSongs],["tab-settings",()=>{loadWebsiteSettings();loadDonations();}],["tab-community-admin",loadFeedbackAdmin]];
     watchers.forEach(([id,fn])=>{const el=$(id);if(el)new MutationObserver(()=>{if(el.classList.contains("active"))fn();}).observe(el,{attributes:true,attributeFilter:["class"]});});
+    window.setInterval(()=>{
+      const panel=$("tab-reports");
+      if(document.visibilityState==="visible"&&panel?.classList.contains("active"))window.refreshAnalyticsActivity?.(true);
+    },15*60*1000);
     db?.auth.onAuthStateChange((_event,session)=>{if(session?.user){loadDashboard();if($("tab-users-admin")?.classList.contains("active"))loadUsers();}});
     if(window.VH_IS_ADMIN)loadDashboard();
   });
