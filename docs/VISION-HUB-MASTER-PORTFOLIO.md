@@ -13,7 +13,7 @@ VISION HUB का core platform, approved Cinema4U-style discovery layout, Admin
 **Latest verified deployment:** 1006b1b9  
 **Commit:** f936f24d84127161c8c17deeb49c29b68ab35971  
 **Cloudflare:** Production build और deploy सफल  
-**GitHub:** PR #17–#25 merged; latest main branch matches the deployment commit.
+**GitHub:** PR #17–#25 merged at this snapshot; PR #26 adds the complete start-to-launch infrastructure and launch chart.
 
 ### Status meaning
 
