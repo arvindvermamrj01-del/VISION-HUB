@@ -87,7 +87,7 @@
       const seriesId=Number($("episodeSeriesId")?.value),season=Number($("episodeSeasonNumber")?.value),episode=Number($("episodeNumber")?.value);
       const title=$("episodeTitle")?.value.trim()||"",provider=$("episodeStorageProvider")?.value||"backblaze_b2";
       const file=$("episodeVideoFile")?.files?.[0]||null,rawUrl=$("episodeVideoUrl")?.value.trim()||"";
-      const primaryResolution=$("episodeResolution")?.value||null;
+      const primaryResolution=$("episodeResolution")?.value||"original";
       const language=$("episodeLanguage")?.value.trim()||"";
       const series=(window.VISION_HUB_DATA||[]).find(item=>String(item.id)===String(seriesId)&&item.type==="Web Series");
       if(!seriesId||!series)throw new Error("Select a published Web Series.");
